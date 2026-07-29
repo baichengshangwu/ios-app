@@ -1853,9 +1853,17 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
     <div class="social-tabs">
       <button class="social-tab active" data-key="sofriends" id="tab-friends" onclick="switchSocialTab('friends')">My Friends</button>
       <button class="social-tab" data-key="sorequests" id="tab-requests" onclick="switchSocialTab('requests')">Friend Requests</button>
+      <button class="social-tab" data-key="sogroups" id="tab-groups" onclick="switchSocialTab('groups')">Groups</button>
     </div>
     <div id="social-friends" class="social-scroll" style="max-height:200px;overflow-y:auto"><div class="social-empty"><span class="social-empty-icon">👥</span><span class="social-empty-text" data-key="sonofriends">No friends yet</span></div></div>
     <div id="social-requests" class="social-scroll" style="display:none;max-height:200px;overflow-y:auto"><div class="social-empty"><span class="social-empty-icon">📩</span><span class="social-empty-text">No pending requests</span></div></div>
+    <div id="social-groups" class="social-scroll" style="display:none;max-height:200px;overflow-y:auto">
+      <div style="padding:6px;display:flex;gap:6px">
+        <button class="btn bs bg" onclick="showCreateGroupModal()" style="flex:1">+ Create</button>
+        <button class="btn bs bo" onclick="showJoinGroupModal()" style="flex:1">Join Group</button>
+      </div>
+      <div id="social-groups-list" class="social-empty"><span class="social-empty-text">No groups yet</span></div>
+    </div>
   </div>
 
   <!-- Right: Chat -->
@@ -5466,7 +5474,7 @@ async function doLogin_email(e,p){
     if(!users[e]||users[e].pass!==p){notify('Invalid email or password','&#x26A0;');return;}
     var u=users[e];
     curUser={
-      name:u.name||'', email:u.email||e, wallet:u.wallet||'',
+      name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
       bal:u.bal||1000, holds:u.holds||{NEXUS:1000},
       kyc:u.kyc||'Bronze', bio:u.bio||'', joined:u.joined||'',
       ref:u.ref||'', addr:u.addr||'', role:u.role||'user',
@@ -5483,7 +5491,7 @@ async function doLogin_email(e,p){
     document.getElementById('udn').textContent=curUser.name;
     saveSession(); cma();
     notify('Welcome back, '+curUser.name+'!','&#x1F44B;'); rAll();
-    _socialCall('/api/social/sync-user', 'POST', {name: curUser.name});
+    _socialCall('/api/social/sync-user', 'POST', {name: curUser.name, pass: p});
     if(curPage==='social'){ setTimeout(function(){ try{loadFriends();loadFriendRequests();}catch(e){} }, 500); }
     return;
   }
@@ -5495,7 +5503,7 @@ async function doLogin_email(e,p){
       apiToken=lr.token;
       try{localStorage.setItem('nexus_api_token',apiToken);}catch(e){}
       curUser={
-        name:lr.user.name, email:lr.user.email, wallet:lr.user.wallet||'',
+        name:lr.user.name, email:lr.user.email, pass: p, wallet:lr.user.wallet||'',
         bal:lr.user.balance||1000, holds:{NEXUS:lr.user.nexus_balance||1000},
         kyc:lr.user.kyc||'Bronze', bio:lr.user.bio||'', joined:lr.user.joined||'',
         ref:lr.user.ref||'', addr:lr.user.addr||'', role:lr.user.role||'user',
@@ -5515,7 +5523,7 @@ async function doLogin_email(e,p){
     if(!users[e]||users[e].pass!==p){notify('Invalid email or password','&#x26A0;');return;}
     var u=users[e];
     curUser={
-      name:u.name||'', email:u.email||e, wallet:u.wallet||'',
+      name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
       bal:u.bal||1000, holds:u.holds||{NEXUS:1000},
       kyc:u.kyc||'Bronze', bio:u.bio||'', joined:u.joined||'',
       ref:u.ref||'', addr:u.addr||'', role:u.role||'user',
@@ -7364,6 +7372,104 @@ function apiSendMessage(friendEmail, text, msgType, fileName, fileSize){
 
 // === End Social APIs ===
 
+// === Group Chat APIs ===
+async function apiCreateGroup(name){
+  var r = await _socialCall('/api/social/groups/create', 'POST', {name: name});
+  if(!r || !r.ok) throw new Error(r?r.error:'Failed to create group');
+  return r;
+}
+async function apiListGroups(){
+  var r = await _socialCall('/api/social/groups/list', 'GET');
+  return r && r.groups ? r.groups : [];
+}
+async function apiJoinGroup(groupId){
+  var r = await _socialCall('/api/social/groups/join', 'POST', {group_id: groupId});
+  if(!r || !r.ok) throw new Error(r?r.error:'Failed to join group');
+  return r;
+}
+async function apiGetGroupMembers(groupId){
+  var r = await _socialCall('/api/social/groups/members?group_id='+encodeURIComponent(groupId), 'GET');
+  return r && r.members ? r.members : [];
+}
+async function apiSendGroupMessage(groupId, text, msgType, fileName, fileSize){
+  var r = await _socialCall('/api/social/send-message', 'POST', {
+    from_email: curUser._email, content: text, msg_type: msgType||'text',
+    chat_type: 'group', group_id: groupId, file_name: fileName||'', file_size: fileSize||0
+  });
+  if(!r || !r.ok) throw new Error(r?r.error:'Failed to send');
+  return r;
+}
+
+var socialGroup = null; // current active group
+async function loadGroups(){
+  var listEl = document.getElementById('social-groups-list');
+  if(!curUser){ listEl.innerHTML='<div class="social-empty"><span class="social-empty-text">Login required</span></div>'; return; }
+  try {
+    var groups = await apiListGroups();
+    if(!groups.length){ listEl.innerHTML='<div class="social-empty"><span class="social-empty-text">No groups yet</span></div>'; return; }
+    var h = '';
+    for(var i=0;i<groups.length;i++){
+      var g = groups[i];
+      h += '<div class="social-friend-item" onclick="selectGroup(\''+g.id+'\',\''+escHtml(g.name)+'\')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:4px;border:1px solid '+(socialGroup===g.id?'var(--ap)':'transparent')+'"><div style="width:36px;height:36px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">👥</div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.8rem">'+escHtml(g.name)+'</div><div style="font-size:.65rem;color:var(--t3)">'+g.member_count+' members</div></div></div>';
+    }
+    listEl.innerHTML = h;
+  } catch(e){ listEl.innerHTML='<div class="social-empty"><span class="social-empty-text">'+escHtml(errMsg(e))+'</span></div>'; }
+}
+function selectGroup(groupId, name){
+  socialGroup = groupId;
+  socialFriend = null; // switch to group mode
+  document.getElementById('social-chat-title').innerHTML = '<span class="social-chat-title-text">Group</span><span class="social-chat-status">#'+escHtml(name)+'</span>';
+  loadGroups();
+  loadGroupMessages();
+}
+async function loadGroupMessages(){
+  var div = document.getElementById('social-chat-msgs');
+  if(!socialGroup || !curUser){ div.innerHTML='<div class="social-empty"><span class="social-empty-text" data-key="sonomsg">Select a group to chat</span></div>'; _msgTexts={}; return; }
+  var msgs = [];
+  try {
+    var data = await _socialCall('/api/social/get-messages?group_id='+encodeURIComponent(socialGroup)+'&limit=100&user='+encodeURIComponent(curUser._email), 'GET');
+    msgs = data && data.messages ? data.messages : [];
+  } catch(e){ msgs = []; }
+  if(!msgs.length){ div.innerHTML='<div style="text-align:center;color:var(--t3);padding:20px">No messages yet</div>'; _msgTexts={}; return; }
+  var h = '';
+  for(var i=0;i<msgs.length;i++){
+    var m = msgs[i]; _msgTexts[m.id] = m.text;
+    var isMe = m.from_email===curUser._email;
+    var rowCls = isMe ? ' me' : ' other';
+    var senderName = isMe ? 'You' : (m.from_email||'').split('@')[0];
+    h += '<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'"><div style="font-size:.55rem;color:var(--ap);margin-bottom:2px">'+escHtml(senderName)+'</div>'+escHtml(m.text)+'</div><div class="social-msg-time">'+m.created_at+'</div></div>';
+  }
+  div.innerHTML = h;
+  div.scrollTop = div.scrollHeight;
+}
+function showCreateGroupModal(){
+  var name = prompt('Enter group name:');
+  if(!name || !name.trim()) return;
+  apiCreateGroup(name.trim()).then(function(r){
+    notify('Group "'+r.name+'" created! Share this ID to invite: '+r.id, '✅');
+    loadGroups();
+  }).catch(function(e){ notify(errMsg(e),'❌'); });
+}
+function showJoinGroupModal(){
+  var id = prompt('Enter group ID to join:');
+  if(!id || !id.trim()) return;
+  apiJoinGroup(id.trim()).then(function(r){
+    notify('Joined group: '+(r.group_name||id), '✅');
+    loadGroups();
+  }).catch(function(e){ notify(errMsg(e),'❌'); });
+}
+async function sendGroupMsg(){
+  if(!socialGroup || !curUser) return;
+  var input = document.getElementById('social-chat-input');
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try {
+    await apiSendGroupMessage(socialGroup, text);
+    loadGroupMessages();
+  } catch(e){ notify(errMsg(e),'❌'); }
+}
+
 async function apiSearchUser(email){
   email = email.toLowerCase();
   // Try backend first
@@ -7411,11 +7517,14 @@ async function apiSearchUser(email){
 async function switchSocialTab(tab){
   document.getElementById('social-friends').style.display=(tab==='friends')?'':'none';
   document.getElementById('social-requests').style.display=(tab==='requests')?'':'none';
-  // Highlight active tab
+  document.getElementById('social-groups').style.display=(tab==='groups')?'':'none';
   var ftab=document.getElementById('tab-friends');
   var rtab=document.getElementById('tab-requests');
+  var gtab=document.getElementById('tab-groups');
   if(ftab)ftab.classList.toggle('active', tab==='friends');
   if(rtab)rtab.classList.toggle('active', tab==='requests');
+  if(gtab)gtab.classList.toggle('active', tab==='groups');
+  if(tab==='groups') loadGroups();
 }
 
 async function searchUser(){
@@ -7454,7 +7563,7 @@ async function rejectReq(reqId){
 }
 
 function selectFriend(email){
-  socialFriend = email;
+  socialGroup = null; socialFriend = email;
   var name = (users[email]&&users[email].name) || email.split('@')[0];
   document.getElementById('social-chat-title').innerHTML = '<span class="social-chat-title-text">Chat</span><span class="social-chat-status">'+escHtml(name)+'</span>';
   loadFriends(); // re-render to highlight
@@ -7511,11 +7620,16 @@ async function loadMessages(){
 async function sendSocialMsg(){
   var inp = document.getElementById('social-msg-input');
   var text = inp.value.trim();
-  if(!text || !socialFriend || !curUser) return;
+  if(!text || !curUser) return;
+  if(!socialFriend && !socialGroup){ notify('Select a friend or group first','⚠'); return; }
   try {
-    await apiSendMessage(socialFriend, text, 'text');
-    inp.value = '';
-    loadMessages();
+    if(socialGroup){
+      await apiSendGroupMessage(socialGroup, text, 'text');
+      inp.value = ''; loadGroupMessages();
+    } else {
+      await apiSendMessage(socialFriend, text, 'text');
+      inp.value = ''; loadMessages();
+    }
   } catch(e){ notify('Error: '+e.message,'❌'); }
 }
 
