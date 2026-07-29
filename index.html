@@ -1894,7 +1894,7 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
   <div class="ig"><label data-key="memail">Email</label><input type="email" id="login-email" data-key-ph="lemail_ph" placeholder="your@email.com"></div>
   <div class="ig"><label data-key="mpass">Password</label><input type="password" id="login-pass" data-key-ph="lpass_ph" placeholder="********"></div>
   <div style="text-align:right;font-size:.7rem;margin-bottom:8px"><span style="color:var(--ap);cursor:pointer" onclick="oam('reset')" data-key="mforgot">Forgot Password?</span></div>
-  <button class="btn bg bw" onclick="doLogin()" data-key="mlog2">Login</button>
+  <button class="btn bg bw" id="btn-login-submit" data-key="mlog2">Login</button>
   <div style="text-align:center;margin-top:8px;font-size:.73rem;color:var(--t2)"><span data-key="mnoacc">No account?</span> <span style="color:var(--ap);cursor:pointer;font-weight:600" onclick="oam('register')" data-key="mregi">Register</span></div>
   <div class="br2"><button class="btn bo" onclick="cma()" data-key="mcancel">Cancel</button></div>
 </div></div>
@@ -2367,19 +2367,17 @@ function _socialFetch(path, opts){
   if(curUser && curUser.pass){ headers['x-auth-pass'] = curUser.pass; }
   if(opts.headers){ Object.assign(headers, opts.headers); }
   return fetch(_socialAPI + path, { method: opts.method||'GET', headers: headers, body: opts.body })
-    .then(function(r){ return r.json(); })
-    .catch(function(){ return null; });
+    .then(function(r){ if(!r.ok){ console.warn('[Social] HTTP '+r.status+' for '+path); return null; } return r.json(); })
+    .catch(function(e){ console.warn('[Social] fetch error for '+path+': '+(e.message||e)); return null; });
 }
 function _socialCall(endpoint, method, body){
   return _socialFetch(endpoint, { method: method||'GET', body: body ? JSON.stringify(body) : undefined });
 }
 // Sync user to D1 after register/login
 function _syncUserToBackend(email, name, pass){
-  return _socialFetch('/api/social/search-user?email=' + encodeURIComponent(email))
+  return _socialFetch('/api/social/sync-user', { method:'POST', body: JSON.stringify({name: name, pass: pass}) })
     .then(function(r){
-      if(!r || r.found) return r;
-      // User not in D1, create via send-request flow (placeholder - user will be created on interaction)
-      // For now, user gets created when they send a friend request
+      if(!r || !r.success){ console.warn('[Social] _syncUserToBackend failed for '+email, r); }
       return r;
     });
 }
@@ -5491,7 +5489,8 @@ async function doLogin_email(e,p){
     document.getElementById('udn').textContent=curUser.name;
     saveSession(); cma();
     notify('Welcome back, '+curUser.name+'!','&#x1F44B;'); rAll();
-    _socialCall('/api/social/sync-user', 'POST', {name: curUser.name, pass: p});
+    _socialCall('/api/social/sync-user', 'POST', {name: curUser.name, pass: p})
+      .then(function(r){ if(!r||!r.success){ console.warn('[Social] sync-user failed:', r); } });
     if(curPage==='social'){ setTimeout(function(){ try{loadFriends();loadFriendRequests();}catch(e){} }, 500); }
     return;
   }
@@ -7050,6 +7049,7 @@ var socialFriend = null;
 // Message translation cache
 var _msgTexts = {};      // msg id -> original text
 var _msgTransCache = {}; // text|lang -> translated text
+var _lastMsgFp = '';     // fingerprint for incremental update to avoid flicker
 function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 // Translate common API error messages
 function errMsg(e){var m=e.message||'';if(m==='Authentication required')return t('sonoauth');if(m==='Invalid or expired token')return t('sotokenexpired');if(m.indexOf('Server returned invalid response')===0)return t('soinvalidresponse')+' (HTTP '+m.split('(')[1];if(m==='Empty response from server')return t('soemptyresponse');if(m.indexOf('Empty response')===0)return t('soemptyresponse');if(m.indexOf('Request timeout')===0)return t('sorequesttimeout');if(m.indexOf('Network error')===0||m.indexOf('Failed to fetch')===0)return t('sonetworkerror');return m;}
@@ -7472,10 +7472,12 @@ async function sendGroupMsg(){
 
 async function apiSearchUser(email){
   email = email.toLowerCase();
+  var backendFailed = false;
   // Try backend first
   try {
     var beResult = await _socialCall('/api/social/search-user?email=' + encodeURIComponent(email), 'GET');
-    if(beResult && beResult.found && beResult.user){
+    if(beResult === null){ backendFailed = true; }
+    else if(beResult && beResult.found && beResult.user){
       var bu = beResult.user;
       // Check if already friend
       var isFriend = false, pendingRequest = false;
@@ -7492,14 +7494,15 @@ async function apiSearchUser(email){
       return {
         user: { name: bu.name, email: bu.email, joined: bu.joined, bio: bu.bio||'', kyc: bu.kyc||'Bronze' },
         isFriend: isFriend,
-        pendingRequest: pendingRequest
+        pendingRequest: pendingRequest,
+        _backendError: false
       };
     }
-  } catch(e) {}
+  } catch(e) { backendFailed = true; }
   // Fallback to localStorage
   var users = loadLS('nexus_users', {});
   var u = users[email];
-  if (!u) return { user: null };
+  if (!u) return { user: null, _backendError: backendFailed };
   var isFriend = false;
   var pendingRequest = false;
   if (curUser && curUser.email) {
@@ -7511,7 +7514,8 @@ async function apiSearchUser(email){
   return {
     user: { name: u.name, email: u.email, joined: u.joined, bio: u.bio, kyc: u.kyc },
     isFriend: isFriend,
-    pendingRequest: pendingRequest
+    pendingRequest: pendingRequest,
+    _backendError: backendFailed
   };
 }
 async function switchSocialTab(tab){
@@ -7535,7 +7539,7 @@ async function searchUser(){
   resDiv.style.display='block'; resDiv.innerHTML='<div style="padding:8px;color:var(--t3);font-size:.75rem" data-key="sosearching">'+t('sosearching')+'</div>';
   try {
     var data = await apiSearchUser(q);
-    if(!data || !data.user){ resDiv.innerHTML='<div style="padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;text-align:center;color:#ef4444;font-size:.78rem" data-key="sonotfound">'+t('sonotfound')+'</div>'; return; }
+    if(!data || !data.user){ if(data && data._backendError){ resDiv.innerHTML='<div style="padding:10px;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;text-align:center;color:#eab308;font-size:.78rem"><b>Server unreachable</b><br><span style="font-size:.7rem">Try refreshing the page and logging in again, then search once more.</span></div>'; } else { resDiv.innerHTML='<div style="padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;text-align:center;color:#ef4444;font-size:.78rem" data-key="sonotfound">'+t('sonotfound')+'</div>'; } return; }
     var u = data.user;
     var name = u.name || u.email.split('@')[0];
     if(u.email===curUser.email){ resDiv.innerHTML='<div style="padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;text-align:center;color:#ef4444;font-size:.78rem" data-key="soself">'+t('soself')+'</div>'; return; }
@@ -7563,7 +7567,7 @@ async function rejectReq(reqId){
 }
 
 function selectFriend(email){
-  socialGroup = null; socialFriend = email;
+  socialGroup = null; socialFriend = email; _lastMsgFp = '';
   var name = (users[email]&&users[email].name) || email.split('@')[0];
   document.getElementById('social-chat-title').innerHTML = '<span class="social-chat-title-text">Chat</span><span class="social-chat-status">'+escHtml(name)+'</span>';
   loadFriends(); // re-render to highlight
@@ -7612,6 +7616,9 @@ async function loadMessages(){
       h+='<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'">'+displayText+'</div><div class="social-msg-time">'+m.created_at+'</div></div>';
     }
   }
+  var newFp = msgs.map(function(x){return x.id;}).join(',');
+  if(newFp===_lastMsgFp){ return; }
+  _lastMsgFp = newFp;
   div.innerHTML = h;
   div.scrollTop = div.scrollHeight;
   translateChatMsgs();
@@ -8089,10 +8096,8 @@ async function retranslateMsgs(){
   if(curPage==='social' && socialFriend && curUser){ loadMessages(); }
 }
 
-// Poll for new messages when chat is open
-setInterval(function(){
-  if(curPage==='social' && socialFriend && curUser) loadMessages();
-}, 3000);
+// No polling — BroadcastChannel handles cross-tab real-time sync;
+// sendSocialMsg / switchSocialTab already call loadMessages() on user action.
 
 // ============ DYNAMIC CONTENT TRANSLATION ============
 async function translateCommunityContent(){
@@ -16019,6 +16024,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{var saved=localStorage.getItem('nexus_cur_user_email');if(saved&&users[saved]){curUser={...users[saved]};curUser._email=saved;document.getElementById('aa').style.display='none';document.getElementById('ud').style.display='block';document.getElementById('ual').textContent=(curUser.name||'U')[0].toUpperCase();document.getElementById('udn').textContent=curUser.name;}}catch(e){}
     if(!apiToken){ try{ var _tk=localStorage.getItem('nexus_api_token'); if(_tk) apiToken=_tk; }catch(e){} }
     applyI18N(); rAll();
+    try{document.getElementById("btn-login-submit")?.addEventListener("click",doLogin);}catch(e){}
     initMKT(); setTimeout(function(){rdrTkr();},1500);
     translateCommunityContent();
     setInterval(()=>{if(curUser){try{localStorage.setItem('nexus_cur_user_email',curUser._email);}catch(e){}}},5000);
