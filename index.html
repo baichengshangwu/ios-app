@@ -7176,8 +7176,14 @@ function apiAcceptFriendRequest(reqId){
     if(!users[fromEmail].friends.some(function(f){ return (f.email||f) === curUser._email; })){
       users[fromEmail].friends.push({email: curUser._email});
     }
-    saveLS('nexus_users', users);
   }
+  // Also update the accepter's own entry in users
+  if(!users[curUser._email]) users[curUser._email] = {};
+  if(!users[curUser._email].friends) users[curUser._email].friends = [];
+  if(!users[curUser._email].friends.some(function(f){ return (f.email||f) === fromEmail; })){
+    users[curUser._email].friends.push({email: fromEmail});
+  }
+  saveLS('nexus_users', users);
   saveSession();
   return {ok: true};
 }
