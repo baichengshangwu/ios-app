@@ -1867,6 +1867,11 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
     <div class="social-chat-input-row">
       <div class="social-icon-btn voice" id="social-voice-btn" onclick="toggleSocialVoiceMsg()" title="Voice Message">🎤</div>
       <div class="social-icon-btn call" id="social-call-btn" onclick="startSocialVoiceCall()" title="Voice Call">📞</div>
+      <div class="social-icon-btn call" id="social-vcall-btn" onclick="startSocialVideoCall()" title="Video Call" style="background:rgba(99,102,241,.1);color:#6366f1">📹</div>
+      <div class="social-icon-btn" id="social-img-btn" onclick="document.getElementById('social-img-input').click()" title="Send Image">🖼️</div>
+      <div class="social-icon-btn" id="social-video-btn" onclick="document.getElementById('social-video-input').click()" title="Send Video (max 2min)">🎬</div>
+      <input type="file" id="social-img-input" accept="image/*" onchange="sendSocialImage(event)" style="display:none">
+      <input type="file" id="social-video-input" accept="video/*" onchange="sendSocialVideo(event)" style="display:none">
       <input type="text" id="social-msg-input" data-key-ph="somsgph" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendSocialMsg()">
       <button class="social-send-btn" onclick="sendSocialMsg()" data-key="sosend">Send</button>
     </div>
@@ -7286,7 +7291,15 @@ function apiRejectFriendRequest(reqId){
 }
 
 function apiFetch(url){
-  // Stub - local messages store
+  // Try D1 backend for messages
+  if(url.indexOf('/api/messages/')===0){
+    var friend = decodeURIComponent(url.split('/').pop());
+    return _socialCall('/api/social/get-messages?friend='+encodeURIComponent(friend)+'&limit=100', 'GET')
+      .then(function(r){ return {messages: r.messages||[]}; })
+      .catch(function(){
+        return {messages: getLocalMessages(socialFriend)};
+      });
+  }
   return Promise.resolve({messages: getLocalMessages(socialFriend)});
 }
 
@@ -7299,18 +7312,21 @@ function getLocalMessages(friendEmail){
   } catch(e){ return []; }
 }
 
-function saveLocalMessage(friendEmail, text){
+function saveLocalMessage(friendEmail, text, msgType, fileName, fileSize){
   if(!curUser || !friendEmail) return;
   var key = 'nexus_msgs_' + curUser._email + '_' + friendEmail;
   var revKey = 'nexus_msgs_' + friendEmail + '_' + curUser._email;
   try {
     var msgs = JSON.parse(localStorage.getItem(key) || '[]');
     var now = new Date().toISOString().slice(0,19).replace('T',' ');
-    msgs.push({id: 'msg_'+Date.now(), from_email: curUser._email, text: text, created_at: now});
+    var msg = {id: 'msg_'+Date.now(), from_email: curUser._email, text: text, created_at: now, msg_type: msgType||'text'};
+    if(fileName) msg.file_name = fileName;
+    if(fileSize) msg.file_size = fileSize;
+    msgs.push(msg);
     localStorage.setItem(key, JSON.stringify(msgs));
     // Also save to recipient side
     var revMsgs = JSON.parse(localStorage.getItem(revKey) || '[]');
-    revMsgs.push({id: 'msg_'+Date.now(), from_email: curUser._email, text: text, created_at: now});
+    revMsgs.push(msg);
     localStorage.setItem(revKey, JSON.stringify(revMsgs));
     // BroadcastChannel for cross-tab notification
     try {
@@ -7333,9 +7349,16 @@ function saveLocalMessage(friendEmail, text){
   } catch(e){}
 })();
 
-function apiSendMessage(friendEmail, text){
+function apiSendMessage(friendEmail, text, msgType, fileName, fileSize){
   if(!curUser) throw new Error('Not logged in');
-  saveLocalMessage(friendEmail, text);
+  saveLocalMessage(friendEmail, text, msgType, fileName, fileSize);
+  // Sync to D1 backend
+  _socialCall('/api/social/send-message', 'POST', {
+    from_email: curUser._email, to_email: friendEmail,
+    msg_type: msgType||'text', content: text,
+    file_name: fileName||'', file_size: fileSize||0,
+    chat_type: 'private'
+  }).catch(function(){}); // Non-blocking
   return Promise.resolve({ok: true});
 }
 
@@ -7459,11 +7482,22 @@ async function loadMessages(){
     _msgTexts[m.id] = m.text;
     var isMe = m.from_email===curUser._email;
     var rowCls = isMe ? ' me' : ' other';
-    var isVoice = m.text.indexOf('[VOICE]')===0;
-    if(isVoice){
-      var voiceUrl = m.text.substring(7);
+    var mt = m.msg_type || 'text';
+    // Voice message
+    if(mt==='voice' || (m.text&&m.text.indexOf('[VOICE]')===0)){
+      var voiceUrl = mt==='voice' ? m.text : m.text.substring(7);
       h+='<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'"><audio controls src="'+escHtml(voiceUrl)+'" style="width:180px;height:32px"></audio></div><div class="social-msg-time">'+m.created_at+'</div></div>';
-    } else {
+    }
+    // Image message
+    else if(mt==='image'){
+      h+='<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'" style="max-width:260px"><img src="'+escHtml(m.text)+'" alt="'+escHtml(m.file_name||'Image')+'" style="width:100%;border-radius:8px;cursor:pointer" onclick="viewFullImage(this.src)" loading="lazy"><div style="font-size:.65rem;color:var(--t3);margin-top:4px">'+escHtml(m.file_name||'')+'</div></div><div class="social-msg-time">'+m.created_at+'</div></div>';
+    }
+    // Video message
+    else if(mt==='video'){
+      h+='<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'" style="max-width:300px"><video controls src="'+escHtml(m.text)+'" style="width:100%;border-radius:8px;max-height:240px" preload="metadata"></video><div style="font-size:.65rem;color:var(--t3);margin-top:4px">'+escHtml(m.file_name||'')+'</div></div><div class="social-msg-time">'+m.created_at+'</div></div>';
+    }
+    // Text message
+    else {
       var cacheKey = m.text + '|' + curLang;
       var displayText = _msgTransCache[cacheKey] || escHtml(m.text);
       h+='<div class="social-msg-row'+rowCls+'"><div class="social-msg-bubble'+rowCls+'" data-mid="'+m.id+'">'+displayText+'</div><div class="social-msg-time">'+m.created_at+'</div></div>';
@@ -7479,10 +7513,72 @@ async function sendSocialMsg(){
   var text = inp.value.trim();
   if(!text || !socialFriend || !curUser) return;
   try {
-    await apiSendMessage(socialFriend, text);
+    await apiSendMessage(socialFriend, text, 'text');
     inp.value = '';
     loadMessages();
   } catch(e){ notify('Error: '+e.message,'❌'); }
+}
+
+// Image upload via file picker
+function sendSocialImage(evt){
+  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); evt.target.value=''; return; }
+  var file = evt.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){ notify('Image too large, max 5MB','⚠️'); evt.target.value=''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var base64 = e.target.result;
+    apiSendMessage(socialFriend, base64, 'image', file.name, file.size).then(function(){
+      loadMessages();
+    });
+  };
+  reader.readAsDataURL(file);
+  evt.target.value = '';
+}
+
+// Video upload via file picker (max 2 minutes check)
+function sendSocialVideo(evt){
+  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); evt.target.value=''; return; }
+  var file = evt.target.files[0];
+  if(!file) return;
+  // Check video duration
+  var video = document.createElement('video');
+  video.preload = 'metadata';
+  video.onloadedmetadata = function(){
+    window.URL.revokeObjectURL(video.src);
+    if(video.duration > 130){ notify('Video too long, max 2 minutes','⚠️'); evt.target.value=''; return; }
+    if(file.size > 8*1024*1024){ notify('Video too large, max 8MB','⚠️'); evt.target.value=''; return; }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var base64 = e.target.result;
+      apiSendMessage(socialFriend, base64, 'video', file.name, file.size).then(function(){
+        loadMessages();
+      });
+    };
+    reader.readAsDataURL(file);
+    evt.target.value = '';
+  };
+  video.src = URL.createObjectURL(file);
+}
+
+// View full-size image in modal
+function viewFullImage(src){
+  var modal = document.getElementById('image-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'image-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+    modal.onclick = function(){ modal.style.display='none'; };
+    var img = document.createElement('img');
+    img.id = 'image-modal-img';
+    img.style.cssText = 'max-width:90%;max-height:90%;object-fit:contain;border-radius:8px';
+    img.onclick = function(e){ e.stopPropagation(); };
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+  }
+  var img = document.getElementById('image-modal-img');
+  img.src = src;
+  modal.style.display = 'flex';
 }
 
 async function translateChatMsgs(){
@@ -17038,7 +17134,256 @@ function getPaymentMethods(type){var all=_getPM();if(!type)return all;return all
     }
   }
 })();
+
+// ========================
+// WebRTC Voice/Video Call
+// ========================
+var CALL = {
+  callId: null, callType: 'voice', peerEmail: null,
+  pc: null, localStream: null, isMuted: false, isVideoOff: false,
+  pollingTimer: null, callStartTime: null, timerInterval: null,
+  isCaller: false, isActive: false
+};
+
+var RTC_CONFIG = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' }
+]};
+
+function startSocialVoiceCall(){
+  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); return; }
+  CALL.callType = 'voice';
+  CALL.peerEmail = socialFriend;
+  initiateCall();
+}
+
+function startSocialVideoCall(){
+  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); return; }
+  CALL.callType = 'video';
+  CALL.peerEmail = socialFriend;
+  initiateCall();
+}
+
+async function initiateCall(){
+  if(CALL.isActive) return;
+  CALL.isCaller = true;
+  CALL.isActive = true;
+  try {
+    var r = await _socialCall('/api/social/call/start', 'POST', {
+      from_email: curUser._email, to_email: CALL.peerEmail, call_type: CALL.callType
+    });
+    if(!r || !r.call_id){ notify('Failed to start call','❌'); CALL.isActive=false; return; }
+    CALL.callId = r.call_id;
+  } catch(e){ notify('Call init failed','❌'); CALL.isActive=false; return; }
+
+  showCallUI('calling');
+  document.getElementById('call-participant').textContent = 'Calling ' + CALL.peerEmail + '...';
+
+  try {
+    CALL.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: CALL.callType==='video' });
+    if(CALL.callType==='video'){
+      var lv = document.getElementById('call-local-video');
+      lv.style.display = 'block'; lv.srcObject = CALL.localStream;
+    }
+  } catch(e){ notify('Camera/Mic access denied','⚠️'); }
+
+  await createPeerConnection();
+  var offer = await CALL.pc.createOffer();
+  await CALL.pc.setLocalDescription(offer);
+  await sendSignal('offer', offer);
+  startPolling();
+}
+
+async function handleIncomingCall(callId, initiatorEmail, callType){
+  if(CALL.isActive){
+    await _socialCall('/api/social/call/signal', 'POST', {
+      call_id: callId, sender_email: curUser._email, signal_type: 'hangup', payload: {}
+    }).catch(function(){});
+    return;
+  }
+  CALL.callId = callId; CALL.peerEmail = initiatorEmail; CALL.callType = callType||'voice';
+  CALL.isCaller = false; CALL.isActive = true;
+  showCallUI('incoming');
+  document.getElementById('call-participant').textContent = 'Incoming '+(callType==='video'?'video':'voice')+' call from '+initiatorEmail;
+  await sleep(600);
+  await acceptCall();
+}
+
+async function acceptCall(){
+  showCallUI('active');
+  document.getElementById('call-participant').textContent = CALL.peerEmail;
+  try {
+    CALL.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: CALL.callType==='video' });
+    if(CALL.callType==='video'){
+      var lv = document.getElementById('call-local-video');
+      lv.style.display = 'block'; lv.srcObject = CALL.localStream;
+    }
+  } catch(e){ notify('Media access denied','⚠️'); }
+  await createPeerConnection();
+  startPolling();
+  startCallTimer();
+}
+
+async function sendSignal(type, payload){
+  return _socialCall('/api/social/call/signal', 'POST', {
+    call_id: CALL.callId, sender_email: curUser._email, signal_type: type, payload: payload
+  });
+}
+
+async function createPeerConnection(){
+  if(CALL.pc) CALL.pc.close();
+  CALL.pc = new RTCPeerConnection(RTC_CONFIG);
+  CALL.pc.onicecandidate = function(e){
+    if(e.candidate) sendSignal('ice-candidate', e.candidate);
+  };
+  CALL.pc.ontrack = function(e){
+    if(CALL.callType==='video' || e.track.kind==='video'){
+      var rv = document.getElementById('call-remote-video');
+      rv.style.display = 'block';
+      if(!rv.srcObject) rv.srcObject = new MediaStream();
+      rv.srcObject.addTrack(e.track);
+    } else {
+      var audio = new Audio(); audio.srcObject = e.streams[0]; audio.play().catch(function(){});
+    }
+  };
+  CALL.pc.onconnectionstatechange = function(){
+    var s = CALL.pc.connectionState;
+    if(s==='disconnected'||s==='failed'||s==='closed') endCall();
+  };
+  if(CALL.localStream){
+    CALL.localStream.getTracks().forEach(function(t){ CALL.pc.addTrack(t, CALL.localStream); });
+  }
+}
+
+async function handleSignal(signal){
+  if(!CALL.pc) return;
+  try {
+    if(signal.signal_type==='offer'){
+      if(CALL.isCaller) return;
+      await CALL.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+      var answer = await CALL.pc.createAnswer();
+      await CALL.pc.setLocalDescription(answer);
+      await sendSignal('answer', answer);
+      showCallUI('active'); startCallTimer();
+      document.getElementById('call-participant').textContent = CALL.peerEmail;
+    } else if(signal.signal_type==='answer'){
+      if(!CALL.isCaller) return;
+      await CALL.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+      showCallUI('active'); startCallTimer();
+      document.getElementById('call-participant').textContent = CALL.peerEmail;
+    } else if(signal.signal_type==='ice-candidate'){
+      await CALL.pc.addIceCandidate(new RTCIceCandidate(signal.payload));
+    } else if(signal.signal_type==='hangup'){
+      endCall();
+    }
+  } catch(e){}
+}
+
+function startPolling(){
+  var lastCheck = new Date().toISOString().slice(0,19).replace('T',' ');
+  CALL.pollingTimer = setInterval(async function(){
+    if(!CALL.isActive || !CALL.callId){ clearInterval(CALL.pollingTimer); return; }
+    try {
+      var r = await _socialCall('/api/social/call/get-signal?call_id='+CALL.callId+'&my_email='+encodeURIComponent(curUser._email)+'&since='+encodeURIComponent(lastCheck), 'GET');
+      if(r && r.signals){
+        for(var i=0;i<r.signals.length;i++) await handleSignal(r.signals[i]);
+        if(r.signals.length>0) lastCheck = r.signals[r.signals.length-1].created_at || lastCheck;
+      }
+      if(r && r.call_ended) endCall();
+    } catch(e){}
+  }, 1500);
+}
+
+// Incoming call polling
+setInterval(async function(){
+  if(CALL.isActive || !curUser) return;
+  try {
+    var r = await _socialCall('/api/social/call/incoming?my_email='+encodeURIComponent(curUser._email), 'GET');
+    if(r && r.active){
+      await handleIncomingCall(r.call_id, r.initiator, r.call_type);
+    }
+  } catch(e){}
+}, 4000);
+
+function showCallUI(state){
+  var o = document.getElementById('call-overlay'); o.style.display = 'flex';
+  var s = document.getElementById('call-status');
+  if(state==='calling') s.textContent = 'Calling...';
+  else if(state==='incoming') s.textContent = 'Incoming Call';
+  else s.textContent = 'Connected';
+}
+
+function toggleCallMute(){
+  CALL.isMuted = !CALL.isMuted;
+  var btn = document.getElementById('call-btn-mute');
+  btn.style.background = CALL.isMuted ? 'rgba(239,68,68,.3)' : 'rgba(255,255,255,.1)';
+  btn.textContent = CALL.isMuted ? '🔇' : '🎤';
+  if(CALL.localStream){
+    CALL.localStream.getAudioTracks().forEach(function(t){ t.enabled = !CALL.isMuted; });
+  }
+}
+
+function toggleCallVideo(){
+  CALL.isVideoOff = !CALL.isVideoOff;
+  var btn = document.getElementById('call-btn-video');
+  btn.style.background = CALL.isVideoOff ? 'rgba(239,68,68,.3)' : 'rgba(255,255,255,.1)';
+  btn.textContent = CALL.isVideoOff ? '📷' : '📹';
+  if(CALL.localStream){
+    CALL.localStream.getVideoTracks().forEach(function(t){ t.enabled = !CALL.isVideoOff; });
+  }
+}
+
+function startCallTimer(){
+  CALL.callStartTime = Date.now();
+  CALL.timerInterval = setInterval(function(){
+    var elapsed = Math.floor((Date.now()-CALL.callStartTime)/1000);
+    var h = Math.floor(elapsed/3600), m = Math.floor((elapsed%3600)/60), s = elapsed%60;
+    var txt = (h>0?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    document.getElementById('call-timer').textContent = txt;
+  }, 1000);
+}
+
+async function endCall(){
+  CALL.isActive = false;
+  if(CALL.pollingTimer){ clearInterval(CALL.pollingTimer); CALL.pollingTimer = null; }
+  if(CALL.timerInterval){ clearInterval(CALL.timerInterval); CALL.timerInterval = null; }
+  if(CALL.callId){
+    await sendSignal('hangup', {}).catch(function(){});
+  }
+  if(CALL.pc){ CALL.pc.close(); CALL.pc = null; }
+  if(CALL.localStream){
+    CALL.localStream.getTracks().forEach(function(t){ t.stop(); });
+    CALL.localStream = null;
+  }
+  document.getElementById('call-overlay').style.display = 'none';
+  document.getElementById('call-remote-video').srcObject = null;
+  document.getElementById('call-remote-video').style.display = 'none';
+  document.getElementById('call-local-video').srcObject = null;
+  document.getElementById('call-local-video').style.display = 'none';
+  document.getElementById('call-timer').textContent = '00:00';
+  CALL.callId = null;
+}
+
+function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 </script>
 
+<!-- Voice/Video Call Overlay -->
+<div id="call-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:10000">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px">
+    <div id="call-status" style="font-size:1.6rem;font-weight:700;color:#d4a853"></div>
+    <div id="call-timer" style="font-size:1rem;color:rgba(255,255,255,.5)">00:00</div>
+    <div id="call-participant" style="font-size:.9rem;color:rgba(255,255,255,.6)"></div>
+    <!-- Remote video -->
+    <video id="call-remote-video" autoplay playsinline style="width:80%;max-width:640px;border-radius:12px;background:#1a1b2e;display:none"></video>
+    <!-- Local video (PIP) -->
+    <video id="call-local-video" autoplay playsinline muted style="position:absolute;top:20px;right:20px;width:160px;height:120px;border-radius:12px;background:#1a1b2e;object-fit:cover;display:none;border:2px solid rgba(212,168,83,.4)"></video>
+    <div style="display:flex;gap:16px;margin-top:20px">
+      <div class="call-btn" id="call-btn-mute" onclick="toggleCallMute()" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s">🎤</div>
+      <div class="call-btn call-end-btn" onclick="endCall()" style="width:56px;height:56px;border-radius:50%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s">📞</div>
+      <div class="call-btn" id="call-btn-video" onclick="toggleCallVideo()" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s">📹</div>
+    </div>
+  </div>
+  <audio id="call-ringtone" src="" loop style="display:none"></audio>
+</div>
 </body>
 </html><!-- v20 agent-site deploy -->
