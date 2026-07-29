@@ -2345,6 +2345,32 @@ function _apiFetch(path, opts){
   });
 }
 
+// ============ SOCIAL BACKEND (CF D1 + Pages Functions) ============
+var _socialAPI = (function(){ try{ return window.location.origin; }catch(e){ return ''; } })();
+function _socialFetch(path, opts){
+  opts = opts || {};
+  var headers = {'Content-Type':'application/json'};
+  if(curUser && curUser.email){ headers['x-auth-email'] = curUser.email; }
+  if(curUser && curUser.pass){ headers['x-auth-pass'] = curUser.pass; }
+  if(opts.headers){ Object.assign(headers, opts.headers); }
+  return fetch(_socialAPI + path, { method: opts.method||'GET', headers: headers, body: opts.body })
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return null; });
+}
+function _socialCall(endpoint, method, body){
+  return _socialFetch(endpoint, { method: method||'GET', body: body ? JSON.stringify(body) : undefined });
+}
+// Sync user to D1 after register/login
+function _syncUserToBackend(email, name, pass){
+  return _socialFetch('/api/social/search-user?email=' + encodeURIComponent(email))
+    .then(function(r){
+      if(!r || r.found) return r;
+      // User not in D1, create via send-request flow (placeholder - user will be created on interaction)
+      // For now, user gets created when they send a friend request
+      return r;
+    });
+}
+
 var API = {
   register: function(n,e,p,c){ return _apiFetch('/api/register', {method:'POST', body:JSON.stringify({name:n, email:e, password:p, code:c})}); },
   login: function(e,p){ return _apiFetch('/api/login', {method:'POST', body:JSON.stringify({email:e, password:p})}); },
@@ -5403,6 +5429,7 @@ async function doRegister(){
       users[e]={name:n,email:e,pass:p,wallet:'',bal:1000,holds:{NEXUS:1000},txs:[{type:'deposit',token:'CNY',amt:1000,time:new Date().toISOString()}],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[],ref:ref,addr:addr};
       saveLS('nexus_users',users);
       notify(t('rgs'),'&#x2705;'); cma(); doLogin_email(e,p); saveSession();
+      _socialCall('/api/social/sync-user', 'POST', {name: n});
       btn.textContent=origText; btn.disabled=false; btn.style.opacity='';
       return;
     }
@@ -5451,6 +5478,7 @@ async function doLogin_email(e,p){
     document.getElementById('udn').textContent=curUser.name;
     saveSession(); cma();
     notify('Welcome back, '+curUser.name+'!','&#x1F44B;'); rAll();
+    _socialCall('/api/social/sync-user', 'POST', {name: curUser.name});
     if(curPage==='social'){ setTimeout(function(){ try{loadFriends();loadFriendRequests();}catch(e){} }, 500); }
     return;
   }
@@ -7072,21 +7100,49 @@ async function apiGetFriends(){
   if(!curUser) return { friends: [] };
   var users = loadLS('nexus_users', {});
   var friends = [];
+  // Try backend
+  try {
+    var beResult = await _socialCall('/api/social/get-friends', 'GET');
+    if(beResult && beResult.friends){
+      for(var i=0;i<beResult.friends.length;i++){
+        var bf = beResult.friends[i];
+        var em = bf.friend_email || bf.email;
+        friends.push({ email: em, name: bf.name || em.split('@')[0], online: true });
+        // Sync to localStorage
+        if(!curUser.friends) curUser.friends = [];
+        if(!curUser.friends.some(function(f){ return (f.email||f) === em; })){
+          curUser.friends.push({email: em});
+        }
+      }
+      saveSession();
+      return { friends: friends };
+    }
+  } catch(e) {}
+  // Fallback to localStorage
   var myFriends = curUser.friends || [];
   for(var i=0;i<myFriends.length;i++){
     var em = myFriends[i].email || myFriends[i];
     var u = users[em];
-    friends.push({
-      email: em,
-      name: (u&&u.name) || em.split('@')[0],
-      online: true
-    });
+    friends.push({ email: em, name: (u&&u.name) || em.split('@')[0], online: true });
   }
   return { friends: friends };
 }
 
 async function apiGetFriendRequests(){
   if(!curUser) return { requests: [] };
+  // Try backend
+  try {
+    var beResult = await _socialCall('/api/social/get-requests', 'GET');
+    if(beResult && beResult.requests && beResult.requests.length > 0){
+      // Filter pending only
+      var pendingReqs = beResult.requests.filter(function(r){ return r.status === 'pending'; });
+      // Update localStorage with backend data
+      curUser.friendRequests = pendingReqs.map(function(r){ return {id: r.id, from: r.from_email, from_name: r.from_name, time: r.created_at}; });
+      saveSession();
+      return { requests: pendingReqs };
+    }
+  } catch(e) {}
+  // Fallback to localStorage
   var users = loadLS('nexus_users', {});
   var reqs = [];
   var myReqs = curUser.friendRequests || [];
@@ -7131,67 +7187,100 @@ function apiSendFriendRequest(email){
   if(!email) throw new Error('Email required');
   email = email.toLowerCase().trim();
   if(email === curUser._email) throw new Error(t('socantaddself'));
-  // Check if already friends
+  // Check if already friends (local)
   var myFriends = curUser.friends||[];
   if(myFriends.some(function(f){ return (f.email||f) === email; })){
     throw new Error(t('soalreadyfriend'));
   }
-  // Check if already sent a pending request
-  var target = users[email];
-  if(!target) throw new Error(t('sonouserfound'));
-  // Check if already has pending request
-  var targetReqs = target.friendRequests || [];
-  if(targetReqs.some(function(r){ return (r.from||r.from_email) === curUser._email; })){
-    throw new Error(t('soreqalready'));
-  }
-  // Create friend request
-  var reqId = 'fr_'+Date.now();
-  var req = {id:reqId, from:curUser._email, from_name:curUser.name||curUser._email, time:new Date().toISOString()};
-  // Add to target's friendRequests
-  if(!target.friendRequests) target.friendRequests = [];
-  target.friendRequests.push(req);
-  // Also add to outbox tracking for current user
-  if(!curUser.sentRequests) curUser.sentRequests = [];
-  curUser.sentRequests.push({id:reqId, to:email, time:req.time});
-  // Save
-  saveLS('nexus_users', users);
-  saveSession();
-  return {ok:true, id:reqId};
+  // Try backend first
+  _syncUserToBackend(curUser._email, curUser.name, curUser.pass);
+  return _socialCall('/api/social/send-request', 'POST', {to_email: email}).then(function(r){
+    if(r && r.success){
+      // Backend succeeded, update localStorage for fallback
+      var target = users[email];
+      var reqId = r.request_id;
+      var req = {id:reqId, from:curUser._email, from_name:curUser.name||curUser._email, time:new Date().toISOString()};
+      if(!target) { target = {email: email, name: email, pass: '', friends:[], friendRequests:[]}; users[email] = target; }
+      if(!target.friendRequests) target.friendRequests = [];
+      if(!target.friendRequests.some(function(rr){ return rr.id===reqId; })) target.friendRequests.push(req);
+      if(!curUser.sentRequests) curUser.sentRequests = [];
+      curUser.sentRequests.push({id:reqId, to:email, time:req.time});
+      saveLS('nexus_users', users);
+      saveSession();
+      return {ok:true, id:reqId};
+    }
+    // Backend failed, fallback to localStorage
+    var target2 = users[email];
+    if(!target2) throw new Error(t('sonouserfound'));
+    var targetReqs = target2.friendRequests || [];
+    if(targetReqs.some(function(rr){ return (rr.from||rr.from_email) === curUser._email; })){
+      throw new Error(t('soreqalready'));
+    }
+    var reqId2 = 'fr_'+Date.now();
+    var req2 = {id:reqId2, from:curUser._email, from_name:curUser.name||curUser._email, time:new Date().toISOString()};
+    if(!target2.friendRequests) target2.friendRequests = [];
+    target2.friendRequests.push(req2);
+    if(!curUser.sentRequests) curUser.sentRequests = [];
+    curUser.sentRequests.push({id:reqId2, to:email, time:req2.time});
+    saveLS('nexus_users', users);
+    saveSession();
+    return {ok:true, id:reqId2};
+  });
 }
 
 function apiAcceptFriendRequest(reqId){
   if(!curUser) throw new Error('Not logged in');
   var myReqs = curUser.friendRequests || [];
   var req = myReqs.find(function(r){ return r.id === reqId; });
-  if(!req) throw new Error('Request not found');
-  // Remove from my requests
-  curUser.friendRequests = myReqs.filter(function(r){ return r.id !== reqId; });
-  // Add to my friends
-  if(!curUser.friends) curUser.friends = [];
-  var fromEmail = req.from || req.from_email;
-  curUser.friends.push({email: fromEmail});
-  // Also add me to their friends (if they exist locally)
-  if(users[fromEmail]){
-    if(!users[fromEmail].friends) users[fromEmail].friends = [];
-    if(!users[fromEmail].friends.some(function(f){ return (f.email||f) === curUser._email; })){
-      users[fromEmail].friends.push({email: curUser._email});
+  // Try backend first
+  var fromEmail = req ? (req.from || req.from_email) : '';
+  return _socialCall('/api/social/accept-request', 'POST', {request_id: reqId}).then(function(r){
+    if(r && r.success){
+      // Backend succeeded, update localStorage
+      curUser.friendRequests = myReqs.filter(function(rr){ return rr.id !== reqId; });
+      if(!curUser.friends) curUser.friends = [];
+      if(fromEmail && !curUser.friends.some(function(f){ return (f.email||f) === fromEmail; })){
+        curUser.friends.push({email: fromEmail});
+      }
+      saveLS('nexus_users', users);
+      saveSession();
+      return {ok: true};
     }
-  }
-  // Also update the accepter's own entry in users
-  if(!users[curUser._email]) users[curUser._email] = {};
-  if(!users[curUser._email].friends) users[curUser._email].friends = [];
-  if(!users[curUser._email].friends.some(function(f){ return (f.email||f) === fromEmail; })){
-    users[curUser._email].friends.push({email: fromEmail});
-  }
-  saveLS('nexus_users', users);
-  saveSession();
-  return {ok: true};
+    // Fallback to localStorage
+    if(!req) throw new Error('Request not found');
+    curUser.friendRequests = myReqs.filter(function(rr){ return rr.id !== reqId; });
+    if(!curUser.friends) curUser.friends = [];
+    if(!curUser.friends.some(function(f){ return (f.email||f) === fromEmail; })){
+      curUser.friends.push({email: fromEmail});
+    }
+    if(fromEmail && users[fromEmail]){
+      if(!users[fromEmail].friends) users[fromEmail].friends = [];
+      if(!users[fromEmail].friends.some(function(f){ return (f.email||f) === curUser._email; })){
+        users[fromEmail].friends.push({email: curUser._email});
+      }
+    }
+    if(!users[curUser._email]) users[curUser._email] = {};
+    if(!users[curUser._email].friends) users[curUser._email].friends = [];
+    if(!users[curUser._email].friends.some(function(f){ return (f.email||f) === fromEmail; })){
+      users[curUser._email].friends.push({email: fromEmail});
+    }
+    saveLS('nexus_users', users);
+    saveSession();
+    return {ok: true};
+  });
 }
 
 function apiRejectFriendRequest(reqId){
   if(!curUser) throw new Error('Not logged in');
   var myReqs = curUser.friendRequests || [];
-  curUser.friendRequests = myReqs.filter(function(r){ return r.id !== reqId; });
+  // Try backend first
+  _socialCall('/api/social/reject-request', 'POST', {request_id: reqId}).then(function(r){
+    // Always update localStorage too
+    curUser.friendRequests = myReqs.filter(function(rr){ return rr.id !== reqId; });
+    saveSession();
+  });
+  // Return immediately (fire-and-forget, but also do local)
+  curUser.friendRequests = myReqs.filter(function(rr){ return rr.id !== reqId; });
   saveSession();
   return {ok: true};
 }
@@ -7253,20 +7342,44 @@ function apiSendMessage(friendEmail, text){
 // === End Social APIs ===
 
 async function apiSearchUser(email){
-  // Search local users
+  email = email.toLowerCase();
+  // Try backend first
+  try {
+    var beResult = await _socialCall('/api/social/search-user?email=' + encodeURIComponent(email), 'GET');
+    if(beResult && beResult.found && beResult.user){
+      var bu = beResult.user;
+      // Check if already friend
+      var isFriend = false, pendingRequest = false;
+      if(curUser && curUser.email){
+        var friends = curUser.friends || [];
+        isFriend = friends.some(function(f){ return (f.email||f) === email; });
+        var requests = curUser.friendRequests || [];
+        pendingRequest = requests.some(function(r){ return (r.from||r.from_email) === email || (r.to||r.to_email) === email; });
+        if(!isFriend){
+          var sentReqs = curUser.sentRequests || [];
+          pendingRequest = pendingRequest || sentReqs.some(function(r){ return r.to === email; });
+        }
+      }
+      return {
+        user: { name: bu.name, email: bu.email, joined: bu.joined, bio: bu.bio||'', kyc: bu.kyc||'Bronze' },
+        isFriend: isFriend,
+        pendingRequest: pendingRequest
+      };
+    }
+  } catch(e) {}
+  // Fallback to localStorage
   var users = loadLS('nexus_users', {});
-  var u = users[email.toLowerCase()];
+  var u = users[email];
   if (!u) return { user: null };
-  // Check if already friend
   var isFriend = false;
   var pendingRequest = false;
   if (curUser && curUser.email) {
     var friends = curUser.friends || [];
-    isFriend = friends.some(function(f){ return f.email === email.toLowerCase(); });
+    isFriend = friends.some(function(f){ return f.email === email; });
     var requests = curUser.friendRequests || [];
-    pendingRequest = requests.some(function(r){ return r.from === email.toLowerCase() || r.to === email.toLowerCase(); });
+    pendingRequest = requests.some(function(r){ return r.from === email || r.to === email; });
   }
-  return { 
+  return {
     user: { name: u.name, email: u.email, joined: u.joined, bio: u.bio, kyc: u.kyc },
     isFriend: isFriend,
     pendingRequest: pendingRequest
