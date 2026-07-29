@@ -7583,8 +7583,9 @@ async function loadMessages(){
     var data = await apiFetch('/api/messages/'+encodeURIComponent(socialFriend));
     msgs = data.messages || [];
   } catch(e){ useLocal = true; }
-  // Fallback to localStorage if backend unavailable or no messages
-  if(useLocal || msgs.length===0){
+  // Fallback to localStorage if backend unavailable, no messages, or API returned empty-text messages
+  var apiHasContent = msgs.some(function(m){return m.text && m.text.trim();});
+  if(useLocal || msgs.length===0 || !apiHasContent){
     var localMsgs = getLocalMessages(socialFriend);
     if(localMsgs.length>0) msgs = localMsgs;
   }
