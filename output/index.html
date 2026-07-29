@@ -8094,6 +8094,7 @@ function endSocialVoiceCall(){
 // Clear translation cache on language switch
 async function retranslateMsgs(){
   _msgTransCache = {};
+  _lastMsgFp = '';
   if(curPage==='social' && socialFriend && curUser){ loadMessages(); }
 }
 
@@ -16682,7 +16683,7 @@ var forumLangWatchInterval = setInterval(function(){
 var TL_CACHE={};
 var TL_MUTEX=false;
 async function translateText(text,targetLang){
-  if(!text||targetLang==='zh')return text;
+  if(!text)return text;
   var key=text+'_'+targetLang;
   if(TL_CACHE[key])return TL_CACHE[key];
   function isErr(t){return !t||t.indexOf('INVALID SOURCE')>=0||t.indexOf('INVALID TARGET')>=0||t.indexOf("AUTO'")>=0||t.length>500;}
