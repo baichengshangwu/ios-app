@@ -7115,7 +7115,6 @@ function apiAddFriend(email){
   if(curUser.friendRequests.some(function(r){ return r.to === email; })) throw new Error('Request already sent');
   // Send friend request
   curUser.friendRequests.push({id: 'req_'+Date.now(), to: email, status:'sent'});
-  var users = loadLS('nexus_users', {});
   if(users[email]){
     if(!users[email].friendRequests) users[email].friendRequests = [];
     if(!users[email].friendRequests.some(function(r){ return r.from === curUser._email; })){
@@ -7138,7 +7137,6 @@ function apiSendFriendRequest(email){
     throw new Error(t('soalreadyfriend'));
   }
   // Check if already sent a pending request
-  var users = loadLS('nexus_users',{});
   var target = users[email];
   if(!target) throw new Error(t('sonouserfound'));
   // Check if already has pending request
@@ -7163,7 +7161,6 @@ function apiSendFriendRequest(email){
 
 function apiAcceptFriendRequest(reqId){
   if(!curUser) throw new Error('Not logged in');
-  var users = loadLS('nexus_users', {});
   var myReqs = curUser.friendRequests || [];
   var req = myReqs.find(function(r){ return r.id === reqId; });
   if(!req) throw new Error('Request not found');
