@@ -7704,13 +7704,6 @@ function viewFullImage(src){
 }
 
 async function translateChatMsgs(){
-  if(curLang==='zh'){ // Chinese is native - restore originals
-    for(var id in _msgTexts){
-      var el0 = document.querySelector('.social-msg-bubble[data-mid="'+id+'"]');
-      if(el0){ el0.innerHTML = escHtml(_msgTexts[id]); }
-    }
-    return;
-  }
   for(var id in _msgTexts){
     var text = _msgTexts[id];
     var cacheKey = text + '|' + curLang;
@@ -7730,6 +7723,10 @@ async function translateChatMsgs(){
         });
         var d = await res.json();
         translated = d.translated || text;
+        // If backend returned same-language error, fallback to public translateText which has error detection
+        if(translated.indexOf('PLEASE SELECT TWO DISTINCT LANGUAGES')>=0 || translated.indexOf('INVALID SOURCE')>=0 || translated.indexOf('INVALID TARGET')>=0){
+          translated = await translateText(text, curLang);
+        }
       } catch(e1){
         translated = await translateText(text, curLang);
       }
