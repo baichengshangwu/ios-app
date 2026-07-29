@@ -1894,7 +1894,7 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
   <div class="ig"><label data-key="memail">Email</label><input type="email" id="login-email" data-key-ph="lemail_ph" placeholder="your@email.com"></div>
   <div class="ig"><label data-key="mpass">Password</label><input type="password" id="login-pass" data-key-ph="lpass_ph" placeholder="********"></div>
   <div style="text-align:right;font-size:.7rem;margin-bottom:8px"><span style="color:var(--ap);cursor:pointer" onclick="oam('reset')" data-key="mforgot">Forgot Password?</span></div>
-  <button class="btn bg bw" id="btn-login-submit" data-key="mlog2">Login</button>
+  <button class="btn bg bw" id="btn-login-submit" data-key="mlog2" onclick="doLogin()">Login</button>
   <div style="text-align:center;margin-top:8px;font-size:.73rem;color:var(--t2)"><span data-key="mnoacc">No account?</span> <span style="color:var(--ap);cursor:pointer;font-weight:600" onclick="oam('register')" data-key="mregi">Register</span></div>
   <div class="br2"><button class="btn bo" onclick="cma()" data-key="mcancel">Cancel</button></div>
 </div></div>
