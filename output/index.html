@@ -1348,8 +1348,8 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
       <!-- input row -->
       <textarea id="th-chat-input" rows="3" style="flex:1;min-width:200px;border-radius:8px;padding:8px 10px;font-size:.78rem;resize:none;font-family:inherit;background:var(--bg2);color:var(--t1);border:1px solid var(--border)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTHChat();}" data-key-ph="chat_ph" placeholder="Enter your prompt..."></textarea>
       <!-- upload buttons -->
-      <button class="th-upload-img-btn" class="btn" onclick="document.getElementById('th-upload-img').click()" title="Upload Image" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem" data-key="th_upload_img">&#x1F5BC;</button>
-      <button class="th-upload-file-btn" class="btn" onclick="document.getElementById('th-upload-file').click()" title="Upload File" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem" data-key="th_upload_file">&#x1F4CE;</button>
+      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-img').click()" title="Upload Image" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_img">&#x1F5BC;</button>
+      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-file').click()" title="Upload File" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_file">&#x1F4CE;</button>
       <button class="btn bg bw" onclick="sendTHChat()" style="white-space:nowrap;padding:8px 16px;flex-shrink:0" data-key="chat_send">Send</button></div>
 </div>
 </div>
@@ -2697,7 +2697,7 @@ const TICKERS = [
 
 // ============ STATE ============
 let curUser = null;
-let curLang = 'zh';
+let curLang = 'zh-CN';
 let curPage = 'market';
 let curListing = null;
 let confirmCB = null;
@@ -2795,17 +2795,20 @@ function loadAuthCookie(){
   try{let c=document.cookie.split(';').find(r=>r.trim().startsWith('nu_auth='));if(!c)return null;let v=decodeURIComponent(c.split('=')[1].trim());let j=JSON.parse(atob(v));return j||null;}catch(e){console.error('loadAuthCookie failed',e);return null;}
 }
 
-// Init from cookie backup if localStorage is empty
-if(Object.keys(users).length===0){
-  let cookieData=loadAuthCookie();
-  if(cookieData&&Object.keys(cookieData).length>0){
-    for(let e in cookieData){
-      users[e]={name:e.split('@')[0],email:e,pass:cookieData[e],wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0]};
+// Init from cookie backup - merge missing users from cookie
+(function(){
+  var cookieData=loadAuthCookie();
+  if(cookieData){
+    var restored=0;
+    for(var e in cookieData){
+      if(!users[e]){
+        users[e]={name:e.split('@')[0],email:e,pass:cookieData[e],wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[]};
+        restored++;
+      }
     }
-    saveLS('nexus_users',users);
-    console.log('Restored '+Object.keys(cookieData).length+' user(s) from cookie backup');
+    if(restored>0){saveLS('nexus_users',users);console.log('Restored '+restored+' user(s) from cookie backup');}
   }
-}
+})();
 // Init demo users only if completely empty (no localstorage, no cookie)
 if(Object.keys(users).length===0){
   users['demo@ai.com']={name:'DemoUser',email:'demo@ai.com',pass:'demo123',wallet:'',bal:5000,holds:{NEXUS:10000,GPT4:100},txs:[{type:'deposit',token:'CNY',amt:5000,time:'2026-06-10T10:00:00Z'}],kyc:'Bronze',bio:'',joined:'2026-06-01'};
@@ -5495,7 +5498,7 @@ ac_usd_balance:{zh:"美元余额",'zh-TW':'美元餘額',en:"USD Balance",ja:"�
 
 
 // ============ LANGUAGE ============
-const LANG_DATA={zh:{f:'🇨🇳',n:'中文'},'zh-CN':{f:'🇨🇳',n:'简体中文'},'zh-TW':{f:'🇹🇼',n:'繁體中文'},en:{f:'🇺🇸',n:'English'},ja:{f:'🇯🇵',n:'日本語'},ko:{f:'🇰🇷',n:'한국어'},es:{f:'🇪🇸',n:'Español'},fr:{f:'🇫🇷',n:'Français'},de:{f:'🇩🇪',n:'Deutsch'},pt:{f:'🇧🇷',n:'Português'},ru:{f:'🇷🇺',n:'Русский'},ar:{f:'🇸🇦',n:'العربية'},hi:{f:'🇮🇳',n:'हिन्दी'},th:{f:'🇹🇭',n:'ไทย'},vi:{f:'🇻🇳',n:'Tiếng Việt'},id:{f:'🇮🇩',n:'Bahasa Indonesia'},it:{f:'🇮🇹',n:'Italiano'}};
+const LANG_DATA={'zh-CN':{f:'🇨🇳',n:'简体中文'},'zh-TW':{f:'🇹🇼',n:'繁體中文'},en:{f:'🇺🇸',n:'English'},ja:{f:'🇯🇵',n:'日本語'},ko:{f:'🇰🇷',n:'한국어'},es:{f:'🇪🇸',n:'Español'},fr:{f:'🇫🇷',n:'Français'},de:{f:'🇩🇪',n:'Deutsch'},pt:{f:'🇧🇷',n:'Português'},ru:{f:'🇷🇺',n:'Русский'},ar:{f:'🇸🇦',n:'العربية'},hi:{f:'🇮🇳',n:'हिन्दी'},th:{f:'🇹🇭',n:'ไทย'},vi:{f:'🇻🇳',n:'Tiếng Việt'},id:{f:'🇮🇩',n:'Bahasa Indonesia'},it:{f:'🇮🇹',n:'Italiano'}};
 
 function buildLangMenu(){
   let h='';
@@ -5679,7 +5682,7 @@ async function translateBio(){
   if(bioEl){bioEl.textContent=curUser.bio;bioEl.style.fontStyle='';}
   try{
     var tl=curLang;
-    var supportedLangs=['zh','zh-CN','zh-TW','en','ko','ja','es','fr','de','pt','ru','ar','hi','th','vi','id','it'];
+    var supportedLangs=['zh-CN','zh-TW','en','ko','ja','es','fr','de','pt','ru','ar','hi','th','vi','id','it'];
     if(supportedLangs.indexOf(curLang)<0) tl='en';
     var res=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='+tl+'&dt=t&q='+encodeURIComponent(curUser.bio));
     if(!res.ok)throw new Error('translate failed');
@@ -5809,7 +5812,15 @@ function doLogin(){
 async function doLogin_email(e,p){
   // Static deployment: use local data exclusively
   if(_staticDeploy){
-    if(!users[e]||users[e].pass!==p){notify('Invalid email or password','&#x26A0;');return;}
+    // Recovery: if user not in localStorage, try restore from cookie backup
+    if(!users[e]){
+      var cd=loadAuthCookie();
+      if(cd&&cd[e]){
+        users[e]={name:e.split('@')[0],email:e,pass:cd[e],wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[]};
+        saveLS('nexus_users',users);
+      }
+    }
+    if(!users[e]||users[e].pass!==p){notify('账号未注册或密码错误，如为新设备请先注册（数据云端同步）','&#x26A0;');return;}
     var u=users[e];
     curUser={
       name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
@@ -5859,7 +5870,15 @@ async function doLogin_email(e,p){
   }catch(er){}
   // Local fallback: check localStorage users when API is unavailable
   if(!apiOk){
-    if(!users[e]||users[e].pass!==p){notify('Invalid email or password','&#x26A0;');return;}
+    // Recovery: if user not in localStorage, try restore from cookie backup
+    if(!users[e]){
+      var cd=loadAuthCookie();
+      if(cd&&cd[e]){
+        users[e]={name:e.split('@')[0],email:e,pass:cd[e],wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[]};
+        saveLS('nexus_users',users);
+      }
+    }
+    if(!users[e]||users[e].pass!==p){notify('账号未注册或密码错误，如为新设备请先注册（数据云端同步）','&#x26A0;');return;}
     var u=users[e];
     curUser={
       name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
@@ -6239,7 +6258,7 @@ function populateDonateCountrySelect(){
 }
 
 function openFaqPage(){
-  var cur=curLang||'zh';
+  var cur=curLang||'zh-CN';
   var faq=[{q:{zh:'如何注册账号?',en:'How to register?'},a:{zh:'点击右上角\u300C登录\u300D按钮,选择\u300C注册\u300D并填写邮箱和密码即可完成注册。',en:'Click "Login" at top right, select "Sign Up" and fill in email and password.'}},{q:{zh:'如何发布作品?',en:'How to publish works?'},a:{zh:'进入论坛页面,选择对应发布区(图文/视频/音频/影视)填写内容后点击发布。系统自动检测违规内容。',en:'Go to Forum, choose category, fill content and publish. Auto-moderation for violations.'}},{q:{zh:'如何交易?',en:'How to trade?'},a:{zh:'在P2P页面选择交易对和方向,输入数量和价格后下单。系统自动计算最优价格。',en:'On P2P page select pair, direction, amount and price, then place order.'}},{q:{zh:'如何绑定支付方式?',en:'How to bind payment?'},a:{zh:'登录后进入\u300C会员中心\u300D,在\u300C支付方式\u300D中绑定Alipay/PayPal。',en:'After login, go to Member Center > Payment Methods to bind Alipay/PayPal.'}},{q:{zh:'如何成为代理/合伙人?',en:'How to become an agent/partner?'},a:{zh:'点击右上角\u300CBecome a Partner\u300D按钮,选择代理级别并完成付款。',en:'Click "Become a Partner", select tier and complete payment.'}},{q:{zh:'赞助捐赠如何操作?',en:'How to sponsor/donate?'},a:{zh:'点击右上角\u300CBecome a Partner\u300D选择\u300CSponsor / Donate\u300D,填写信息并完成支付。',en:'Click "Become a Partner" then "Sponsor / Donate", fill info and pay.'}},{q:{zh:'内容审核规则是什么?',en:'Content moderation rules?'},a:{zh:'系统自动检测五类违规: ①政治敏感 ②暴力血腥 ③黄色色情 ④赌博涉毒 ⑤侵权网暴。违规拒绝发布,严重封号。',en:'Auto-detection: politics, violence, porn, gambling/drugs, infringement/cyberbullying. Violations rejected, severe = ban.'}},{q:{zh:'电算协同挂售是什么?',en:'What is electronic co-listing?'},a:{zh:'P2P高级功能,支持自动化计算最优定价与协同管理挂单。在P2P页面点击\u300C发布\u300D标签创建挂单。',en:'Advanced P2P feature: auto-calculation and collaborative listing. Go to P2P > Post tab.'}},{q:{zh:'支持哪些语种?',en:'Supported languages?'},a:{zh:'中文、English、日本語、한국어、Español、العربية、Français、Deutsch、Português、Русский、हिन्दी、ไทย、Tiếng Việt、Bahasa Indonesia、Bahasa Melayu共15种语言。',en:'15 languages: ZH, EN, JA, KO, ES, AR, FR, DE, PT, RU, HI, TH, VI, ID, MS.'}},{q:{zh:'如何联系客服?',en:'How to contact support?'},a:{zh:'通过右下角浮窗查看微信、邮箱等联系方式,或在此FAQ页面查找答案。',en:'Use bottom-right floating widget for WeChat, email, or browse this FAQ page.'}},];
   var faqTitle={zh:'常见问题解答',en:'FAQ / Help',ja:'よくある質問',ko:'자주 묻는 질문',es:'Preguntas frecuentes',ar:'الأسئلة الشائعة',fr:'FAQ / Aide',de:'FAQ / Hilfe',pt:'Perguntas frequentes',ru:'Часто задаваемые вопросы',hi:'अक्सर पूछे जाने वाले प्रश्न',th:'คำถามที่พบบ่อย',vi:'Câu hỏi thường gặp',id:'Pertanyaan Umum',ms:'Soalan Lazim'}[cur]||'FAQ';
   var h='<div class="mo show" id="mo-faq" onclick="if(event.target===this){closeFaqPage()}" style="z-index:999999"><div class="mod" style="max-width:600px;max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch"><h3 style="margin-bottom:16px">'+faqTitle+'</h3>';
@@ -8531,11 +8550,11 @@ function regenerateInviteCode(){
   if(typeof showToast==='function')showToast(t('invgen_ok')||'邀请码已生成');
 }
 function _memberLevelLabel(l,lang){
-  lang=lang||'zh';
+  lang=lang||'zh-CN';
   return (l.name[lang])||(l.name.zh)||(l.name.en)||l.key;
 }
 function _memberBtnLabel(idx,lang){
-  lang=lang||'zh';
+  lang=lang||'zh-CN';
   var l=MEMBER_LEVELS[idx];
   if(typeof curUser!=='undefined'&&curUser&&curUser.memberLevel===l.key){
     return t('mcurrentlv')||_isZh(lang)?'当前等级':(lang==='ja'?'現在のレベル':'Current');
@@ -8742,7 +8761,7 @@ function _getNextTradingDay(){
 var AC_BUY_RATE=0.01;var AC_SELL_RATE=0.009;
 function _getACPoolRate(){return{buy:AC_BUY_RATE,sell:AC_SELL_RATE};}
 function _renderACPool(lang){
-  lang=lang||'zh';
+  lang=lang||'zh-CN';
   var isTD=_isTradingDay();
   var di=document.getElementById('pool-day-icon');
   if(di)di.textContent=isTD?'🟢':'🔴';
@@ -8842,7 +8861,7 @@ function _addACTxn(type,acAmt,rate,cnyAmt,dir,lang){
   acData.transactions=txns;_saveACData(acData);
 }
 function _renderACMarket(lang){
-  lang=lang||'zh';
+  lang=lang||'zh-CN';
   var acData=_getACData();
   var orders=acData.orders||[];
   var buys=orders.filter(function(o){return o.dir==='buy'&&o.status==='open';});
@@ -8903,7 +8922,7 @@ function cancelACOrder(idx){
   renderMemberPage();_renderACMarket(lang);
 }
 function _renderACHistory(lang){
-  lang=lang||'zh';
+  lang=lang||'zh-CN';
   var acData=_getACData();
   var txns=acData.transactions||[];
   var el=document.getElementById('ac-txn-list');
@@ -16380,7 +16399,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{initAjRegionSelectors();}catch(e){console.error('initAjRegionSelectors failed:',e.message);}
   }catch(e){console.error('initParticles failed:',e.message);}
   try{
-    try{curLang=localStorage.getItem('nexus_lang')||'zh';}catch(e){curLang='zh';}
+    try{curLang=localStorage.getItem('nexus_lang')||'zh-CN';}catch(e){curLang='zh-CN';}
     try{document.getElementById('clang-flag').textContent=LANG_DATA[curLang].f;document.getElementById('clang').textContent=t('lang_label');}catch(e){}
     try{buildLangMenu();}catch(e){console.error('buildLangMenu failed:',e.message);}
     try{initRegCountrySelect();}catch(e){console.error('initRegCountrySelect failed:',e.message);}
@@ -16934,7 +16953,7 @@ function enableForumVoiceTrans(){
   bar.style.display = 'block';
   
   // Show current language
-  var langNames = {zh:'中文','zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
+  var langNames = {'zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
   document.getElementById('forum-vt-lang').textContent = langNames[curLang]||curLang;
   
   document.getElementById('forum-vt-status').style.background = '#10b981';
@@ -17013,7 +17032,7 @@ function toggleForumPlaybackTrans(){
     btn.style.background = 'rgba(16,185,129,.15)';
     btn.style.color = '#10b981';
     btn.style.borderColor = 'rgba(16,185,129,.3)';
-    var langNames = {zh:'中文','zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
+    var langNames = {'zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
     langEl.textContent = '→ ' + (langNames[curLang]||curLang);
     capArea.style.display = 'block';
     // Enable the main voice trans bar as well
@@ -17034,7 +17053,7 @@ var forumLangWatchInterval = setInterval(function(){
   var bar = document.getElementById('forum-voice-trans-bar');
   if(!bar || bar.style.display==='none') return;
   
-  var langNames = {zh:'中文','zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
+  var langNames = {'zh-CN':'简体中文','zh-TW':'繁體中文',en:'English',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',pt:'Português',ru:'Русский',ar:'العربية',hi:'हिन्दी',th:'ไทย',vi:'Tiếng Việt',id:'Bahasa Indonesia',it:'Italiano'};
   var el = document.getElementById('forum-vt-lang');
   if(el && el.textContent !== (langNames[curLang]||curLang)){
     el.textContent = langNames[curLang]||curLang;
