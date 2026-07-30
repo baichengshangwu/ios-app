@@ -2564,13 +2564,66 @@ let tradeTFVal = '1h';
 const USD_TO_CNY = 7.15;
 function getTodouModelId(id){var m=id.replace(/-td$/,'');if(m.startsWith('relaypool-'))m=m.replace('relaypool-','relaypool/');if(m.startsWith('unipass-'))m=m.replace('unipass-','unipass/');if(m==='gpt-image-2-i2i')m='gpt-image-2-image-to-image';if(m==='gpt-image-2-t2i')m='gpt-image-2-text-to-image';return m;}
 var TH_MODELS = [
+  // --- Default/Tencent group (available) ---
   {id:'deepseek-v4-flash-td',icon:'&#x26A1;',name:'DeepSeek V4 Flash',cat:'text',desc:'$0.02/$0.04',price:0.03,color:'#4f46e5',vendor:'DeepSeek',badge:'FAST'},
   {id:'deepseek-v4-pro-td',icon:'&#x1F9E0;',name:'DeepSeek V4 Pro',cat:'text',desc:'$0.24/$0.49',price:0.37,color:'#4f46e5',vendor:'DeepSeek',badge:'PRO'},
   {id:'glm-5-td',icon:'&#x1F9E0;',name:'GLM-5',cat:'text',desc:'$0.56/$0.83',price:0.70,color:'#3b82f6',vendor:'Zhipu',badge:''},
   {id:'glm-5-turbo-td',icon:'&#x26A1;',name:'GLM-5 Turbo',cat:'text',desc:'$0.70/$0.97',price:0.84,color:'#3b82f6',vendor:'Zhipu',badge:'FAST'},
   {id:'glm-5.1-td',icon:'&#x1F9E0;',name:'GLM-5.1',cat:'text',desc:'$0.84/$3.36',price:2.10,color:'#3b82f6',vendor:'Zhipu',badge:''},
   {id:'glm-5.2-td',icon:'&#x1F9E0;',name:'GLM-5.2',cat:'text',desc:'$1.11/$3.89',price:2.50,color:'#3b82f6',vendor:'Zhipu',badge:'PROMO'},
-  {id:'kimi-k3-td',icon:'&#x1F9E0;',name:'Kimi K3',cat:'text',desc:'$0.55/$2.90',price:1.73,color:'#8b5cf6',vendor:'Moonshot',badge:'NEW'}
+  {id:'kimi-k3-td',icon:'&#x1F9E0;',name:'Kimi K3',cat:'text',desc:'$0.55/$2.90',price:1.73,color:'#8b5cf6',vendor:'Moonshot',badge:'NEW'},
+  // --- VIP group ---
+  {id:'gpt-5.3-codex-td',icon:'&#x1F916;',name:'GPT-5.3 Codex',cat:'text',desc:'VIP',price:2.0,color:'#10b981',vendor:'OpenAI',badge:'VIP'},
+  {id:'gpt-5.4-td',icon:'&#x1F916;',name:'GPT-5.4',cat:'text',desc:'VIP',price:2.0,color:'#10b981',vendor:'OpenAI',badge:'VIP'},
+  {id:'gpt-5.4-pro-td',icon:'&#x1F916;',name:'GPT-5.4 Pro',cat:'text',desc:'VIP',price:2.5,color:'#10b981',vendor:'OpenAI',badge:'VIP'},
+  {id:'gpt-5.5-td',icon:'&#x1F916;',name:'GPT-5.5',cat:'text',desc:'VIP',price:3.0,color:'#10b981',vendor:'OpenAI',badge:'VIP'},
+  {id:'gpt-5.5-instant-td',icon:'&#x26A1;',name:'GPT-5.5 Instant',cat:'text',desc:'VIP',price:1.5,color:'#10b981',vendor:'OpenAI',badge:'FAST'},
+  {id:'claude-opus-4-6-td',icon:'&#x1F9E0;',name:'Claude Opus 4.6',cat:'text',desc:'VIP',price:15.0,color:'#d97706',vendor:'Anthropic',badge:'VIP'},
+  {id:'claude-opus-4-6-thinking-td',icon:'&#x1F9E0;',name:'Claude Opus 4.6 Thinking',cat:'text',desc:'VIP',price:15.0,color:'#d97706',vendor:'Anthropic',badge:'THINK'},
+  {id:'claude-opus-4-7-td',icon:'&#x1F9E0;',name:'Claude Opus 4.7',cat:'text',desc:'VIP',price:15.0,color:'#d97706',vendor:'Anthropic',badge:'VIP'},
+  {id:'claude-opus-4-8-td',icon:'&#x1F9E0;',name:'Claude Opus 4.8',cat:'text',desc:'VIP',price:15.0,color:'#d97706',vendor:'Anthropic',badge:'NEW'},
+  {id:'claude-sonnet-4-6-td',icon:'&#x26A1;',name:'Claude Sonnet 4.6',cat:'text',desc:'VIP',price:3.0,color:'#d97706',vendor:'Anthropic',badge:'FAST'},
+  {id:'claude-sonnet-4-6-thinking-td',icon:'&#x26A1;',name:'Claude Sonnet 4.6 Thinking',cat:'text',desc:'VIP',price:3.0,color:'#d97706',vendor:'Anthropic',badge:'THINK'},
+  // --- Hops group (relaypool / unipass) ---
+  {id:'relaypool-gpt-5.4-td',icon:'&#x1F916;',name:'RelayPool GPT-5.4',cat:'text',desc:'0.8x',price:1.6,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-gpt-5.5-td',icon:'&#x1F916;',name:'RelayPool GPT-5.5',cat:'text',desc:'0.8x',price:2.4,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-gpt-5.6-td',icon:'&#x1F916;',name:'RelayPool GPT-5.6',cat:'text',desc:'0.8x',price:3.0,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-gpt-5.6-sol-td',icon:'&#x1F916;',name:'RelayPool GPT-5.6 Sol',cat:'text',desc:'0.8x',price:3.0,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-gpt-5.6-terra-td',icon:'&#x1F916;',name:'RelayPool GPT-5.6 Terra',cat:'text',desc:'0.8x',price:3.0,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-gpt-5.6-luna-td',icon:'&#x1F916;',name:'RelayPool GPT-5.6 Luna',cat:'text',desc:'0.8x',price:3.0,color:'#f59e0b',vendor:'OpenAI',badge:'RELAY'},
+  {id:'relaypool-claude-opus-4-6-td',icon:'&#x1F9E0;',name:'RelayPool Claude Opus 4.6',cat:'text',desc:'0.8x',price:12.0,color:'#f59e0b',vendor:'Anthropic',badge:'RELAY'},
+  {id:'relaypool-claude-opus-4-7-td',icon:'&#x1F9E0;',name:'RelayPool Claude Opus 4.7',cat:'text',desc:'0.8x',price:12.0,color:'#f59e0b',vendor:'Anthropic',badge:'RELAY'},
+  {id:'relaypool-claude-opus-4-8-td',icon:'&#x1F9E0;',name:'RelayPool Claude Opus 4.8',cat:'text',desc:'0.8x',price:12.0,color:'#f59e0b',vendor:'Anthropic',badge:'RELAY'},
+  {id:'relaypool-claude-sonnet-4-6-td',icon:'&#x26A1;',name:'RelayPool Claude Sonnet 4.6',cat:'text',desc:'0.8x',price:2.4,color:'#f59e0b',vendor:'Anthropic',badge:'RELAY'},
+  {id:'relaypool-claude-sonnet-5-td',icon:'&#x26A1;',name:'RelayPool Claude Sonnet 5',cat:'text',desc:'0.8x',price:3.0,color:'#f59e0b',vendor:'Anthropic',badge:'NEW'},
+  {id:'unipass-gpt-5.4-td',icon:'&#x1F916;',name:'UniPass GPT-5.4',cat:'text',desc:'0.8x',price:1.6,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-gpt-5.5-td',icon:'&#x1F916;',name:'UniPass GPT-5.5',cat:'text',desc:'0.8x',price:2.4,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-gpt-5.6-td',icon:'&#x1F916;',name:'UniPass GPT-5.6',cat:'text',desc:'0.8x',price:3.0,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-gpt-5.6-sol-td',icon:'&#x1F916;',name:'UniPass GPT-5.6 Sol',cat:'text',desc:'0.8x',price:3.0,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-gpt-5.6-terra-td',icon:'&#x1F916;',name:'UniPass GPT-5.6 Terra',cat:'text',desc:'0.8x',price:3.0,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-gpt-5.6-luna-td',icon:'&#x1F916;',name:'UniPass GPT-5.6 Luna',cat:'text',desc:'0.8x',price:3.0,color:'#8b5cf6',vendor:'OpenAI',badge:'UNI'},
+  {id:'unipass-claude-opus-4-6-td',icon:'&#x1F9E0;',name:'UniPass Claude Opus 4.6',cat:'text',desc:'0.8x',price:12.0,color:'#8b5cf6',vendor:'Anthropic',badge:'UNI'},
+  {id:'unipass-claude-opus-4-7-td',icon:'&#x1F9E0;',name:'UniPass Claude Opus 4.7',cat:'text',desc:'0.8x',price:12.0,color:'#8b5cf6',vendor:'Anthropic',badge:'UNI'},
+  {id:'unipass-claude-opus-4-8-td',icon:'&#x1F9E0;',name:'UniPass Claude Opus 4.8',cat:'text',desc:'0.8x',price:12.0,color:'#8b5cf6',vendor:'Anthropic',badge:'UNI'},
+  {id:'unipass-claude-sonnet-4-6-td',icon:'&#x26A1;',name:'UniPass Claude Sonnet 4.6',cat:'text',desc:'0.8x',price:2.4,color:'#8b5cf6',vendor:'Anthropic',badge:'UNI'},
+  // --- Aliyun models ---
+  {id:'qwen3.7-plus-td',icon:'&#x1F9E0;',name:'Qwen3.7 Plus',cat:'text',desc:'Aliyun',price:1.0,color:'#6366f1',vendor:'Alibaba',badge:'ALI'},
+  {id:'qwen3.7-max-td',icon:'&#x1F9E0;',name:'Qwen3.7 Max',cat:'text',desc:'Aliyun',price:2.0,color:'#6366f1',vendor:'Alibaba',badge:'ALI'},
+  {id:'qwen3.7-flash-td',icon:'&#x26A1;',name:'Qwen3.7 Flash',cat:'text',desc:'Aliyun',price:0.5,color:'#6366f1',vendor:'Alibaba',badge:'FAST'},
+  {id:'qwen3-32b-AWQ-td',icon:'&#x1F4BB;',name:'Qwen3 32B AWQ',cat:'text',desc:'Self',price:0.5,color:'#64748b',vendor:'Alibaba',badge:'SELF'},
+  {id:'glm-5.2-fast-preview-td',icon:'&#x26A1;',name:'GLM-5.2 Fast Preview',cat:'text',desc:'Aliyun',price:1.5,color:'#3b82f6',vendor:'Zhipu',badge:'FAST'},
+  {id:'kimi-k2.7-code-highspeed-td',icon:'&#x26A1;',name:'Kimi K2.7 Code Highspeed',cat:'text',desc:'Aliyun',price:2.0,color:'#8b5cf6',vendor:'Moonshot',badge:'CODE'},
+  {id:'MiniMax/MiniMax-M3-td',icon:'&#x1F9E0;',name:'MiniMax M3',cat:'text',desc:'Aliyun',price:1.0,color:'#ec4899',vendor:'MiniMax',badge:'NEW'},
+  // --- Image models ---
+  {id:'gpt-image-1.5-td',icon:'&#x1F5BC;',name:'GPT Image 1.5',cat:'image',desc:'VIP',price:5.0,color:'#f43f5e',vendor:'OpenAI',badge:'IMG'},
+  {id:'gpt-image-2-td',icon:'&#x1F5BC;',name:'GPT Image 2',cat:'image',desc:'VIP',price:8.0,color:'#f43f5e',vendor:'OpenAI',badge:'IMG'},
+  {id:'gpt-image-2-t2i-td',icon:'&#x1F5BC;',name:'GPT Image 2 T2I',cat:'image',desc:'0.8x',price:6.0,color:'#f43f5e',vendor:'OpenAI',badge:'IMG'},
+  {id:'gpt-image-2-i2i-td',icon:'&#x1F5BC;',name:'GPT Image 2 I2I',cat:'image',desc:'0.8x',price:6.0,color:'#f43f5e',vendor:'OpenAI',badge:'IMG'},
+  // --- Video models ---
+  {id:'doubao-seedance-2.0-td',icon:'&#x1F3AC;',name:'Doubao Seedance 2.0',cat:'video',desc:'Seedance',price:10.0,color:'#06b6d4',vendor:'ByteDance',badge:'VIDEO'},
+  // --- Embedding & Rerank ---
+  {id:'qwen3.7-text-embedding-td',icon:'&#x1F4DD;',name:'Qwen3.7 Text Embedding',cat:'embedding',desc:'Aliyun',price:0.1,color:'#6366f1',vendor:'Alibaba',badge:'EMB'},
+  {id:'qwen3-rerank-td',icon:'&#x1F4CA;',name:'Qwen3 Rerank',cat:'rerank',desc:'Aliyun',price:0.1,color:'#6366f1',vendor:'Alibaba',badge:'RERANK'}
 ];
 
 
