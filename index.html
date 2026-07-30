@@ -2564,39 +2564,13 @@ let tradeTFVal = '1h';
 const USD_TO_CNY = 7.15;
 function getTodouModelId(id){var m=id.replace(/-td$/,'');if(m.startsWith('relaypool-'))m=m.replace('relaypool-','relaypool/');if(m.startsWith('unipass-'))m=m.replace('unipass-','unipass/');if(m==='gpt-image-2-i2i')m='gpt-image-2-image-to-image';if(m==='gpt-image-2-t2i')m='gpt-image-2-text-to-image';return m;}
 var TH_MODELS = [
-  {id:'gpt-image-1.5-td',icon:'&#x1F916;',name:'GPT Image 1.5',cat:'image',desc:'$0.84/$5.37',price:3.1049,color:'#10b981',vendor:'OpenAI',badge:''},
-  {id:'gpt-image-2-td',icon:'&#x1F916;',name:'GPT Image 2',cat:'image',desc:'$0.84/$5.03',price:2.9371,color:'#10b981',vendor:'OpenAI',badge:'NEW'},
-  {id:'gpt-5.3-codex-td',icon:'&#x1F9E0;',name:'GPT-5.3 Codex',cat:'text',desc:'$0.29/$2.34',price:1.315,color:'#10b981',vendor:'OpenAI',badge:''},
-  {id:'gpt-5.4-td',icon:'&#x1F9E0;',name:'GPT-5.4',cat:'text',desc:'$0.42/$2.50',price:1.46,color:'#10b981',vendor:'OpenAI',badge:''},
-  {id:'gpt-5.4-pro-td',icon:'&#x1F9E0;',name:'GPT-5.4 Pro',cat:'text',desc:'$5.00/$30.02',price:17.51,color:'#10b981',vendor:'OpenAI',badge:'PRO'},
-  {id:'gpt-5.5-td',icon:'&#x1F9E0;',name:'GPT-5.5',cat:'text',desc:'$11.68/$35.03',price:23.355,color:'#10b981',vendor:'OpenAI',badge:''},
-  {id:'gpt-5.5-instant-td',icon:'&#x1F9E0;',name:'GPT-5.5 Instant',cat:'text',desc:'$12.51/$75.06',price:43.785,color:'#10b981',vendor:'OpenAI',badge:'FAST'},
-  {id:'claude-opus-4-6-td',icon:'&#x1F9E0;',name:'Claude Opus 4.6',cat:'text',desc:'$11.68/$29.19',price:20.435,color:'#d97706',vendor:'Anthropic',badge:''},
-  {id:'claude-opus-4-7-td',icon:'&#x1F9E0;',name:'Claude Opus 4.7',cat:'text',desc:'$7.78/$19.46',price:13.62,color:'#d97706',vendor:'Anthropic',badge:''},
-  {id:'claude-opus-4-8-td',icon:'&#x1F9E0;',name:'Claude Opus 4.8',cat:'text',desc:'$1.67/$29.19',price:15.43,color:'#d97706',vendor:'Anthropic',badge:'NEW'},
-  {id:'claude-sonnet-4-6-td',icon:'&#x1F9E0;',name:'Claude Sonnet 4.6',cat:'text',desc:'$2.34/$11.68',price:7.01,color:'#d97706',vendor:'Anthropic',badge:''},
-  {id:'deepseek-r1-td',icon:'&#x1F9E0;',name:'DeepSeek R1',cat:'text',desc:'$0.11/$0.22',price:0.1678,color:'#4f46e5',vendor:'DeepSeek',badge:''},
-  {id:'deepseek-v3.2-td',icon:'&#x1F9E0;',name:'DeepSeek V3.2',cat:'text',desc:'$0.08/$0.23',price:0.155,color:'#4f46e5',vendor:'DeepSeek',badge:''},
-  {id:'deepseek-v4-flash-td',icon:'&#x1F9E0;',name:'DeepSeek V4 Flash',cat:'text',desc:'$0.02/$0.04',price:0.0294,color:'#4f46e5',vendor:'DeepSeek',badge:'FAST'},
-  {id:'deepseek-v4-pro-td',icon:'&#x1F9E0;',name:'DeepSeek V4 Pro',cat:'text',desc:'$0.24/$0.49',price:0.365,color:'#4f46e5',vendor:'DeepSeek',badge:''},
-  {id:'glm-4.7-td',icon:'&#x1F9E0;',name:'GLM-4.7',cat:'text',desc:'$0.28/$1.12',price:0.6993,color:'#3b82f6',vendor:'Zhipu',badge:''},
-  {id:'glm-5-td',icon:'&#x1F9E0;',name:'GLM-5',cat:'text',desc:'$0.56/$0.83',price:0.695,color:'#3b82f6',vendor:'Zhipu',badge:''},
-  {id:'glm-5-turbo-td',icon:'&#x1F9E0;',name:'GLM-5 Turbo',cat:'text',desc:'$0.70/$0.97',price:0.835,color:'#3b82f6',vendor:'Zhipu',badge:'FAST'},
-  {id:'glm-5.1-td',icon:'&#x1F9E0;',name:'GLM-5.1',cat:'text',desc:'$0.84/$3.36',price:2.0979,color:'#3b82f6',vendor:'Zhipu',badge:''},
-  {id:'glm-5.2-td',icon:'&#x1F9E0;',name:'GLM-5.2',cat:'text',desc:'$1.11/$3.89',price:2.5,color:'#3b82f6',vendor:'Zhipu',badge:'NEW'},
-  {id:'kimi-k2.5-td',icon:'&#x1F9E0;',name:'Kimi K2.5',cat:'text',desc:'$0.56/$2.94',price:1.7483,color:'#8b5cf6',vendor:'Moonshot',badge:''},
-  {id:'kimi-k2.6-td',icon:'&#x1F9E0;',name:'Kimi K2.6',cat:'text',desc:'$0.70/$3.48',price:2.09,color:'#8b5cf6',vendor:'Moonshot',badge:'NEW'},
-  {id:'qwen3-rerank-td',icon:'&#x1F9E0;',name:'Qwen3 Rerank',cat:'text',desc:'$0.07/$0.14',price:0.105,color:'#ff6a00',vendor:'Alibaba',badge:''},
-  {id:'qwen3.5-plus-td',icon:'&#x1F9E0;',name:'Qwen3.5 Plus',cat:'text',desc:'$0.21/$0.98',price:0.5944,color:'#ff6a00',vendor:'Alibaba',badge:''},
-  {id:'qwen3.6-plus-td',icon:'&#x1F9E0;',name:'Qwen3.6 Plus',cat:'text',desc:'$0.21/$0.97',price:0.59,color:'#ff6a00',vendor:'Alibaba',badge:''},
-  {id:'qwen3.7-max-td',icon:'&#x1F9E0;',name:'Qwen3.7 Max',cat:'text',desc:'$1.68/$5.03',price:3.3566,color:'#ff6a00',vendor:'Alibaba',badge:'MAX'},
-  {id:'qwen3.7-plus-td',icon:'&#x1F9E0;',name:'Qwen3.7 Plus',cat:'text',desc:'$0.28/$1.12',price:0.6993,color:'#ff6a00',vendor:'Alibaba',badge:''},
-  {id:'qwen2.5-vl-embedding-td',icon:'&#x1F9E0;',name:'Qwen2.5 VL Embedding',cat:'embedding',desc:'$0.25/$0.25',price:0.2517,color:'#ff6a00',vendor:'Alibaba',badge:''},
-  {id:'MiniMax-M2.5-td',icon:'&#x1F9E0;',name:'MiniMax M2.5',cat:'text',desc:'$0.21/$0.83',price:0.52,color:'#06b6d4',vendor:'MiniMax',badge:''},
-  {id:'doubao-seedance-2.0-td',icon:'&#x1F3AC;',name:'Doubao Seedance 2.0',cat:'video',desc:'$3.52/$5.79',price:4.6573,color:'#ec4899',vendor:'ByteDance',badge:'VIDEO'},
-  {id:'happyhorse-1.0-t2v-td',icon:'&#x1F9E0;',name:'HappyHorse 1.0 T2V',cat:'video',desc:'$3.92/$5.87',price:4.8951,color:'#06b6d4',vendor:'MiniMax',badge:'VIDEO'},
-  {id:'text-embedding-v4-td',icon:'&#x1F9E0;',name:'Text Embedding V4',cat:'embedding',desc:'$0.07/$0.07',price:0.0699,color:'#6366f1',vendor:'TodouCloud',badge:''},
-  {id:'tongyi-embedding-vision-plus-td',icon:'&#x1F9E0;',name:'Tongyi Embedding Vision+',cat:'embedding',desc:'$0.07/$0.07',price:0.0699,color:'#ff6a00',vendor:'Alibaba',badge:''}
+  {id:'deepseek-v4-flash-td',icon:'&#x26A1;',name:'DeepSeek V4 Flash',cat:'text',desc:'$0.02/$0.04',price:0.03,color:'#4f46e5',vendor:'DeepSeek',badge:'FAST'},
+  {id:'deepseek-v4-pro-td',icon:'&#x1F9E0;',name:'DeepSeek V4 Pro',cat:'text',desc:'$0.24/$0.49',price:0.37,color:'#4f46e5',vendor:'DeepSeek',badge:'PRO'},
+  {id:'glm-5-td',icon:'&#x1F9E0;',name:'GLM-5',cat:'text',desc:'$0.56/$0.83',price:0.70,color:'#3b82f6',vendor:'Zhipu',badge:''},
+  {id:'glm-5-turbo-td',icon:'&#x26A1;',name:'GLM-5 Turbo',cat:'text',desc:'$0.70/$0.97',price:0.84,color:'#3b82f6',vendor:'Zhipu',badge:'FAST'},
+  {id:'glm-5.1-td',icon:'&#x1F9E0;',name:'GLM-5.1',cat:'text',desc:'$0.84/$3.36',price:2.10,color:'#3b82f6',vendor:'Zhipu',badge:''},
+  {id:'glm-5.2-td',icon:'&#x1F9E0;',name:'GLM-5.2',cat:'text',desc:'$1.11/$3.89',price:2.50,color:'#3b82f6',vendor:'Zhipu',badge:'PROMO'},
+  {id:'kimi-k3-td',icon:'&#x1F9E0;',name:'Kimi K3',cat:'text',desc:'$0.55/$2.90',price:1.73,color:'#8b5cf6',vendor:'Moonshot',badge:'NEW'}
 ];
 
 
