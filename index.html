@@ -642,7 +642,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
     <select id="tool-sort" onchange="rTools()"><option value="pop" data-key="spop">Popular</option><option value="new" data-key="snew">Newest</option><option value="price" data-key="sprice">Price Low</option><option value="apy" data-key="sapy">Yield High</option></select>
     
   </div>
-    <div id="tools-apihint-bar" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:8px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:8px;font-size:.7rem;color:var(--t2);flex-wrap:wrap"><span class="apihint-f1"><span>&#x2139;&#xFE0F;</span><span data-key="tools_apihint_title" style="font-weight:600;color:var(--ap);white-space:nowrap"></span></span><span data-key="tools_apihint_text" style="flex:1;min-width:200px" class="apihint-f2"></span><button class="btn bo apihint-f3" style="font-size:.6rem;padding:3px 8px;white-space:nowrap" onclick="document.getElementById('mo-tools-apihint').classList.add('show')" data-key="tools_apihint_btn"></button><button class="btn bg bw" style="font-size:.6rem;padding:3px 8px;white-space:nowrap" onclick="sp('promo')" data-key="tools_goto_app"><span class="goto-arrow">&#10142;</span></button></div>
+    <div id="tools-apihint-bar" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:8px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:8px;font-size:.7rem;color:var(--t2);flex-wrap:wrap"><span class="apihint-f1"><span>&#x2139;&#xFE0F;</span><span data-key="tools_apihint_title" style="font-weight:600;color:var(--ap);white-space:nowrap"></span></span><span data-key="tools_apihint_text" style="flex:1;min-width:200px" class="apihint-f2"></span><button class="btn bo apihint-f3" style="font-size:.6rem;padding:3px 8px;white-space:nowrap" onclick="document.getElementById('mo-tools-apihint').classList.add('show')" data-key="tools_apihint_btn"></button><button class="btn bg bw" style="font-size:.6rem;padding:3px 8px;white-space:nowrap" onclick="sp('promo')"><span class="goto-arrow">&#10142;</span> <span data-key="tools_goto_app"></span></button></div>
 <div class="g3" id="tools-grid"></div>
 </div>
 <!-- ============ P2P PAGE ============ -->
@@ -969,7 +969,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
     </div>
     <p><b data-key="recharge_rule_4">4. 注意事项</b></p>
     <p data-key="recharge_rule_4d">充值金额以实际到账为准，使用优惠券部分不计入累计充值。如有疑问请联系客服。</p>
-    <p style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:.75rem;line-height:1.6"><b data-key="ac_recharge_tip_title">&#x1F4B0; 联盟币购买说明：</b><br><span data-key="ac_recharge_desc">充值后需在交易日到平台交易区页面或到平台资金池里购买联盟币，也可以进入平台的自由市场去购买其他会员出售挂单的联盟币</span></p>
+    <p style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:.95rem;line-height:1.6"><b data-key="ac_recharge_tip_title">&#x1F4B0; 联盟币购买说明：</b><br><span data-key="ac_recharge_desc">充值后需在交易日到平台交易区页面或到平台资金池里购买联盟币，也可以进入平台的自由市场去购买其他会员出售挂单的联盟币</span></p>
   </div>
   <div class="br2"><button class="btn bo" onclick="cma()" data-key="mcancel">关闭</button></div>
 </div></div>
@@ -1124,7 +1124,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
       <span style="font-size:.75rem;color:var(--t3);animation:poolDepArrow 1.5s ease-in-out infinite"><span class="pool-dep-arrow">⇒</span></span>
     </div>
     <div style="position:relative;font-size:.6rem;color:var(--t3);text-align:center;padding:0 12px 10px" data-key="ac_pool_desc">法币充值后兑换联盟币</div>
-    <div style="position:relative;font-size:.65rem;color:var(--t2);line-height:1.6;background:var(--bg2);border-radius:8px;padding:8px;margin:0 10px 10px" data-key="ac_recharge_desc">充值后需在交易日到平台交易区页面或到平台资金池里购买联盟币，也可以进入平台的自由市场去购买其他会员出售挂单的联盟币</div>
+    <div style="position:relative;font-size:.85rem;color:var(--t2);line-height:1.6;background:var(--bg2);border-radius:8px;padding:8px;margin:0 10px 10px" data-key="ac_recharge_desc">充值后需在交易日到平台交易区页面或到平台资金池里购买联盟币，也可以进入平台的自由市场去购买其他会员出售挂单的联盟币</div>
   </div>
 </div>
 
@@ -5478,6 +5478,8 @@ fmpub:'Pubblica',fmpub_tw:'Pubblica Articolo',fmpub_sp:'Pubblica Video',fmpub_ac
   tools_apihint_close:{zh:"知道了",en:"Got it",ja:"了解",ko:"확인",es:"Entendido",fr:"Compris",de:"Verstanden",pt:"Entendi",ru:"Понял",ar:"فهمت",hi:"समझ गया",th:"เข้าใจแล้ว",vi:"Đã hiểu",id:"Mengerti",it:"Capito"},
   tools_apihint_btn:{zh:"使用说明",en:"Usage Guide",ja:"利用ガイド",ko:"사용 안내",es:"Guía",fr:"Guide",de:"Hinweis",pt:"Guia",ru:"Гайд",ar:"دليل",hi:"गाइड",th:"คู่มือ",vi:"Hướng dẫn",id:"Panduan",it:"Guida"},
   tools_goto_app:{zh:"前往应用区",en:"Go to Apps",ja:"アプリへ",ko:"앱으로 이동",es:"Ir a Apps",fr:"Aller aux Apps",de:"Zu Apps",pt:"Ir para Apps",ru:"К приложениям",ar:"الذهاب للتطبيقات",hi:"ऐप पर जाएं",th:"ไปที่แอป",vi:"Đến Ứng dụng",id:"Ke Aplikasi",it:"Vai alle App"},
+  search_no_user:{zh:"未找到用户",en:"No user found",ja:"ユーザーが見つかりません",ko:"사용자를 찾을 수 없습니다",es:"Usuario no encontrado",fr:"Aucun utilisateur trouvé",de:"Kein Benutzer gefunden",pt:"Usuário não encontrado",ru:"Пользователь не найден",ar:"لم يتم العثور على المستخدم",hi:"कोई उपयोगकर्ता नहीं मिला",th:"ไม่พบผู้ใช้",vi:"Không tìm thấy người dùng",id:"Pengguna tidak ditemukan",it:"Nessun utente trovato"},
+  search_net_error:{zh:"网络错误",en:"Network error",ja:"ネットワークエラー",ko:"네트워크 오류",es:"Error de red",fr:"Erreur réseau",de:"Netzwerkfehler",pt:"Erro de rede",ru:"Ошибка сети",ar:"خطأ في الشبكة",hi:"नेटवर्क त्रुटि",th:"ข้อผิดพลาดเครือข่าย",vi:"Lỗi mạng",id:"Kesalahan jaringan",it:"Errore di rete"},
 
 
 ac_cny_balance:{zh:"人民币余额",en:"CNY Balance",ja:"人民元残高",ko:"CNY 잔액",es:"Saldo CNY",fr:"Solde CNY",de:"CNY-Guthaben",pt:"Saldo CNY",ru:"Баланс CNY",ar:"رصيد اليوان",hi:"CNY बैलेंस",th:"ยอดคงเหลือ CNY",vi:"Số dư CNY",id:"Saldo CNY",it:"Saldo CNY"},
@@ -7895,8 +7897,8 @@ async function searchUser(){
     if(data.found&&data.user){
       var n=data.user.name||data.user.email.split('@')[0];var ini=n[0].toUpperCase();
       r.innerHTML='<div class="social-friend-card" style="padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--bd);margin:8px 0;display:flex;align-items:center;gap:10px"><div style="width:40px;height:40px;border-radius:50%;background:var(--g1);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">'+ini+'</div><div style="flex:1"><div style="font-weight:700">'+n+'</div><div style="font-size:.7rem;color:var(--t2)">'+data.user.email+'</div></div><button class="btn bs" data-email="'+data.user.email+'" onclick="addFriend(this.dataset.email)">Add Friend</button></div>';
-    }else{r.innerHTML='<div style="padding:12px;text-align:center;color:var(--t2)">No user found</div>'}
-  }).catch(function(){r.innerHTML='<div style="padding:12px;text-align:center;color:#ef4444">Network error</div>'});
+    }else{r.innerHTML='<div style="padding:12px;text-align:center;color:var(--t2)" data-key="search_no_user"></div>';t()}
+  }).catch(function(){r.innerHTML='<div style="padding:12px;text-align:center;color:#ef4444" data-key="search_net_error"></div>';t()});
 }
 function addFriend(email){
   if(!email)return;

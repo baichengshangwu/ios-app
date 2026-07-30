@@ -33,7 +33,7 @@ export async function onRequest(context) {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   } catch (e) {
-    return new Response(JSON.stringify({ found: false, error: 'DB error' }), {
+    return new Response(JSON.stringify({ found: false, error: 'DB error: ' + (e.message || String(e)) }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   }
