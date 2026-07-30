@@ -29,7 +29,7 @@ export async function onRequestGet({ request, env }) {
     { id: 'glm-5', name: 'GLM-5', cat: 'text', groups: ['default','tencent'] },
     { id: 'glm-5-turbo', name: 'GLM-5 Turbo', cat: 'text', groups: ['default','tencent'] },
     { id: 'glm-5.1', name: 'GLM-5.1', cat: 'text', groups: ['default','tencent'] },
-    { id: 'glm-5.2', name: 'GLM-5.2', cat: 'text', groups: ['default','tencent','Aliyun_promo'] },
+    { id: 'glm-5.2', name: 'GLM-5.2', cat: 'text', groups: ['Aliyun_promo','default','tencent'] },
     { id: 'glm-5.2-fast-preview', name: 'GLM-5.2 Fast Preview', cat: 'text', groups: ['Aliyun_adb'] },
     { id: 'kimi-k3', name: 'Kimi K3', cat: 'text', groups: ['default','tencent','Aliyun_adb'] },
     { id: 'kimi-k2.7-code-highspeed', name: 'Kimi K2.7 Code Highspeed', cat: 'text', groups: ['Aliyun_adb'] },

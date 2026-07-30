@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
     'glm-5': 'default',
     'glm-5-turbo': 'default',
     'glm-5.1': 'default',
-    'glm-5.2': 'default',
+    'glm-5.2': 'Aliyun_promo',
     'glm-5.2-fast-preview': 'Aliyun_adb',
     'kimi-k3': 'default',
     'kimi-k2.7-code-highspeed': 'Aliyun_adb',

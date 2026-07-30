@@ -2680,6 +2680,33 @@ if(listings.length===0){
 
 var thChatHistory = [];
 var currentTHModel = 'deepseek-v4-pro-td';
+var thModelHealth = {};
+var thHealthPolling = null;
+
+async function checkTHModelHealth() {
+  try {
+    var resp = await fetch('/api/health');
+    if (!resp.ok) return;
+    var data = await resp.json();
+    data.models.forEach(function(m) {
+      thModelHealth[m.model] = { ok: m.status === 'ok', error: m.error || '', group: m.group, fallback: !!m.fallback };
+    });
+    // Auto-fix: if any model working on fallback, suggest routing update
+    if (data.needs_fix && data.needs_fix.length > 0) {
+      console.warn('[TH Health] Models need routing fix:', data.needs_fix);
+    }
+    // Re-render model cards to reflect health
+    if (curPage === 'promo') rTHModels();
+  } catch (e) {
+    console.warn('[TH Health] Check failed:', e.message);
+  }
+}
+
+function startTHHealthMonitor() {
+  if (thHealthPolling) clearInterval(thHealthPolling);
+  checkTHModelHealth();
+  thHealthPolling = setInterval(checkTHModelHealth, 60000);
+}
 
 function rTHModels(){
   if(curPage!=='promo')return;
@@ -2700,7 +2727,7 @@ function rTHModels(){
   var g=document.getElementById('th-models-grid');
   if(!g)return;
   var vc={Anthropic:'#d97757',OpenAI:'#10a37f',DeepSeek:'#4f46e5',Alibaba:'#ff6a00',Zhipu:'#3b82f6',Moonshot:'#8b5cf6',ByteDance:'#e0245e',MiniMax:'#06b6d4',RelayPool:'#ec4899',UniPass:'#f59e0b',TodouCloud:'#6366f1'};
-  g.innerHTML=models.map(function(m){var b=m.badge?'<span style=background:'+m.color+';color:#fff;font-size:.55rem;padding:1px 5px;border-radius:3px;margin-left:4px>'+m.badge+'</span>':'';var cv=vc[m.vendor]||'#6366f1';return '<div class=tpc style=border-left:3px solid '+m.color+' onclick=selectTHModel(\"'+m.id+'\")><div class=tpc-inner><div class=tpc-top><span style=font-size:1.2rem>'+m.icon+'</span><strong style=font-size:.8rem>'+m.name+'</strong>'+b+'</div><div style=font-size:.65rem;color:var(--t2);margin:4px 0>'+m.desc+'</div><div style=display:flex;justify-content:space-between;align-items:center><span style=font-size:.65rem;color:'+cv+'>'+m.vendor+'</span><span style=font-size:.75rem;font-weight:700;color:'+m.color+'>$'+m.price.toFixed(4)+'/M</span></div></div></div>';}).join('')||'<div style=color:var(--t2);text-align:center;padding:20px;font-size:.75rem>'+t('no_results')+'</div>';
+  g.innerHTML=models.map(function(m){var b=m.badge?'<span style=background:'+m.color+';color:#fff;font-size:.55rem;padding:1px 5px;border-radius:3px;margin-left:4px>'+m.badge+'</span>':'';var cv=vc[m.vendor]||'#6366f1';var tdId=m.id.replace(/-/g,'_');var h=thModelHealth[tdId];var hd='';if(h){if(h.ok){hd='<span title=正常 style=width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;margin-left:6px;flex-shrink:0></span>';}else{hd='<span title='+(h.error||'调用失败')+' style=width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;margin-left:6px;flex-shrink:0;animation:pulse 1.5s infinite></span>';}}return '<div class=tpc style=border-left:3px solid '+m.color+' onclick=selectTHModel(\"'+m.id+'\")><div class=tpc-inner><div class=tpc-top><span style=font-size:1.2rem>'+m.icon+'</span><strong style=font-size:.8rem>'+m.name+'</strong>'+b+hd+'</div><div style=font-size:.65rem;color:var(--t2);margin:4px 0>'+m.desc+'</div><div style=display:flex;justify-content:space-between;align-items:center><span style=font-size:.65rem;color:'+cv+'>'+m.vendor+'</span><span style=font-size:.75rem;font-weight:700;color:'+m.color+'>$'+m.price.toFixed(4)+'/M</span></div></div></div>';}).join('')||'<div style=color:var(--t2);text-align:center;padding:20px;font-size:.75rem>'+t('no_results')+'</div>';
   rTHChatModels();
 }
 
@@ -16068,6 +16095,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{var saved=localStorage.getItem('nexus_cur_user_email');if(saved&&users[saved]){curUser={...users[saved]};curUser._email=saved;document.getElementById('aa').style.display='none';document.getElementById('ud').style.display='block';document.getElementById('ual').textContent=(curUser.name||'U')[0].toUpperCase();document.getElementById('udn').textContent=curUser.name;}}catch(e){}
     if(!apiToken){ try{ var _tk=localStorage.getItem('nexus_api_token'); if(_tk) apiToken=_tk; }catch(e){} }
     applyI18N(); rAll();
+    try{startTHHealthMonitor();}catch(e){console.warn('TH health monitor init:',e.message);}
     try{document.getElementById("btn-login-submit")?.addEventListener("click",doLogin);}catch(e){}
     initMKT(); setTimeout(function(){rdrTkr();},1500);
     translateCommunityContent();
