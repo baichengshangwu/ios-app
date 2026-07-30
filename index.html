@@ -5663,7 +5663,7 @@ async function translateBio(){
   if(!curUser||!curUser.bio)return;
   var bioEl=document.getElementById('pv-bio');
   // For Chinese: show original
-  if(curLang==='zh'){
+  if(_isZh()){
     if(bioEl){bioEl.textContent=curUser.bio;bioEl.style.fontStyle='';}
     return;
   }
@@ -6319,9 +6319,11 @@ function sp(page){if(page==='promo'){setTimeout(rTHModels,50);setTimeout(updateA
 
   try{if(typeof updateUserBadge==='function')updateUserBadge();}catch(e){}
 }
+function _isZh(l){return(l||curLang)==='zh'||(l||curLang)==='zh-CN'||(l||curLang)==='zh-TW';}
 function t(k){
-  if(LANG&&LANG[curLang]&&LANG[curLang][k])return LANG[curLang][k];
-  if(LANG&&LANG[k]&&LANG[k][curLang])return LANG[k][curLang];
+  var _l=curLang;if(_l==='zh-CN'||_l==='zh-TW')_l='zh';
+  if(LANG&&LANG[_l]&&LANG[_l][k])return LANG[_l][k];
+  if(LANG&&LANG[k]&&LANG[k][_l])return LANG[k][_l];
   if(LANG&&LANG['en']&&LANG['en'][k])return LANG['en'][k];
   if(LANG&&LANG[k]&&LANG[k]['en'])return LANG[k]['en'];
   return k;
@@ -8221,7 +8223,7 @@ function transcribeSocialVoice(blob, btn){
   // Use audio element as source for recognition
   var audio = new Audio(URL.createObjectURL(blob));
   var recognition = new SpeechRecognition();
-  recognition.lang = curLang === "zh" ? "zh-CN" : curLang === "ja" ? "ja-JP" : curLang === "ko" ? "ko-KR" : curLang === "fr" ? "fr-FR" : curLang === "de" ? "de-DE" : curLang === "es" ? "es-ES" : curLang === "pt" ? "pt-BR" : curLang === "ru" ? "ru-RU" : curLang === "ar" ? "ar-SA" : curLang === "hi" ? "hi-IN" : curLang === "th" ? "th-TH" : curLang === "vi" ? "vi-VN" : curLang === "id" ? "id-ID" : curLang === "it" ? "it-IT" : "en-US";
+  recognition.lang = _isZh() ? "zh-CN" : curLang === "ja" ? "ja-JP" : curLang === "ko" ? "ko-KR" : curLang === "fr" ? "fr-FR" : curLang === "de" ? "de-DE" : curLang === "es" ? "es-ES" : curLang === "pt" ? "pt-BR" : curLang === "ru" ? "ru-RU" : curLang === "ar" ? "ar-SA" : curLang === "hi" ? "hi-IN" : curLang === "th" ? "th-TH" : curLang === "vi" ? "vi-VN" : curLang === "id" ? "id-ID" : curLang === "it" ? "it-IT" : "en-US";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
   
@@ -8235,7 +8237,7 @@ function transcribeSocialVoice(blob, btn){
     transDiv.textContent = text;
     
     // Real-time voice-to-voice translation: transcribe → translate → display
-    if(curLang !== 'zh'){
+    if(!_isZh()){
       try {
         var translated = await translateText(text, curLang);
         if(translated && translated !== text){
@@ -8349,7 +8351,7 @@ async function startSocialVoiceCall(){
     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(SpeechRecognition){
       socialVoiceCallRecognition = new SpeechRecognition();
-      socialVoiceCallRecognition.lang = curLang === "zh" ? "zh-CN" : curLang === "ja" ? "ja-JP" : curLang === "ko" ? "ko-KR" : curLang === "fr" ? "fr-FR" : curLang === "de" ? "de-DE" : curLang === "es" ? "es-ES" : curLang === "pt" ? "pt-BR" : curLang === "ru" ? "ru-RU" : curLang === "ar" ? "ar-SA" : curLang === "hi" ? "hi-IN" : curLang === "th" ? "th-TH" : curLang === "vi" ? "vi-VN" : curLang === "id" ? "id-ID" : curLang === "it" ? "it-IT" : "en-US";
+      socialVoiceCallRecognition.lang = _isZh() ? "zh-CN" : curLang === "ja" ? "ja-JP" : curLang === "ko" ? "ko-KR" : curLang === "fr" ? "fr-FR" : curLang === "de" ? "de-DE" : curLang === "es" ? "es-ES" : curLang === "pt" ? "pt-BR" : curLang === "ru" ? "ru-RU" : curLang === "ar" ? "ar-SA" : curLang === "hi" ? "hi-IN" : curLang === "th" ? "th-TH" : curLang === "vi" ? "vi-VN" : curLang === "id" ? "id-ID" : curLang === "it" ? "it-IT" : "en-US";
       socialVoiceCallRecognition.continuous = true;
       socialVoiceCallRecognition.interimResults = true;
       socialVoiceCallRecognition.maxAlternatives = 1;
@@ -8363,7 +8365,7 @@ async function startSocialVoiceCall(){
         // Send caption to peer (original)
         channel.postMessage({type:'caption', text:text, speaker:curUser.name, from:curUser._email});
         // Translate for self if needed
-        if(curLang !== 'zh'){
+        if(!_isZh()){
           try {
             var translated = await translateText(text, curLang);
             if(translated && translated !== text){
@@ -8374,7 +8376,7 @@ async function startSocialVoiceCall(){
           captionArea.innerHTML = '🎙️ <span style="color:#e0e0e0">' + escHtml(text) + '</span>';
         }
         // Send translation to peer
-        if(curLang !== 'zh'){
+        if(!_isZh()){
           try {
             var translated2 = await translateText(text, curLang);
             if(translated2 && translated2 !== text){
@@ -8459,7 +8461,7 @@ setInterval(function(){
 
 // ============ DYNAMIC CONTENT TRANSLATION ============
 async function translateCommunityContent(){
-  if(curLang==='zh') return;
+  if(_isZh()) return;
   var els=document.querySelectorAll('.dyn-tr');
   var tasks=[];
   els.forEach(function(el){
@@ -8533,9 +8535,9 @@ function _memberBtnLabel(idx,lang){
   lang=lang||'zh';
   var l=MEMBER_LEVELS[idx];
   if(typeof curUser!=='undefined'&&curUser&&curUser.memberLevel===l.key){
-    return t('mcurrentlv')||lang==='zh'?'当前等级':(lang==='ja'?'現在のレベル':'Current');
+    return t('mcurrentlv')||_isZh(lang)?'当前等级':(lang==='ja'?'現在のレベル':'Current');
   }
-  return t('mbuy')||lang==='zh'?'立即购买':(lang==='ja'?'購入':'Buy');
+  return t('mbuy')||_isZh(lang)?'立即购买':(lang==='ja'?'購入':'Buy');
 }
 function renderMemberPage(){
   if(typeof initInvite==='function')try{initInvite();}catch(e){}
@@ -8666,7 +8668,7 @@ function confirmMemberBuy(){
 function copyInvite(){
   var v=document.getElementById('invite-link').value;
   var lang=(typeof curLang!=='undefined'&&curLang)?curLang:'zh';
-  var msg=t('copied')||lang==='zh'?'已复制':(lang==='ja'?'コピーしました':'Copied');
+  var msg=t('copied')||_isZh(lang)?'已复制':(lang==='ja'?'コピーしました':'Copied');
   function doAlert(){alert(msg);}
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(v).then(doAlert).catch(function(){
@@ -16041,7 +16043,7 @@ function tRegion(name) {
   const iso = regionIsoMap[engName];
   if (iso) {
     try {
-      const lang = curLang === 'ko' ? 'ko' : curLang === 'ja' ? 'ja' : curLang === 'zh' ? 'zh-Hans' : curLang === 'ar' ? 'ar' : curLang === 'th' ? 'th' : curLang === 'vi' ? 'vi' : curLang === 'id' ? 'id' : curLang === 'pt' ? 'pt' : curLang === 'ru' ? 'ru' : curLang === 'hi' ? 'hi' : curLang === 'es' ? 'es' : curLang === 'fr' ? 'fr' : curLang === 'de' ? 'de' : curLang === 'it' ? 'it' : curLang;
+      const lang = curLang === 'ko' ? 'ko' : curLang === 'ja' ? 'ja' : _isZh() ? 'zh-Hans' : curLang === 'ar' ? 'ar' : curLang === 'th' ? 'th' : curLang === 'vi' ? 'vi' : curLang === 'id' ? 'id' : curLang === 'pt' ? 'pt' : curLang === 'ru' ? 'ru' : curLang === 'hi' ? 'hi' : curLang === 'es' ? 'es' : curLang === 'fr' ? 'fr' : curLang === 'de' ? 'de' : curLang === 'it' ? 'it' : curLang;
       const dn = new Intl.DisplayNames([lang], { type: 'region' });
       const result = dn.of(iso);
       if (result && result !== engName && result !== iso) return result;
