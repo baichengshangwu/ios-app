@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>邀请动画演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden}
+#container{position:relative;width:800px;height:500px;border-radius:16px;overflow:hidden;box-shadow:0 0 60px rgba(139,92,246,.3)}
+canvas{display:block;width:100%;height:100%}
+#controls{position:absolute;bottom:12px;right:16px;display:flex;gap:8px;z-index:10}
+#controls button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;transition:all .2s}
+#controls button:hover{background:rgba(139,92,246,.4)}
+#subtitles{position:absolute;bottom:50px;left:0;right:0;text-align:center;z-index:10;pointer-events:none}
+#subtitle-text{display:inline-block;background:rgba(0,0,0,.7);color:#fff;padding:8px 20px;border-radius:20px;font-size:.85rem;max-width:90%;line-height:1.5;transition:opacity .3s}
+#progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#8b5cf6,#6366f1);z-index:10;transition:width .1s linear;border-radius:0 2px 2px 0}
+</style>
+</head>
+<body>
+<div id="container">
+  <canvas id="c"></canvas>
+  <div id="subtitles"><span id="subtitle-text"></span></div>
+  <div id="progress" style="width:0%"></div>
+  <div id="controls">
+    <button id="btn-play" onclick="togglePlay()">▶ 播放</button>
+    <button onclick="restart()">↺ 重播</button>
+    <button id="btn-mute" onclick="toggleMute()">🔊</button>
+  </div>
+</div>
+
+<script>
+// ── Multi-language voiceover & subtitle ──
+const SCRIPT = {
+  'zh-CN': [
+    {t:0,d:10, txt:'调用大模型需要用联盟币，会员级别低用充值余额购买联盟币数量有限。'},
+    {t:10,d:8, txt:'可以邀请朋友注册用户，邀请朋友成为注册会员，朋友可以获赠一千个联盟币。'},
+    {t:18,d:10, txt:'你可以收购朋友获赠的联盟币，用钞票换朋友手中的金币，两人开心大笑，握手拥抱。'},
+    {t:30,d:7, txt:'每邀请一个人注册用户，你就会获得奖励5个联盟币。'},
+    {t:37,d:8, txt:'邀请三个、五个人，金币越堆越多，胸前堆满金币。'},
+    {t:48,d:9, txt:'朋友获赠一千联盟币可以购买算力Token，也可以在网站平台按照平台限价挂单出售。'},
+    {t:57,d:10, txt:'按照汇率填写价格上架挂单，一笔笔成交，钞票飞到手中，口袋鼓鼓囊囊。'},
+    {t:70,d:8, txt:'也可以和朋友约定价格，讨价还价确定好价格，填写挂单上架，朋友点击购买。'},
+    {t:78,d:10, txt:'接连和几个人约定价格，交易成功，桌子上堆满钞票。'},
+    {t:92,d:8, txt:'手里的联盟币还可以在平台参与抵押获利。'},
+    {t:100,d:9, txt:'根据抵押获利规则，按不同抵押期限获得不同利率收益。'},
+    {t:109,d:9, txt:'把金币推到桌子中心，胸前金币一堆接一堆，直到堆满桌面。'},
+    {t:120,d:7, txt:'根据累计充值金额分为五个会员等级。'},
+    {t:127,d:8, txt:'级别越高，奖励和抵押利率越高，交易限额也越大。'},
+    {t:135,d:10, txt:'立即邀请朋友，开启联盟币财富之旅！'}
+  ],
+  'en': [
+    {t:0,d:10, txt:'Using AI models requires Alliance Coins. Lower-tier members have limited purchase quotas with recharge balance.'},
+    {t:10,d:8, txt:'Invite friends to register. Each friend who becomes a member receives 1,000 Alliance Coins as a gift.'},
+    {t:18,d:10, txt:'You can buy your friends\' gifted Alliance Coins. Exchange cash for their gold coins, both laugh and hug with joy.'},
+    {t:30,d:7, txt:'For every person you invite to register, you earn a reward of 5 Alliance Coins.'},
+    {t:37,d:8, txt:'Invite three, five people — gold coins pile up higher and higher, filling your chest with gold.'},
+    {t:48,d:9, txt:'Friends can use their 1,000 Alliance Coins to buy computing power Tokens, or list them for sale on the platform at the limit price.'},
+    {t:57,d:10, txt:'Check the exchange rate, set your price, list the order. One deal after another, cash flies into your hands, pockets bulging.'},
+    {t:70,d:8, txt:'Or agree on a price with friends, negotiate a good deal, list the order, and your friend clicks buy.'},
+    {t:78,d:10, txt:'Negotiate with several people, deals close one after another, the table fills with cash.'},
+    {t:92,d:8, txt:'Your Alliance Coins can also be used for staking profit on the platform.'},
+    {t:100,d:9, txt:'Based on staking rules, different lock-up periods earn different interest rates.'},
+    {t:109,d:9, txt:'Push gold coins to the center of the table, pile after pile, until the entire table overflows with gold.'},
+    {t:120,d:7, txt:'There are five membership tiers based on cumulative recharge amount.'},
+    {t:127,d:8, txt:'Higher tiers mean bigger rewards, higher staking interest rates, and larger transaction limits.'},
+    {t:135,d:10, txt:'Invite friends now and start your Alliance Coin fortune journey!'}
+  ],
+  'zh-TW': [
+    {t:0,d:10, txt:'調用大模型需要用聯盟幣，會員級別低用充值餘額購買聯盟幣數量有限。'},
+    {t:10,d:8, txt:'可以邀請朋友註冊用戶，邀請朋友成為註冊會員，朋友可以獲贈一千個聯盟幣。'},
+    {t:18,d:10, txt:'你可以收購朋友獲贈的聯盟幣，用鈔票換朋友手中的金幣，兩人開心大笑，握手擁抱。'},
+    {t:30,d:7, txt:'每邀請一個人註冊用戶，你就會獲得獎勵5個聯盟幣。'},
+    {t:37,d:8, txt:'邀請三個、五個人，金幣越堆越多，胸前堆滿金幣。'},
+    {t:48,d:9, txt:'朋友獲贈一千聯盟幣可以購買算力Token，也可以在網站平台按照平台限價掛單出售。'},
+    {t:57,d:10, txt:'按照匯率填寫價格上架掛單，一筆筆成交，鈔票飛到手中，口袋鼓鼓囊囊。'},
+    {t:70,d:8, txt:'也可以和朋友約定價格，討價還價確定好價格，填寫掛單上架，朋友點擊購買。'},
+    {t:78,d:10, txt:'接連和幾個人約定價格，交易成功，桌子上堆滿鈔票。'},
+    {t:92,d:8, txt:'手裡的聯盟幣還可以在平台參與抵押獲利。'},
+    {t:100,d:9, txt:'根據抵押獲利規則，按不同抵押期限獲得不同利率收益。'},
+    {t:109,d:9, txt:'把金幣推到桌子中心，胸前金幣一堆接一堆，直到堆滿桌面。'},
+    {t:120,d:7, txt:'根據累計充值金額分為五個會員等級。'},
+    {t:127,d:8, txt:'級別越高，獎勵和抵押利率越高，交易限額也越大。'},
+    {t:135,d:10, txt:'立即邀請朋友，開啟聯盟幣財富之旅！'}
+  ]
+};
+
+function getLang() {
+  if (typeof window.curLang !== 'undefined') return window.curLang;
+  var nav = navigator.language || 'zh-CN';
+  if (nav.startsWith('zh')) return nav.includes('TW')||nav.includes('HK')?'zh-TW':'zh-CN';
+  if (nav.startsWith('en')) return 'en';
+  return 'zh-CN';
+}
+
+function getScript() {
+  var lang = getLang();
+  return SCRIPT[lang] || SCRIPT['zh-CN'];
+}
+
+// ── Canvas Setup ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 800, H = 500;
+canvas.width = W; canvas.height = H;
+
+const subEl = document.getElementById('subtitle-text');
+const progressEl = document.getElementById('progress');
+const btnPlay = document.getElementById('btn-play');
+const btnMute = document.getElementById('btn-mute');
+
+let playing = false;
+let muted = false;
+let startTime = 0;
+let currentTime = 0;
+let animationId;
+
+// ── Particles ──
+let coins = [];
+let bills = [];
+let players = [];
+let coinPiles = [];
+let tableCoins = [];
+
+function spawnCoins(x, y, count, spread) {
+  for (let i = 0; i < count; i++) {
+    coins.push({
+      x: x + (Math.random() - 0.5) * spread,
+      y: y - Math.random() * 200,
+      vy: 2 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 2,
+      r: 6 + Math.random() * 4,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.1,
+      alpha: 1,
+      life: 120 + Math.random() * 60,
+      grounded: false
+    });
+  }
+}
+
+function spawnBills(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    bills.push({
+      x: x + (Math.random() - 0.5) * 100,
+      y: y - Math.random() * 150,
+      vy: 1.5 + Math.random() * 2,
+      vx: (Math.random() - 0.5) * 1.5,
+      w: 20 + Math.random() * 10,
+      h: 10 + Math.random() * 5,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.08,
+      alpha: 1,
+      life: 150 + Math.random() * 60,
+      grounded: false
+    });
+  }
+}
+
+// ── Scene Manager ──
+let scenePhase = 0;
+let sceneStartTime = 0;
+let pileCount = [0, 0]; // [player1 piles, player2 piles]
+
+function getScene(t) {
+  if (t < 28) return 0;  // Scene 1: coin exchange
+  if (t < 45) return 1;  // Scene 2: invite rewards - coins piling
+  if (t < 90) return 2;  // Scene 3: platform trading
+  if (t < 120) return 3; // Scene 4: staking
+  return 4;               // Scene 5: membership tiers
+}
+
+function resetScene(scene) {
+  coins = [];
+  bills = [];
+  if (scene === 0 || scene === 1) {
+    coinPiles = [
+      {x: 200, y: 350, coins: 0, target: 0},
+      {x: 600, y: 350, coins: 0, target: 0}
+    ];
+  }
+  if (scene === 3) {
+    tableCoins = [];
+  }
+}
+
+// ── Drawing ──
+function drawBackground(scene) {
+  var grad = ctx.createLinearGradient(0, 0, 0, H);
+  if (scene === 0 || scene === 1) {
+    grad.addColorStop(0, '#1a0a2e');
+    grad.addColorStop(0.5, '#0d1b3e');
+    grad.addColorStop(1, '#0a0a1a');
+  } else if (scene === 2) {
+    grad.addColorStop(0, '#0a1a2e');
+    grad.addColorStop(0.5, '#1a2e0a');
+    grad.addColorStop(1, '#0a0a1a');
+  } else if (scene === 3) {
+    grad.addColorStop(0, '#2e0a1a');
+    grad.addColorStop(0.5, '#1a0a2e');
+    grad.addColorStop(1, '#0a0a1a');
+  } else {
+    grad.addColorStop(0, '#0a1a2e');
+    grad.addColorStop(0.5, '#2e1a0a');
+    grad.addColorStop(1, '#0a0a1a');
+  }
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  for (let i = 0; i < 30; i++) {
+    let sx = (i * 257 + 13) % W;
+    let sy = (i * 179 + 7) % (H * 0.6);
+    let sr = 0.5 + (i % 3) * 0.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawCoin(x, y, r) {
+  // Gold coin
+  var grad = ctx.createRadialGradient(x - 1, y - 1, r * 0.2, x, y, r);
+  grad.addColorStop(0, '#ffe066');
+  grad.addColorStop(0.5, '#f0a500');
+  grad.addColorStop(1, '#b8860b');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#8b6914';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBill(x, y, w, h, r) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(r || 0);
+  // Bill body
+  ctx.fillStyle = '#4CAF50';
+  ctx.fillRect(-w / 2, -h / 2, w, h);
+  ctx.fillStyle = '#66BB6A';
+  ctx.fillRect(-w / 2 + 2, -h / 2 + 2, w - 4, h - 4);
+  // Dollar sign
+  ctx.fillStyle = '#1B5E20';
+  ctx.font = `${Math.min(w, h) * 0.7}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('$', 0, 0);
+  ctx.restore();
+}
+
+function drawPerson(x, y, color, happy) {
+  ctx.save();
+  // Body
+  ctx.fillStyle = color;
+  ctx.fillRect(x - 20, y + 20, 40, 60);
+  // Head
+  ctx.fillStyle = '#ffcc99';
+  ctx.beginPath();
+  ctx.arc(x, y, 22, 0, Math.PI * 2);
+  ctx.fill();
+  // Face
+  if (happy) {
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y - 2, 8, 0.1, Math.PI - 0.1);
+    ctx.stroke();
+    // Eyes (happy squint)
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(x - 6, y - 4, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 6, y - 4, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Neutral face
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y + 2, 6, 0.1, Math.PI - 0.1);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(x - 6, y - 4, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 6, y - 4, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Arms
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(x - 20, y + 35);
+  ctx.lineTo(x - 45, y + (happy ? 15 : 50));
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + 20, y + 35);
+  ctx.lineTo(x + 45, y + (happy ? 15 : 50));
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPile(x, y, count) {
+  if (count <= 0) return;
+  var baseR = 8;
+  for (var i = 0; i < Math.min(count, 30); i++) {
+    var px = x + (Math.sin(i * 1.7) * 20);
+    var py = y - i * 6 + (Math.cos(i * 2.3) * 8);
+    drawCoin(px, py, baseR - Math.min(i * 0.15, 3));
+  }
+  // Count label
+  if (count > 5) {
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('×' + count, x, y - count * 6 - 30);
+  }
+}
+
+function drawTable(x, y, w, h) {
+  ctx.fillStyle = '#5D4037';
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#795548';
+  ctx.fillRect(x, y, w, 3);
+  // Legs
+  ctx.fillStyle = '#4E342E';
+  ctx.fillRect(x + 5, y + h, 8, 40);
+  ctx.fillRect(x + w - 13, y + h, 8, 40);
+}
+
+function drawBillboard(x, y, text) {
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(x, y, 200, 60);
+  ctx.strokeStyle = '#8b5cf6';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, 200, 60);
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, x + 100, y + 35);
+}
+
+// ── Update ──
+function update(dt) {
+  // Update coins
+  for (var i = coins.length - 1; i >= 0; i--) {
+    var c = coins[i];
+    c.y += c.vy;
+    c.x += c.vx;
+    c.rot += c.rotV;
+    c.life--;
+    if (!c.grounded && c.y > H - 50) {
+      c.y = H - 50;
+      c.vy = 0;
+      c.vx *= 0.3;
+      c.grounded = true;
+    }
+    if (c.life <= 0 || c.alpha <= 0) {
+      coins.splice(i, 1);
+    } else if (c.life < 30) {
+      c.alpha = c.life / 30;
+    }
+  }
+
+  // Update bills
+  for (var i = bills.length - 1; i >= 0; i--) {
+    var b = bills[i];
+    b.y += b.vy;
+    b.x += b.vx;
+    b.rot += b.rotV;
+    b.life--;
+    if (!b.grounded && b.y > H - 50) {
+      b.y = H - 50;
+      b.vy = 0;
+      b.vx *= 0.2;
+      b.grounded = true;
+    }
+    if (b.life <= 0 || b.alpha <= 0) {
+      bills.splice(i, 1);
+    } else if (b.life < 30) {
+      b.alpha = b.life / 30;
+    }
+  }
+}
+
+function updateScene(t) {
+  var scene = getScene(t);
+  var st = t - (scene === 0 ? 0 : scene === 1 ? 28 : scene === 2 ? 45 : scene === 3 ? 90 : 120);
+
+  switch (scene) {
+    case 0: // Coin exchange
+      if (st < 1) resetScene(0);
+      if (st > 2 && st < 18 && Math.random() < 0.3) {
+        spawnCoins(200, 100, 3, 80);
+      }
+      if (st > 8 && st < 22 && Math.random() < 0.2) {
+        spawnBills(400, 150, 2);
+      }
+      break;
+    case 1: // Invite rewards
+      if (st < 1) resetScene(1);
+      if (st > 1 && st < 15 && Math.random() < 0.25) {
+        spawnCoins(200, 120, 2, 50);
+        coinPiles[0].coins = Math.min(coinPiles[0].coins + 1, 30);
+      }
+      break;
+    case 2: // Platform trading
+      if (st < 1) resetScene(2);
+      if (st > 2 && st < 40 && Math.random() < 0.2) {
+        spawnBills(600, 200, 1);
+      }
+      break;
+    case 3: // Staking
+      if (st < 1) resetScene(3);
+      if (st > 3 && st < 28 && Math.random() < 0.3) {
+        spawnCoins(400, 150, 3, 200);
+      }
+      if (st > 10) {
+        tableCoins = Math.min(tableCoins.length + (Math.random() < 0.3 ? 1 : 0), 40);
+      }
+      break;
+    case 4: // Membership tiers
+      if (st < 1) { resetScene(4); coins = []; bills = []; }
+      break;
+  }
+}
+
+function drawScene(scene, st) {
+  drawBackground(scene);
+
+  switch (scene) {
+    case 0: // Coin exchange - two people, coins raining
+      drawPerson(180, 220, '#6366f1', st > 6 && st < 28);
+      drawPerson(550, 220, '#8b5cf6', st > 6 && st < 28);
+      // Label
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('YOU', 180, 310);
+      ctx.fillText('FRIEND', 550, 310);
+      // Exchange arrows
+      if (st > 5 && st < 15) {
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(220, 200);
+        ctx.lineTo(510, 200);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('1000 AC', 365, 190);
+      }
+      if (st > 10 && st < 22) {
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(510, 240);
+        ctx.lineTo(220, 240);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#4CAF50';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('$$$', 365, 235);
+      }
+      // Ground coins
+      for (var c of coins) {
+        ctx.globalAlpha = c.alpha;
+        drawCoin(c.x, c.y, c.r);
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 1: // Invite rewards - piles growing
+      drawPerson(200, 200, '#6366f1', true);
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('YOU', 200, 290);
+      // Piles
+      if (coinPiles[0].coins > 5) drawPile(200, 330, coinPiles[0].coins);
+      if (coinPiles[0].coins > 10) drawPile(240, 330, Math.floor(coinPiles[0].coins * 0.6));
+      // "+5" labels
+      if (st > 1 && st < 20) {
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        var alpha = Math.abs(Math.sin(st * 2)) * 0.8 + 0.2;
+        ctx.globalAlpha = alpha;
+        ctx.fillText('+5 AC', 200, 140 - st * 1.5);
+        ctx.globalAlpha = 1;
+      }
+      for (var c of coins) {
+        ctx.globalAlpha = c.alpha;
+        drawCoin(c.x, c.y, c.r);
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 2: // Platform trading
+      // Monitor
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(80, 50, 250, 180);
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(80, 50, 250, 180);
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('P2P 自由市场', 205, 80);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('挂单 #001 价格: 0.12 CNY', 205, 110);
+      ctx.fillText('挂单 #002 价格: 0.11 CNY', 205, 130);
+      if (st > 15) ctx.fillText('挂单 #003 价格: 0.10 CNY ✓', 205, 150);
+      if (st > 25) ctx.fillText('挂单 #004 价格: 0.09 CNY ✓', 205, 170);
+      if (st > 35) ctx.fillText('挂单 #005 价格: 0.08 CNY ✓', 205, 190);
+
+      // Person at desk
+      drawPerson(500, 180, '#8b5cf6', st > 10);
+      drawTable(430, 280, 200, 10);
+      if (st > 10) {
+        for (var j = 0; j < Math.floor(st / 8); j++) {
+          drawBill(460 + j * 25, 260, 16, 8, 0.1);
+        }
+      }
+      for (var b of bills) {
+        ctx.globalAlpha = b.alpha;
+        drawBill(b.x, b.y, b.w, b.h, b.rot);
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 3: // Staking
+      // Billboard
+      drawBillboard(30, 50, getLang().startsWith('zh') ? '抵押获利' : 'Staking Profit');
+      ctx.fillStyle = '#fff';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('30天: 年化 8%', 40, 95);
+      ctx.fillText('180天: 年化 12%', 40, 110);
+      ctx.fillText('365天: 年化 18%', 40, 125);
+
+      // Person pushing coins
+      drawPerson(350, 200, '#6366f1', st > 5);
+      drawTable(250, 300, 300, 10);
+      // Table coins
+      for (var k = 0; k < tableCoins; k++) {
+        drawCoin(300 + (k % 8) * 25, 295 - Math.floor(k / 8) * 8, 7);
+      }
+      for (var c of coins) {
+        ctx.globalAlpha = c.alpha;
+        drawCoin(c.x, c.y, c.r);
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 4: // Membership tiers
+      var tiers = [
+        {name: '青铜', color: '#CD7F32', x: 60},
+        {name: '白银', color: '#C0C0C0', x: 200},
+        {name: '黄金', color: '#FFD700', x: 340},
+        {name: '铂金', color: '#E5E4E2', x: 480},
+        {name: '钻石', color: '#B9F2FF', x: 620}
+      ];
+      for (var ti of tiers) {
+        // Card
+        ctx.fillStyle = 'rgba(26,26,46,0.9)';
+        ctx.fillRect(ti.x, 120, 110, 220);
+        ctx.strokeStyle = ti.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(ti.x, 120, 110, 220);
+        // Name
+        ctx.fillStyle = ti.color;
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ti.name, ti.x + 55, 160);
+        // Level indicator
+        ctx.fillStyle = ti.color;
+        ctx.beginPath();
+        ctx.arc(ti.x + 55, 200, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText(tiers.indexOf(ti) + 1, ti.x + 55, 205);
+        // Up arrow for higher tiers
+        if (tiers.indexOf(ti) > 0) {
+          ctx.fillStyle = 'rgba(255,255,255,0.6)';
+          ctx.font = '10px sans-serif';
+          ctx.fillText('↑ 奖励↑', ti.x + 55, 260);
+          ctx.fillText('↑ 利率↑', ti.x + 55, 280);
+          ctx.fillText('↑ 限额↑', ti.x + 55, 300);
+        }
+        // Glow for tier 5
+        if (ti.name === '钻石') {
+          ctx.shadowColor = ti.color;
+          ctx.shadowBlur = 20 + Math.sin(st * 3) * 5;
+          ctx.strokeStyle = ti.color;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(ti.x - 2, 118, 114, 224);
+          ctx.shadowBlur = 0;
+        }
+      }
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(getLang().startsWith('zh') ? '累计充值金额越多，等级越高，待遇越好！' : 'More recharge = higher tier = better benefits!', 400, 400);
+      ctx.fillText(getLang().startsWith('zh') ? '立即邀请朋友，开启财富之旅！' : 'Invite friends now, start your fortune journey!', 400, 430);
+      break;
+  }
+}
+
+// ── Voice ──
+let currentUtterance = null;
+function speakText(text, lang) {
+  if (muted) return;
+  if (currentUtterance) {
+    speechSynthesis.cancel();
+  }
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'zh-CN' ? 'zh-CN' : lang === 'zh-TW' ? 'zh-TW' : 'en-US';
+  u.rate = 0.95;
+  u.pitch = 1;
+  u.volume = 0.8;
+  currentUtterance = u;
+  speechSynthesis.speak(u);
+}
+
+// ── Subtitle ──
+function updateSubtitle(t) {
+  var script = getScript();
+  var currentLine = null;
+  for (var line of script) {
+    if (t >= line.t && t < line.t + line.d) {
+      currentLine = line;
+      break;
+    }
+  }
+  if (currentLine) {
+    subEl.textContent = currentLine.txt;
+    subEl.style.opacity = '1';
+    // Trigger voice
+    if (playing && !muted) {
+      var lang = getLang();
+      if (!subEl.dataset.lastLine || subEl.dataset.lastLine !== String(currentLine.t)) {
+        speakText(currentLine.txt, lang);
+        subEl.dataset.lastLine = String(currentLine.t);
+      }
+    }
+  } else {
+    subEl.style.opacity = '0';
+  }
+}
+
+// ── Main Loop ──
+function loop(ts) {
+  if (playing) {
+    currentTime = (ts - startTime) / 1000;
+    if (currentTime > 145) {
+      playing = false;
+      btnPlay.textContent = '↺ 重播';
+    }
+    progressEl.style.width = (currentTime / 145 * 100) + '%';
+  }
+
+  update(0.016);
+  updateScene(currentTime);
+  
+  var scene = getScene(currentTime);
+  var st = currentTime - (scene === 0 ? 0 : scene === 1 ? 28 : scene === 2 ? 45 : scene === 3 ? 90 : 120);
+  drawScene(scene, st);
+  updateSubtitle(currentTime);
+
+  animationId = requestAnimationFrame(loop);
+}
+
+// ── Controls ──
+function togglePlay() {
+  if (playing) {
+    playing = false;
+    btnPlay.textContent = '▶ 继续';
+    speechSynthesis.cancel();
+  } else {
+    if (currentTime >= 145) restart();
+    playing = true;
+    startTime = performance.now() - currentTime * 1000;
+    btnPlay.textContent = '⏸ 暂停';
+    subEl.dataset.lastLine = '';
+  }
+}
+
+function restart() {
+  playing = true;
+  currentTime = 0;
+  startTime = performance.now();
+  btnPlay.textContent = '⏸ 暂停';
+  subEl.dataset.lastLine = '';
+  coins = [];
+  bills = [];
+  coinPiles = [];
+  tableCoins = 0;
+  speechSynthesis.cancel();
+}
+
+function toggleMute() {
+  muted = !muted;
+  btnMute.textContent = muted ? '🔇' : '🔊';
+  if (muted) speechSynthesis.cancel();
+}
+
+// Start
+startTime = performance.now();
+playing = true;
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
