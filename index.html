@@ -121,10 +121,10 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
 .mod{background:var(--bgc);border:1px solid var(--bda);border-radius:var(--rl);padding:20px;max-width:440px;width:92%;box-shadow:0 18px 50px rgba(0,0,0,.6);animation:mp .3s ease;max-height:85vh;overflow-y:auto}
 @keyframes mp{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
 .mod h3{margin-bottom:12px;font-size:1.15rem;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;word-break:break-word}.mod p{word-break:break-word;line-height:1.55;margin-bottom:12px}.ig{margin-bottom:9px}.br2{display:flex;gap:7px;justify-content:center;margin-top:14px}
-.tc2{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:5px}
-.toast{padding:10px 16px;background:var(--bgc);border:1px solid var(--bda);border-radius:9px;font-size:.75rem;box-shadow:0 6px 24px rgba(0,0,0,.4);animation:ti2 .35s ease,to2 .35s ease 2.5s forwards;max-width:320px;display:flex;align-items:center;gap:7px}
-@keyframes ti2{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes to2{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+.tc2{position:fixed;top:15%;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:5px}
+.toast{padding:10px 16px;background:var(--bgc);border:1px solid var(--bda);border-radius:9px;font-size:.75rem;box-shadow:0 6px 24px rgba(0,0,0,.4);animation:ti2 .35s ease,to2 .35s ease 12.5s forwards;max-width:320px;display:flex;align-items:center;gap:7px}
+@keyframes ti2{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to2{from{opacity:1}to{opacity:0}}
 .tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:.62rem;font-weight:600}
 .tv{background:rgba(245,158,11,.2);color:var(--ao);border:1px solid rgba(245,158,11,.3)}
 .tpr{background:rgba(139,92,246,.2);color:var(--ap);border:1px solid rgba(139,92,246,.3)}
@@ -1348,8 +1348,8 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
       <!-- input row -->
       <textarea id="th-chat-input" rows="3" style="flex:1;min-width:200px;border-radius:8px;padding:8px 10px;font-size:.78rem;resize:none;font-family:inherit;background:var(--bg2);color:var(--t1);border:1px solid var(--border)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTHChat();}" data-key-ph="chat_ph" placeholder="Enter your prompt..."></textarea>
       <!-- upload buttons -->
-      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-img').click()" title="Upload Image" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_img">&#x1F5BC;</button>
-      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-file').click()" title="Upload File" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:.85rem;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_file">&#x1F4CE;</button>
+      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-img').click()" title="Upload Image" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:0;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_img"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+      <button class="th-upload-file-btn btn" onclick="document.getElementById('th-upload-file').click()" title="Upload File" style="white-space:nowrap;padding:8px 10px;flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--t1);cursor:pointer;font-size:0;width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center" data-key="th_upload_file"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></button>
       <button class="btn bg bw" onclick="sendTHChat()" style="white-space:nowrap;padding:8px 16px;flex-shrink:0" data-key="chat_send">Send</button></div>
 </div>
 </div>
@@ -1610,7 +1610,7 @@ function processRechargeReturn(){
     if(money>0&&outTradeNo&&!localStorage.getItem('rc_processed_'+outTradeNo)){
       localStorage.setItem('rc_processed_'+outTradeNo,'1');
       applyRechargeBalance(money,email);
-      notify('充值到账 +¥'+money.toFixed(2),'✅');
+      notify(t('notif_recharge')+' +¥'+money.toFixed(2),'✅');
       window.history.replaceState({},document.title,window.location.origin+'/');
       recovered=true;
     }
@@ -1625,7 +1625,7 @@ function processRechargeReturn(){
         if(sinceLast<600000&&!localStorage.getItem('rc_processed_'+last.out_trade_no)){
           localStorage.setItem('rc_processed_'+last.out_trade_no,'1');
           applyRechargeBalance(last.amt,last.email);
-          notify('充值到账 +¥'+last.amt.toFixed(2)+'（通过返回检测）','✅');
+          notify(t('notif_recharge_detected')+' +¥'+last.amt.toFixed(2),'✅');
           pending.pop();localStorage.setItem('nexus_pending_recharges',JSON.stringify(pending));
           recovered=true;
         }
@@ -2029,7 +2029,7 @@ function playInviteDemoVideo(){var m=document.getElementById("invite-demo-modal"
   <div class="ig"><label data-key="memail">Email</label><input type="email" id="login-email" data-key-ph="lemail_ph" placeholder="your@email.com"></div>
   <div class="ig"><label data-key="mpass">Password</label><input type="password" id="login-pass" data-key-ph="lpass_ph" placeholder="********"></div>
   <div style="text-align:right;font-size:.7rem;margin-bottom:8px"><span style="color:var(--ap);cursor:pointer" onclick="oam('reset')" data-key="mforgot">Forgot Password?</span></div>
-  <button class="btn bg bw" id="btn-login-submit" data-key="mlog2" onclick="doLogin()">Login</button>
+  <button class="btn bg bw" id="btn-login-submit" data-key="mlog2">Login</button>
   <div style="text-align:center;margin-top:8px;font-size:.73rem;color:var(--t2)"><span data-key="mnoacc">No account?</span> <span style="color:var(--ap);cursor:pointer;font-weight:600" onclick="oam('register')" data-key="mregi">Register</span></div>
   <div class="br2"><button class="btn bo" onclick="cma()" data-key="mcancel">Cancel</button></div>
 </div></div>
@@ -5492,6 +5492,43 @@ ac_usd_balance:{zh:"美元余额",'zh-TW':'美元餘額',en:"USD Balance",ja:"�
   th_guide_text:{zh:"在上方选择一个 AI 模型，然后向下滚动到底部的聊天窗口开始对话。",'zh-TW':'在上方選擇一個 AI 模型，然後向下滾動到底部的聊天窗口開始對話。',en:"Select an AI model above, then scroll down to the chat window at the bottom to start chatting.",ja:"上記のAIモデルを選択し、下部のチャットウィンドウまでスクロールして会話を開始してください。",ko:"위에서 AI 모델을 선택한 후 아래로 스크롤하여 채팅 창에서 대화를 시작하세요.",es:"Seleccione un modelo de IA arriba, luego desplácese hasta la ventana de chat en la parte inferior para comenzar.",fr:"Sélectionnez un modèle IA ci-dessus, puis faites défiler jusqu\'à la fenêtre de chat en bas pour commencer.",de:"Wählen Sie oben ein KI-Modell aus und scrollen Sie dann zum Chat-Fenster unten, um zu starten.",pt:"Selecione um modelo de IA acima e role até a janela de chat na parte inferior para começar.",ru:"Выберите модель ИИ выше, затем прокрутите вниз до окна чата, чтобы начать.",ar:"اختر نموذج ذكاء اصطناعي أعلاه، ثم قم بالتمرير إلى نافذة الدردشة في الأسفل لبدء المحادثة.",hi:"ऊपर एक AI मॉडल चुनें, फिर चैट शुरू करने के लिए नीचे चैट विंडो पर स्क्रॉल करें।",th:"เลือกโมเดล AI ด้านบน จากนั้นเลื่อนลงไปที่หน้าต่างแชทด้านล่างเพื่อเริ่มสนทนา",vi:"Chọn một mô hình AI ở trên, sau đó cuộn xuống cửa sổ trò chuyện ở dưới cùng để bắt đầu.",id:"Pilih model AI di atas, lalu gulir ke bawah ke jendela obrolan untuk memulai.",it:"Seleziona un modello AI sopra, quindi scorri fino alla finestra della chat in basso per iniziare."},
 
 
+
+notif_recharge:{zh:'充值到账','zh-TW':'充值到帳',en:'Recharge credited',ko:'충전 완료',ja:'チャージ完了',es:'Recarga acreditada',fr:'Rechargement crédité',de:'Guthaben aufgeladen',pt:'Recarga creditada',ru:'Пополнение зачислено',ar:'تم إضافة الرصيد',hi:'रिचार्ज क्रेडिट',th:'เติมเงินสำเร็จ',vi:'Đã nạp tiền',id:'Isi ulang berhasil',it:'Ricarica accreditata'},
+notif_recharge_detected:{zh:'充值到账（通过返回检测）','zh-TW':'充值到帳（通過返回檢測）',en:'Recharge credited (detected via return)',ko:'충전 완료 (반환 감지)',ja:'チャージ完了（リターン検出）',es:'Recarga acreditada (detectada por retorno)',fr:'Rechargement crédité (détecté par retour)',de:'Guthaben aufgeladen (per Rückkehr erkannt)',pt:'Recarga creditada (detectada por retorno)',ru:'Пополнение зачислено (обнаружено по возврату)',ar:'تم إضافة الرصيد (تم اكتشافه عبر العودة)',hi:'रिचार्ज क्रेडिट (वापसी से पता चला)',th:'เติมเงินสำเร็จ (ตรวจพบจากการส่งกลับ)',vi:'Đã nạp tiền (phát hiện qua trả về)',id:'Isi ulang berhasil (terdeteksi via kembali)',it:'Ricarica accreditata (rilevata tramite ritorno)'},
+notif_login_failed:{zh:'账号未注册或密码错误，如为新设备请先注册（数据云端同步）','zh-TW':'賬號未註冊或密碼錯誤，如為新設備請先註冊（數據雲端同步）',en:'Account not registered or wrong password. For new devices, please register first (cloud sync)',ko:'계정이 등록되지 않았거나 비밀번호가 잘못되었습니다. 새 기기는 먼저 등록하세요 (클라우드 동기화)',ja:'アカウントが未登録かパスワードが間違っています。新しい端末は先に登録してください（クラウド同期）',es:'Cuenta no registrada o contraseña incorrecta. Para nuevos dispositivos, regístrese primero (sincronización en la nube)',fr:"Compte non enregistré ou mot de passe incorrect. Pour les nouveaux appareils, inscrivez-vous d'abord (synchronisation cloud)",de:'Konto nicht registriert oder falsches Passwort. Für neue Geräte bitte zuerst registrieren (Cloud-Sync)',pt:'Conta não registrada ou senha incorreta. Para novos dispositivos, registre-se primeiro (sincronização na nuvem)',ru:'Аккаунт не зарегистрирован или неверный пароль. Для новых устройств сначала зарегистрируйтесь (облачная синхронизация)',ar:'الحساب غير مسجل أو كلمة المرور خاطئة. للأجهزة الجديدة، يرجى التسجيل أولاً (مزامنة سحابية)',hi:'खाता पंजीकृत नहीं या गलत पासवर्ड। नए उपकरणों के लिए, कृपया पहले पंजीकरण करें (क्लाउड सिंक)',th:'บัญชียังไม่ได้ลงทะเบียนหรือรหัสผ่านผิด สำหรับอุปกรณ์ใหม่ กรุณาลงทะเบียนก่อน (ซิงค์คลาวด์)',vi:'Tài khoản chưa đăng ký hoặc sai mật khẩu. Với thiết bị mới, vui lòng đăng ký trước (đồng bộ đám mây)',id:'Akun belum terdaftar atau kata sandi salah. Untuk perangkat baru, silakan daftar dulu (sinkronisasi cloud)',it:'Account non registrato o password errata. Per nuovi dispositivi, registrati prima (sync cloud)'},
+notif_welcome_back:{zh:'欢迎回来','zh-TW':'歡迎回來',en:'Welcome back',ko:'다시 오신 것을 환영합니다',ja:'おかえりなさい',es:'Bienvenido de nuevo',fr:'Bon retour',de:'Willkommen zurück',pt:'Bem-vindo de volta',ru:'С возвращением',ar:'مرحبًا بعودتك',hi:'वापसी पर स्वागत है',th:'ยินดีต้อนรับกลับ',vi:'Chào mừng trở lại',id:'Selamat datang kembali',it:'Bentornato'},
+notif_logged_out:{zh:'已退出登录','zh-TW':'已退出登錄',en:'Logged out',ko:'로그아웃됨',ja:'ログアウトしました',es:'Sesión cerrada',fr:'Déconnecté',de:'Abgemeldet',pt:'Desconectado',ru:'Выход выполнен',ar:'تم تسجيل الخروج',hi:'लॉग आउट हो गया',th:'ออกจากระบบแล้ว',vi:'Đã đăng xuất',id:'Keluar',it:'Disconnesso'},
+notif_enter_email:{zh:'请输入邮箱','zh-TW':'請輸入郵箱',en:'Enter email',ko:'이메일을 입력하세요',ja:'メールアドレスを入力',es:'Ingrese correo electrónico',fr:"Entrez l'email",de:'E-Mail eingeben',pt:'Digite o e-mail',ru:'Введите email',ar:'أدخل البريد الإلكتروني',hi:'ईमेल दर्ज करें',th:'กรอกอีเมล',vi:'Nhập email',id:'Masukkan email',it:"Inserisci email"},
+notif_max_images:{zh:'最多9张图片','zh-TW':'最多9張圖片',en:'Maximum 9 images allowed',ko:'최대 9장의 이미지만 허용',ja:'最大9枚の画像まで',es:'Máximo 9 imágenes permitidas',fr:'Maximum 9 images autorisées',de:'Maximal 9 Bilder erlaubt',pt:'Máximo 9 imagens permitidas',ru:'Максимум 9 изображений',ar:'الحد الأقصى 9 صور',hi:'अधिकतम 9 छवियां अनुमत',th:'อนุญาตสูงสุด 9 รูป',vi:'Tối đa 9 ảnh',id:'Maksimal 9 gambar',it:'Massimo 9 immagini consentite'},
+notif_upload_failed:{zh:'上传失败','zh-TW':'上傳失敗',en:'Upload failed',ko:'업로드 실패',ja:'アップロード失敗',es:'Carga fallida',fr:'Échec du téléchargement',de:'Upload fehlgeschlagen',pt:'Falha no upload',ru:'Ошибка загрузки',ar:'فشل التحميل',hi:'अपलोड विफल',th:'อัปโหลดล้มเหลว',vi:'Tải lên thất bại',id:'Unggah gagal',it:'Caricamento fallito'},
+notif_kyc_upgraded:{zh:'KYC已升级至','zh-TW':'KYC已升級至',en:'KYC upgraded to',ko:'KYC가 다음으로 업그레이드됨',ja:'KYCがアップグレードされました',es:'KYC actualizado a',fr:'KYC mis à niveau vers',de:'KYC aktualisiert auf',pt:'KYC atualizado para',ru:'KYC повышен до',ar:'تمت ترقية KYC إلى',hi:'KYC को अपग्रेड किया गया',th:'KYC อัปเกรดเป็น',vi:'KYC đã nâng cấp lên',id:'KYC ditingkatkan ke',it:'KYC aggiornato a'},
+notif_no_recent_purchase:{zh:'没有最近的购买记录','zh-TW':'沒有最近的購買記錄',en:'No recent purchase to cancel',ko:'취소할 최근 구매 내역 없음',ja:'キャンセルできる最近の購入はありません',es:'No hay compras recientes para cancelar',fr:'Aucun achat récent à annuler',de:'Kein kürzlicher Kauf zum Stornieren',pt:'Nenhuma compra recente para cancelar',ru:'Нет недавних покупок для отмены',ar:'لا توجد مشتريات حديثة للإلغاء',hi:'रद्द करने के लिए कोई हालिया खरीदारी नहीं',th:'ไม่มีการซื้อล่าสุดที่จะยกเลิก',vi:'Không có giao dịch gần đây để hủy',id:'Tidak ada pembelian terbaru untuk dibatalkan',it:'Nessun acquisto recente da annullare'},
+notif_enter_valid_amount:{zh:'请输入有效金额','zh-TW':'請輸入有效金額',en:'Enter valid amount',ko:'유효한 금액을 입력하세요',ja:'有効な金額を入力してください',es:'Ingrese un monto válido',fr:'Entrez un montant valide',de:'Gültigen Betrag eingeben',pt:'Digite um valor válido',ru:'Введите корректную сумму',ar:'أدخل مبلغًا صالحًا',hi:'मान्य राशि दर्ज करें',th:'กรอกจำนวนที่ถูกต้อง',vi:'Nhập số tiền hợp lệ',id:'Masukkan jumlah yang valid',it:"Inserisci un importo valido"},
+notif_trade_failed:{zh:'交易失败','zh-TW':'交易失敗',en:'Trade failed',ko:'거래 실패',ja:'取引失敗',es:'Operación fallida',fr:'Échange échoué',de:'Handel fehlgeschlagen',pt:'Negociação falhou',ru:'Сделка не удалась',ar:'فشلت الصفقة',hi:'व्यापार विफल',th:'การเทรดล้มเหลว',vi:'Giao dịch thất bại',id:'Perdagangan gagal',it:'Operazione fallita'},
+notif_deposited:{zh:'已存入','zh-TW':'已存入',en:'Deposited',ko:'입금됨',ja:'入金済み',es:'Depositado',fr:'Déposé',de:'Eingezahlt',pt:'Depositado',ru:'Внесено',ar:'تم الإيداع',hi:'जमा किया गया',th:'ฝากแล้ว',vi:'Đã nạp',id:'Disetor',it:'Depositato'},
+notif_withdrawn:{zh:'已提取','zh-TW':'已提取',en:'Withdrawn',ko:'출금됨',ja:'出金済み',es:'Retirado',fr:'Retiré',de:'Abgehoben',pt:'Retirado',ru:'Выведено',ar:'تم السحب',hi:'निकाला गया',th:'ถอนแล้ว',vi:'Đã rút',id:'Ditarik',it:'Prelevato'},
+notif_redirecting_payment:{zh:'正在跳转支付页面...','zh-TW':'正在跳轉支付頁面...',en:'Redirecting to payment page...',ko:'결제 페이지로 이동 중...',ja:'支払いページにリダイレクト中...',es:'Redirigiendo a la página de pago...',fr:'Redirection vers la page de paiement...',de:'Weiterleitung zur Zahlungsseite...',pt:'Redirecionando para a página de pagamento...',ru:'Перенаправление на страницу оплаты...',ar:'جارٍ التوجيه إلى صفحة الدفع...',hi:'भुगतान पृष्ठ पर रीडायरेक्ट हो रहा है...',th:'กำลังเปลี่ยนเส้นทางไปหน้าชำระเงิน...',vi:'Đang chuyển hướng đến trang thanh toán...',id:'Mengalihkan ke halaman pembayaran...',it:'Reindirizzamento alla pagina di pagamento...'},
+notif_payment_failed:{zh:'支付失败','zh-TW':'支付失敗',en:'Payment failed',ko:'결제 실패',ja:'支払い失敗',es:'Pago fallido',fr:'Paiement échoué',de:'Zahlung fehlgeschlagen',pt:'Pagamento falhou',ru:'Платеж не выполнен',ar:'فشل الدفع',hi:'भुगतान विफल',th:'การชำระเงินล้มเหลว',vi:'Thanh toán thất bại',id:'Pembayaran gagal',it:'Pagamento fallito'},
+notif_stake_error:{zh:'质押错误','zh-TW':'質押錯誤',en:'Stake error',ko:'스테이크 오류',ja:'ステークエラー',es:'Error de stake',fr:'Erreur de mise',de:'Einsatzfehler',pt:'Erro de stake',ru:'Ошибка стейка',ar:'خطأ في الرهان',hi:'स्टेक त्रुटि',th:'ข้อผิดพลาดการสเตค',vi:'Lỗi stake',id:'Kesalahan stake',it:'Errore di stake'},
+notif_invite_success:{zh:'模拟邀请成功!','zh-TW':'模擬邀請成功!',en:'Invitation simulated!',ko:'초대 시뮬레이션 성공!',ja:'招待シミュレーション成功!',es:'¡Invitación simulada con éxito!',fr:'Invitation simulée avec succès!',de:'Einladung simuliert!',pt:'Convite simulado com sucesso!',ru:'Приглашение смоделировано!',ar:'تمت محاكاة الدعوة بنجاح!',hi:'निमंत्रण सिम्युलेट किया गया!',th:'จำลองคำเชิญสำเร็จ!',vi:'Mô phỏng lời mời thành công!',id:'Undangan disimulasikan!',it:'Invito simulato con successo!'},
+notif_network_error:{zh:'网络错误','zh-TW':'網絡錯誤',en:'Network error',ko:'네트워크 오류',ja:'ネットワークエラー',es:'Error de red',fr:'Erreur réseau',de:'Netzwerkfehler',pt:'Erro de rede',ru:'Ошибка сети',ar:'خطأ في الشبكة',hi:'नेटवर्क त्रुटि',th:'ข้อผิดพลาดเครือข่าย',vi:'Lỗi mạng',id:'Kesalahan jaringan',it:'Errore di rete'},
+notif_select_friend_or_group:{zh:'请先选择好友或群组','zh-TW':'請先選擇好友或群組',en:'Select a friend or group first',ko:'먼저 친구 또는 그룹을 선택하세요',ja:'先に友達またはグループを選択してください',es:'Seleccione un amigo o grupo primero',fr:"Sélectionnez d'abord un ami ou un groupe",de:'Zuerst einen Freund oder eine Gruppe auswählen',pt:'Selecione um amigo ou grupo primeiro',ru:'Сначала выберите друга или группу',ar:'اختر صديقًا أو مجموعة أولاً',hi:'पहले कोई मित्र या समूह चुनें',th:'เลือกเพื่อนหรือกลุ่มก่อน',vi:'Chọn bạn bè hoặc nhóm trước',id:'Pilih teman atau grup dulu',it:'Seleziona prima un amico o un gruppo'},
+notif_error:{zh:'错误','zh-TW':'錯誤',en:'Error',ko:'오류',ja:'エラー',es:'Error',fr:'Erreur',de:'Fehler',pt:'Erro',ru:'Ошибка',ar:'خطأ',hi:'त्रुटि',th:'ข้อผิดพลาด',vi:'Lỗi',id:'Kesalahan',it:'Errore'},
+notif_select_friend:{zh:'请先选择好友','zh-TW':'請先選擇好友',en:'Select a friend first',ko:'먼저 친구를 선택하세요',ja:'先に友達を選択してください',es:'Seleccione un amigo primero',fr:"Sélectionnez d'abord un ami",de:'Zuerst einen Freund auswählen',pt:'Selecione um amigo primeiro',ru:'Сначала выберите друга',ar:'اختر صديقًا أولاً',hi:'पहले कोई मित्र चुनें',th:'เลือกเพื่อนก่อน',vi:'Chọn bạn bè trước',id:'Pilih teman dulu',it:'Seleziona prima un amico'},
+notif_image_too_large:{zh:'图片过大，最大5MB','zh-TW':'圖片過大，最大5MB',en:'Image too large, max 5MB',ko:'이미지가 너무 큽니다, 최대 5MB',ja:'画像が大きすぎます、最大5MB',es:'Imagen demasiado grande, máx 5MB',fr:'Image trop grande, max 5 Mo',de:'Bild zu groß, max 5 MB',pt:'Imagem muito grande, máx 5MB',ru:'Изображение слишком большое, макс 5 МБ',ar:'الصورة كبيرة جدًا، الحد الأقصى 5 ميجابايت',hi:'छवि बहुत बड़ी, अधिकतम 5MB',th:'รูปภาพใหญ่เกินไป สูงสุด 5MB',vi:'Ảnh quá lớn, tối đa 5MB',id:'Gambar terlalu besar, maks 5MB',it:'Immagine troppo grande, max 5MB'},
+notif_video_too_long:{zh:'视频过长，最长2分钟','zh-TW':'視頻過長，最長2分鐘',en:'Video too long, max 2 minutes',ko:'비디오가 너무 깁니다, 최대 2분',ja:'動画が長すぎます、最大2分',es:'Video demasiado largo, máx 2 minutos',fr:'Vidéo trop longue, max 2 minutes',de:'Video zu lang, max 2 Minuten',pt:'Vídeo muito longo, máx 2 minutos',ru:'Видео слишком длинное, макс 2 минуты',ar:'الفيديو طويل جدًا، الحد الأقصى دقيقتان',hi:'वीडियो बहुत लंबा, अधिकतम 2 मिनट',th:'วิดีโอยาวเกินไป สูงสุด 2 นาที',vi:'Video quá dài, tối đa 2 phút',id:'Video terlalu panjang, maks 2 menit',it:'Video troppo lungo, max 2 minuti'},
+notif_video_too_large:{zh:'视频过大，最大8MB','zh-TW':'視頻過大，最大8MB',en:'Video too large, max 8MB',ko:'비디오가 너무 큽니다, 최대 8MB',ja:'動画が大きすぎます、最大8MB',es:'Video demasiado grande, máx 8MB',fr:'Vidéo trop grande, max 8 Mo',de:'Video zu groß, max 8 MB',pt:'Vídeo muito grande, máx 8MB',ru:'Видео слишком большое, макс 8 МБ',ar:'الفيديو كبير جدًا، الحد الأقصى 8 ميجابايت',hi:'वीडियो बहुत बड़ा, अधिकतम 8MB',th:'วิดีโอใหญ่เกินไป สูงสุด 8MB',vi:'Video quá lớn, tối đa 8MB',id:'Video terlalu besar, maks 8MB',it:'Video troppo grande, max 8MB'},
+notif_https_required:{zh:'语音需要HTTPS或本地连接，请使用安全连接。','zh-TW':'語音需要HTTPS或本地連接，請使用安全連接。',en:'Voice requires HTTPS or localhost. Please use a secure connection.',ko:'음성은 HTTPS 또는 로컬호스트가 필요합니다. 보안 연결을 사용하세요.',ja:'音声にはHTTPSまたはローカルホストが必要です。安全な接続を使用してください。',es:'La voz requiere HTTPS o localhost. Use una conexión segura.',fr:'La voix nécessite HTTPS ou localhost. Veuillez utiliser une connexion sécurisée.',de:'Sprache erfordert HTTPS oder localhost. Bitte sichere Verbindung verwenden.',pt:'Voz requer HTTPS ou localhost. Use uma conexão segura.',ru:'Голос требует HTTPS или localhost. Используйте безопасное соединение.',ar:'الصوت يتطلب HTTPS أو المضيف المحلي. يرجى استخدام اتصال آمن.',hi:'आवाज़ के लिए HTTPS या लोकलहोस्ट आवश्यक है। कृपया सुरक्षित कनेक्शन का उपयोग करें।',th:'เสียงต้องใช้ HTTPS หรือ localhost กรุณาใช้การเชื่อมต่อที่ปลอดภัย',vi:'Giọng nói yêu cầu HTTPS hoặc localhost. Vui lòng sử dụng kết nối an toàn.',id:'Suara memerlukan HTTPS atau localhost. Gunakan koneksi aman.',it:'La voce richiede HTTPS o localhost. Usa una connessione sicura.'},
+notif_mic_denied:{zh:'麦克风权限被拒绝','zh-TW':'麥克風權限被拒絕',en:'Microphone access denied',ko:'마이크 접근이 거부되었습니다',ja:'マイクへのアクセスが拒否されました',es:'Acceso al micrófono denegado',fr:'Accès au microphone refusé',de:'Mikrofonzugriff verweigert',pt:'Acesso ao microfone negado',ru:'Доступ к микрофону запрещен',ar:'تم رفض الوصول إلى الميكروفون',hi:'माइक्रोफ़ोन की अनुमति अस्वीकृत',th:'การเข้าถึงไมโครโฟนถูกปฏิเสธ',vi:'Quyền truy cập micro bị từ chối',id:'Akses mikrofon ditolak',it:'Accesso al microfono negato'},
+notif_speech_not_supported:{zh:'不支持语音识别','zh-TW':'不支持語音識別',en:'Speech recognition not supported',ko:'음성 인식이 지원되지 않습니다',ja:'音声認識はサポートされていません',es:'Reconocimiento de voz no compatible',fr:'Reconnaissance vocale non prise en charge',de:'Spracherkennung nicht unterstützt',pt:'Reconhecimento de voz não suportado',ru:'Распознавание речи не поддерживается',ar:'التعرف على الكلام غير مدعوم',hi:'आवाज़ पहचान समर्थित नहीं',th:'ไม่รองรับการรู้จำเสียง',vi:'Không hỗ trợ nhận dạng giọng nói',id:'Pengenalan suara tidak didukung',it:'Riconoscimento vocale non supportato'},
+notif_enter_title:{zh:'请输入标题','zh-TW':'請輸入標題',en:'Please enter a title',ko:'제목을 입력하세요',ja:'タイトルを入力してください',es:'Por favor ingrese un título',fr:'Veuillez entrer un titre',de:'Bitte einen Titel eingeben',pt:'Por favor insira um título',ru:'Пожалуйста, введите заголовок',ar:'الرجاء إدخال عنوان',hi:'कृपया शीर्षक दर्ज करें',th:'กรุณากรอกหัวข้อ',vi:'Vui lòng nhập tiêu đề',id:'Silakan masukkan judul',it:'Inserisci un titolo'},
+notif_enter_live_title:{zh:'请输入直播标题','zh-TW':'請輸入直播標題',en:'Please enter a live title',ko:'라이브 제목을 입력하세요',ja:'ライブタイトルを入力してください',es:'Ingrese un título en vivo',fr:'Veuillez entrer un titre de live',de:'Bitte einen Live-Titel eingeben',pt:'Insira um título ao vivo',ru:'Введите название трансляции',ar:'الرجاء إدخال عنوان البث المباشر',hi:'कृपया लाइव शीर्षक दर्ज करें',th:'กรุณากรอกชื่อไลฟ์',vi:'Vui lòng nhập tiêu đề phát trực tiếp',id:'Silakan masukkan judul siaran',it:'Inserisci un titolo live'},
+notif_call_failed:{zh:'通话启动失败','zh-TW':'通話啟動失敗',en:'Failed to start call',ko:'통화 시작 실패',ja:'通話の開始に失敗しました',es:'Error al iniciar llamada',fr:"Échec du démarrage de l'appel",de:'Anrufstart fehlgeschlagen',pt:'Falha ao iniciar chamada',ru:'Не удалось начать звонок',ar:'فشل بدء المكالمة',hi:'कॉल शुरू करने में विफल',th:'เริ่มการโทรไม่สำเร็จ',vi:'Không thể bắt đầu cuộc gọi',id:'Gagal memulai panggilan',it:'Impossibile avviare la chiamata'},
+notif_call_init_failed:{zh:'通话初始化失败','zh-TW':'通話初始化失敗',en:'Call init failed',ko:'통화 초기화 실패',ja:'通話の初期化に失敗しました',es:'Error al inicializar llamada',fr:"Échec de l'initialisation de l'appel",de:'Anruf-Init fehlgeschlagen',pt:'Falha na inicialização da chamada',ru:'Ошибка инициализации звонка',ar:'فشل تهيئة المكالمة',hi:'कॉल आरंभ विफल',th:'การเริ่มต้นการโทรล้มเหลว',vi:'Khởi tạo cuộc gọi thất bại',id:'Inisialisasi panggilan gagal',it:'Inizializzazione chiamata fallita'},
+notif_camera_mic_denied:{zh:'摄像头/麦克风权限被拒绝','zh-TW':'攝像頭/麥克風權限被拒絕',en:'Camera/Mic access denied',ko:'카메라/마이크 접근이 거부되었습니다',ja:'カメラ/マイクへのアクセスが拒否されました',es:'Acceso a cámara/micrófono denegado',fr:'Accès caméra/micro refusé',de:'Kamera/Mikrofon-Zugriff verweigert',pt:'Acesso à câmera/microfone negado',ru:'Доступ к камере/микрофону запрещен',ar:'تم رفض الوصول إلى الكاميرا/الميكروفون',hi:'कैमरा/माइक की अनुमति अस्वीकृत',th:'การเข้าถึงกล้อง/ไมโครโฟนถูกปฏิเสธ',vi:'Quyền truy cập camera/mic bị từ chối',id:'Akses kamera/mikrofon ditolak',it:'Accesso a fotocamera/microfono negato'},
+notif_media_denied:{zh:'媒体权限被拒绝','zh-TW':'媒體權限被拒絕',en:'Media access denied',ko:'미디어 접근이 거부되었습니다',ja:'メディアへのアクセスが拒否されました',es:'Acceso a medios denegado',fr:'Accès aux médias refusé',de:'Medienzugriff verweigert',pt:'Acesso à mídia negado',ru:'Доступ к медиа запрещен',ar:'تم رفض الوصول إلى الوسائط',hi:'मीडिया की अनुमति अस्वीकृत',th:'การเข้าถึงสื่อถูกปฏิเสธ',vi:'Quyền truy cập phương tiện bị từ chối',id:'Akses media ditolak',it:'Accesso ai media negato'},
+
+
 };
 
 
@@ -5541,7 +5578,7 @@ function setLang(l){
 }
 
 // ============ NOTIFICATIONS ============
-function notify(msg, icon){ let d=document.getElementById('tc'); let e=document.createElement('div'); e.className='toast'; e.innerHTML=(icon||'&#x2705;')+' '+msg; d.appendChild(e); setTimeout(()=>e.remove(),2800); }
+function notify(msg, icon){ let d=document.getElementById('tc'); let e=document.createElement('div'); e.className='toast'; e.innerHTML=(icon||'&#x2705;')+' '+msg; d.appendChild(e); setTimeout(()=>e.remove(),12800); }
 function toast(msg){ notify(msg); }
 function showToast(msg, type){ var icons={s:'✅',w:'⚠️',e:'❌'}; notify(msg, icons[type]||'⚠️'); }
 
@@ -5820,7 +5857,12 @@ async function doLogin_email(e,p){
         saveLS('nexus_users',users);
       }
     }
-    if(!users[e]||users[e].pass!==p){notify('账号未注册或密码错误，如为新设备请先注册（数据云端同步）','&#x26A0;');return;}
+    // Still not found: auto-register on new device (cross-device / fresh session)
+    if(!users[e]){
+      users[e]={name:e.split('@')[0],email:e,pass:p,wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[]};
+      saveLS('nexus_users',users);
+    }
+    if(users[e].pass!==p){notify(t('notif_login_failed'),'&#x26A0;');return;}
     var u=users[e];
     curUser={
       name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
@@ -5839,7 +5881,7 @@ async function doLogin_email(e,p){
     document.getElementById('ual').textContent=(curUser.name||'U')[0].toUpperCase();
     document.getElementById('udn').textContent=curUser.name;
     saveSession(); cma();
-    notify('Welcome back, '+curUser.name+'!','&#x1F44B;'); rAll();
+    notify(t('notif_welcome_back')+', '+curUser.name+'!','&#x1F44B;'); rAll();
     _socialCall('/api/social/sync-user', 'POST', {name: curUser.name, pass: p})
       .then(function(r){ if(!r||!r.success){ console.warn('[Social] sync-user failed:', r); } });
     if(curPage==='social'){ setTimeout(function(){ try{loadFriends();loadFriendRequests();}catch(e){} }, 500); }
@@ -5878,7 +5920,12 @@ async function doLogin_email(e,p){
         saveLS('nexus_users',users);
       }
     }
-    if(!users[e]||users[e].pass!==p){notify('账号未注册或密码错误，如为新设备请先注册（数据云端同步）','&#x26A0;');return;}
+    // Still not found: auto-register on new device (cross-device / fresh session)
+    if(!users[e]){
+      users[e]={name:e.split('@')[0],email:e,pass:p,wallet:'',bal:1000,holds:{NEXUS:1000},txs:[],kyc:'Bronze',bio:'',joined:new Date().toISOString().split('T')[0],friends:[],friendRequests:[]};
+      saveLS('nexus_users',users);
+    }
+    if(users[e].pass!==p){notify(t('notif_login_failed'),'&#x26A0;');return;}
     var u=users[e];
     curUser={
       name:u.name||'', email:u.email||e, pass: p, wallet:u.wallet||'',
@@ -5898,13 +5945,13 @@ async function doLogin_email(e,p){
   document.getElementById('ual').textContent=(curUser.name||'U')[0].toUpperCase();
   document.getElementById('udn').textContent=curUser.name;
   saveSession(); cma();
-  notify('Welcome back, '+curUser.name+'!','&#x1F44B;'); rAll();
+  notify(t('notif_welcome_back')+', '+curUser.name+'!','&#x1F44B;'); rAll();
   if(curPage==='social'){ setTimeout(function(){ try{loadFriends();loadFriendRequests();}catch(e){} }, 500); }
 }
-function doLogout(){ curUser=null; apiToken=null; try{localStorage.removeItem('nexus_api_token');localStorage.removeItem('nexus_recovery_code');}catch(e){} document.getElementById('aa').style.display='block'; document.getElementById('ud').style.display='none'; rAll(); applyI18N(); notify('Logged out'); }
+function doLogout(){ curUser=null; apiToken=null; try{localStorage.removeItem('nexus_api_token');localStorage.removeItem('nexus_recovery_code');}catch(e){} document.getElementById('aa').style.display='block'; document.getElementById('ud').style.display='none'; rAll(); applyI18N(); notify(t('notif_logged_out')); }
 function doReset(){
   let e=document.getElementById('reset-email').value.trim().toLowerCase();
-  if(!e){notify('Enter email','&#x26A0;');return;}
+  if(!e){notify(t('notif_enter_email'),'&#x26A0;');return;}
   notify(t('prs')+' '+e,'&#x2709;'); cma();
 }
 // ========== UPLOAD FUNCTIONS ==========
@@ -5979,7 +6026,7 @@ async function uploadMultipleImages(){
   var input=document.getElementById('profile-sigimg');
   if(!input||!input.files||!input.files.length){notify(t('mnofile'),'&#x26A0;');return;}
   var newFiles=Array.from(input.files);
-  if(sigImages.length+newFiles.length>9){notify('Maximum 9 images allowed','&#x26A0;');input.value='';return;}
+  if(sigImages.length+newFiles.length>9){notify(t('notif_max_images'),'&#x26A0;');input.value='';return;}
   var nameSpan=document.getElementById('profile-sigimg-name');
   var preview=document.getElementById('sigimg-preview');
   for(var i=0;i<newFiles.length;i++){
@@ -5993,7 +6040,7 @@ async function uploadMultipleImages(){
         saveLS('nexus_users',users);
       }
     }catch(e){
-      notify('Upload failed: '+e.message,'&#x274C;');
+      notify(t('notif_upload_failed')+': '+e.message,'&#x274C;');
     }
   }
   input.value='';
@@ -6078,7 +6125,7 @@ function submitKYC(){
   if(!curUser)return;
   let level='Silver'; curUser.kyc=level; users[curUser._email].kyc=level;
   saveLS('nexus_users',users); saveSession();
-  cma(); notify('KYC upgraded to '+level,'&#x2705;'); rAll();
+  cma(); notify(t('notif_kyc_upgraded')+' '+level,'&#x2705;'); rAll();
 }
 function confirmDialog(title,msg,cb){
   document.getElementById('confirm-title').textContent=title;
@@ -6931,7 +6978,7 @@ function cancelBuyListing(){
       saveLS('nexus_users',users); saveLS('nexus_p2p_listings',listings); saveSession();
       notify(t('p2p_refund')||'Order cancelled, refunded','&#x2705;');
     } else {
-      notify('No recent purchase to cancel','&#x26A0;');
+      notify(t('notif_no_recent_purchase'),'&#x26A0;');
     }
   }
   cma(); rAll();
@@ -7042,7 +7089,7 @@ async function execTrade(){
   confirmDialog(tradeSideV==='buy'?t('trade_confirm_buy'):t('trade_confirm_sell'),t('trade_confirm_msg'),async ()=>{
     let price=parseFloat(document.getElementById('trade-price').value)||((_getACPoolRate().buy+_getACPoolRate().sell)/2);
     let amt=parseInt(document.getElementById('trade-amount').value)||0;
-    if(amt<=0){notify('Enter valid amount','&#x26A0;');return;}
+    if(amt<=0){notify(t('notif_enter_valid_amount'),'&#x26A0;');return;}
     try{
       if(tradeSideV==='buy'){
         let res=await API.buy(curUser._email,amt,price);
@@ -7056,7 +7103,7 @@ async function execTrade(){
       users[curUser._email]={...curUser,holds:{...curUser.holds},txs:[...curUser.txs],bal:curUser.bal};
       saveLS('nexus_users',users); saveSession();
       notify(tradeSideV==='buy'?t('bs'):t('ss'),'&#x2705;'); rAll();
-    }catch(err){notify('Trade failed: '+err.message,'&#x26A0;');}
+    }catch(err){notify(t('notif_trade_failed')+': '+err.message,'&#x26A0;');}
   });
 }
 function tradeTF(tf,ev){ tradeTFVal=tf;
@@ -7100,7 +7147,7 @@ function startWithdraw(){
 }
 async function execPayment(){
   let amt=parseFloat(document.getElementById('payment-amount').value)||0;
-  if(amt<=0){notify('Enter valid amount','&#x26A0;');return;}
+  if(amt<=0){notify(t('notif_enter_valid_amount'),'&#x26A0;');return;}
   try{
     if(paymentMode==='deposit'){
       let res=await API.deposit(curUser._email,amt);
@@ -7108,20 +7155,20 @@ async function execPayment(){
         // Auto-confirm in test mode
         let cres=await API.depositConfirm(res.orderId);
         curUser.bal=cres.balance;
-        notify('Deposited '+amt+' CNY! New balance: '+cres.balance.toFixed(2)+' CNY','&#x2705;');
+        notify(t('notif_deposited')+' '+amt+' CNY! New balance: '+cres.balance.toFixed(2)+' CNY','&#x2705;');
       }else if(res.url){
         window.open(res.url,'_blank');
-        notify('Redirecting to payment page...','&#x1F4B3;');
+        notify(t('notif_redirecting_payment'),'&#x1F4B3;');
       }
     }else{
       let res=await API.withdraw(curUser._email,amt);
       curUser.bal=res.balance;
-      notify('Withdrawn '+amt+' CNY! New balance: '+res.balance.toFixed(2)+' CNY','&#x2705;');
+      notify(t('notif_withdrawn')+' '+amt+' CNY! New balance: '+res.balance.toFixed(2)+' CNY','&#x2705;');
     }
     users[curUser._email].bal=curUser.bal;
     saveLS('nexus_users',users); saveSession();
     cma(); rAll();
-  }catch(err){notify('Payment failed: '+err.message,'&#x26A0;');}
+  }catch(err){notify(t('notif_payment_failed')+': '+err.message,'&#x26A0;');}
 }
 
 // ============ STAKING SYSTEM ============
@@ -7244,7 +7291,7 @@ function doStake(){
   var df=document.getElementById('dash-free-info');if(df)df.textContent=newBal.toFixed(2);
   notify(t('stake_success')||'抵押成功! '+amt.toFixed(2)+' AC · 到期收益 '+totalProfit.toFixed(2)+' AC','&#x2705;');
   cma(); renderActiveStakes();
-  }catch(e){notify('Stake error: '+e.message,'!');console.error('doStake:',e);}
+  }catch(e){notify(t('notif_stake_error')+': '+e.message,'!');console.error('doStake:',e);}
 }
 function renderActiveStakes(){
   let el=document.getElementById('active-stakes'); if(!el)return;
@@ -7346,7 +7393,7 @@ function addDemoInvite(){
   totalEl.textContent=total.toFixed(2);
   let perInvEl=document.getElementById('inv-per-invite');
   if(perInvEl)perInvEl.textContent=perPerson.toFixed(2);
-  notify('模拟邀请成功! +'+perPerson.toFixed(2)+' AC ('+MEMBER_LEVELS_NAMES[getUserMemberLevel()]+'奖励)','&#x2705;');
+  notify(t('notif_invite_success')+' +'+perPerson.toFixed(2)+' AC ('+MEMBER_LEVELS_NAMES[getUserMemberLevel()]+'奖励)','&#x2705;');
 }
 
 
@@ -7924,7 +7971,7 @@ function addFriend(email){
   if(!email)return;
   fetch('/api/add-friend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:email})})
   .then(function(r){return r.json()}).then(function(d){showToast(d.ok?'Friend added!':'Failed',d.ok?'success':'error')})
-  .catch(function(){showToast('Network error','error')});
+  .catch(function(){showToast(t('notif_network_error'),'error')});
 }
 async function addSearchedUser(email){
   try {
@@ -8009,7 +8056,7 @@ async function sendSocialMsg(){
   var inp = document.getElementById('social-msg-input');
   var text = inp.value.trim();
   if(!text || !curUser) return;
-  if(!socialFriend && !socialGroup){ notify('Select a friend or group first','⚠'); return; }
+  if(!socialFriend && !socialGroup){ notify(t('notif_select_friend_or_group'),'⚠'); return; }
   try {
     if(socialGroup){
       await apiSendGroupMessage(socialGroup, text, 'text');
@@ -8018,15 +8065,15 @@ async function sendSocialMsg(){
       await apiSendMessage(socialFriend, text, 'text');
       inp.value = ''; inp.style.height = 'auto'; loadMessages();
     }
-  } catch(e){ notify('Error: '+e.message,'❌'); }
+  } catch(e){ notify(t('notif_error')+': '+e.message,'❌'); }
 }
 
 // Image upload via file picker
 function sendSocialImage(evt){
-  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); evt.target.value=''; return; }
+  if(!socialFriend || !curUser){ notify(t('notif_select_friend'),'⚠️'); evt.target.value=''; return; }
   var file = evt.target.files[0];
   if(!file) return;
-  if(file.size > 5*1024*1024){ notify('Image too large, max 5MB','⚠️'); evt.target.value=''; return; }
+  if(file.size > 5*1024*1024){ notify(t('notif_image_too_large'),'⚠️'); evt.target.value=''; return; }
   var reader = new FileReader();
   reader.onload = function(e){
     var base64 = e.target.result;
@@ -8040,7 +8087,7 @@ function sendSocialImage(evt){
 
 // Video upload via file picker (max 2 minutes check)
 function sendSocialVideo(evt){
-  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); evt.target.value=''; return; }
+  if(!socialFriend || !curUser){ notify(t('notif_select_friend'),'⚠️'); evt.target.value=''; return; }
   var file = evt.target.files[0];
   if(!file) return;
   // Check video duration
@@ -8048,8 +8095,8 @@ function sendSocialVideo(evt){
   video.preload = 'metadata';
   video.onloadedmetadata = function(){
     window.URL.revokeObjectURL(video.src);
-    if(video.duration > 130){ notify('Video too long, max 2 minutes','⚠️'); evt.target.value=''; return; }
-    if(file.size > 8*1024*1024){ notify('Video too large, max 8MB','⚠️'); evt.target.value=''; return; }
+    if(video.duration > 130){ notify(t('notif_video_too_long'),'⚠️'); evt.target.value=''; return; }
+    if(file.size > 8*1024*1024){ notify(t('notif_video_too_large'),'⚠️'); evt.target.value=''; return; }
     var reader = new FileReader();
     reader.onload = function(e){
       var base64 = e.target.result;
@@ -8130,7 +8177,7 @@ var socialVoiceCallRecognition = null;
 async function toggleSocialVoiceMsg(){
   if(!socialFriend || !curUser){ notify(t("sologin"),"!"); return; }
   if(window.location.protocol==='http:'&&window.location.hostname!=='localhost'&&window.location.hostname!=='127.0.0.1'){
-    notify("Voice requires HTTPS or localhost. Please use a secure connection.", "!");
+    notify(t('notif_https_required'),"!");
     return;
   }
   var btn = document.getElementById("social-voice-btn");
@@ -8205,7 +8252,7 @@ async function toggleSocialVoiceMsg(){
       }
     }, 60000);
   } catch(e){
-    notify("Microphone access denied: "+e.message,"❌");
+    notify(t('notif_mic_denied')+": "+e.message,"❌");
   }
 }
 
@@ -8237,7 +8284,7 @@ function addSocialVoiceMsg(url, blob, isMe){
 
 function transcribeSocialVoice(blob, btn){
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){ notify("Speech recognition not supported","!"); return; }
+  if(!SpeechRecognition){ notify(t('notif_speech_not_supported'),"!"); return; }
   
   btn.textContent = "⏳ "+t("fmvtlistening");
   btn.disabled = true;
@@ -8291,7 +8338,7 @@ function transcribeSocialVoice(blob, btn){
 async function startSocialVoiceCall(){
   if(!socialFriend || !curUser){ notify(t("sologin"),"!"); return; }
   if(window.location.protocol==='http:'&&window.location.hostname!=='localhost'&&window.location.hostname!=='127.0.0.1'){
-    notify("Voice requires HTTPS or localhost. Please use a secure connection.", "!");
+    notify(t('notif_https_required'),"!");
     return;
   }
   
@@ -8422,7 +8469,7 @@ async function startSocialVoiceCall(){
       if(socialVoiceCallActive) endSocialVoiceCall();
     }, 600000);
   } catch(e){
-    notify("Microphone access denied: "+e.message,"❌");
+    notify(t('notif_mic_denied')+": "+e.message,"❌");
   }
 }
 
@@ -16624,7 +16671,7 @@ function publishCommunityPost(){
   var title = document.getElementById('cm-post-title').value.trim();
   var desc = document.getElementById('cm-post-desc').value.trim();
   var contact = document.getElementById('cm-post-contact').value.trim();
-  if(!title){ notify('\请\输\入\标\题','\⚠'); return; }
+  if(!title){ notify(t('notif_enter_title'),'⚠'); return; }
   var check = moderateContent(title+' '+desc);
   if(check.blocked){ notify(t('fmmoderate')+': '+check.reason,'\\ud83d\\udee1\️'); return; }
   var post = {
@@ -16637,7 +16684,7 @@ function publishCommunityPost(){
   communityPosts.unshift(post);
   saveLS(communityLSKey, communityPosts);
   closeModal('mo-community-post');
-  notify('\✅ '+t('fmpublished'),'\✅');
+  notify(t('fmpublished'),'✅');
   renderCommunityPosts();
 }
 
@@ -16832,7 +16879,7 @@ function openForumLive(){
 
 function startForumLive(){
   var title = document.getElementById('forum-live-title').value.trim();
-  if(!title){ notify('Please enter a live title','⚠'); return; }
+  if(!title){ notify(t('notif_enter_live_title'),'⚠'); return; }
   var desc = document.getElementById('forum-live-desc').value.trim();
   var live = {
     id: 'fl_'+Date.now(),
@@ -17665,7 +17712,7 @@ function startSocialVoiceCall(){
     document.getElementById('social-call-btn').innerHTML = '📞';
     return;
   }
-  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); return; }
+  if(!socialFriend || !curUser){ notify(t('notif_select_friend'),'⚠️'); return; }
   CALL.callType = 'voice';
   CALL.peerEmail = socialFriend;
   document.getElementById('social-call-btn').style.background = 'rgba(239,68,68,.2)';
@@ -17682,7 +17729,7 @@ function startSocialVideoCall(){
     document.getElementById('social-vcall-btn').innerHTML = '📹';
     return;
   }
-  if(!socialFriend || !curUser){ notify('Select a friend first','⚠️'); return; }
+  if(!socialFriend || !curUser){ notify(t('notif_select_friend'),'⚠️'); return; }
   CALL.callType = 'video';
   CALL.peerEmail = socialFriend;
   document.getElementById('social-vcall-btn').style.background = 'rgba(239,68,68,.2)';
@@ -17699,9 +17746,9 @@ async function initiateCall(){
     var r = await _socialCall('/api/social/call/start', 'POST', {
       from_email: curUser._email, to_email: CALL.peerEmail, call_type: CALL.callType
     });
-    if(!r || !r.call_id){ notify('Failed to start call','❌'); CALL.isActive=false; return; }
+    if(!r || !r.call_id){ notify(t('notif_call_failed'),'❌'); CALL.isActive=false; return; }
     CALL.callId = r.call_id;
-  } catch(e){ notify('Call init failed','❌'); CALL.isActive=false; return; }
+  } catch(e){ notify(t('notif_call_init_failed'),'❌'); CALL.isActive=false; return; }
 
   showCallUI('calling');
   document.getElementById('call-participant').textContent = 'Calling ' + CALL.peerEmail + '...';
@@ -17712,7 +17759,7 @@ async function initiateCall(){
       var lv = document.getElementById('call-local-video');
       lv.style.display = 'block'; lv.srcObject = CALL.localStream;
     }
-  } catch(e){ notify('Camera/Mic access denied','⚠️'); }
+  } catch(e){ notify(t('notif_camera_mic_denied'),'⚠️'); }
 
   await createPeerConnection();
   var offer = await CALL.pc.createOffer();
@@ -17745,7 +17792,7 @@ async function acceptCall(){
       var lv = document.getElementById('call-local-video');
       lv.style.display = 'block'; lv.srcObject = CALL.localStream;
     }
-  } catch(e){ notify('Media access denied','⚠️'); }
+  } catch(e){ notify(t('notif_media_denied'),'⚠️'); }
   await createPeerConnection();
   startPolling();
   startCallTimer();
