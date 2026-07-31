@@ -7,10 +7,10 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a1a;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif}
-#wrap{position:relative;width:800px;height:500px}
+#wrap{position:relative;width:100%;max-width:800px;aspect-ratio:8/5;margin:0 auto}
 canvas{display:block;width:100%;height:100%;border-radius:12px}
-#subtitles{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;text-align:center}
-#subtitle-text{display:inline-block;background:rgba(0,0,0,.75);color:#fff;padding:10px 24px;border-radius:24px;font-size:.9rem;letter-spacing:.5px;line-height:1.5;max-width:700px;transition:opacity .4s;text-shadow:0 0 10px rgba(255,215,0,.3)}
+#subtitles{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;text-align:center;max-width:90%}
+#subtitle-text{display:inline-block;background:rgba(0,0,0,.75);color:#fff;padding:.6em 1.4em;border-radius:24px;font-size:clamp(.65rem,1.8vw,.9rem);letter-spacing:.5px;line-height:1.5;max-width:100%;transition:opacity .4s;text-shadow:0 0 10px rgba(255,215,0,.3)}
 #progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#06b6d4,#10b981,#34d399,#ffd700);z-index:10;transition:width .15s linear;border-radius:0 2px 2px 0;box-shadow:0 0 8px rgba(16,185,129,.5)}
 </style>
 </head>
@@ -84,8 +84,19 @@ function getLang() {
 // ── Canvas Setup ──
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const W = 800, H = 500;
-canvas.width = W; canvas.height = H;
+const WRAP = document.getElementById('wrap');
+// Design resolution constants (used for all coordinate calculations)
+const DW = 800, DH = 500;
+let W = 800, H = 500;
+
+function resizeCanvas() {
+  var r = WRAP.getBoundingClientRect();
+  W = Math.min(r.width, 800);
+  H = W * 5/8;
+  canvas.width = W; canvas.height = H;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 const subEl = document.getElementById('subtitle-text');
 const progEl = document.getElementById('progress');
