@@ -269,7 +269,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
 .mp-ev{display:flex;flex-direction:column;gap:8px}
 .mp-ev-it{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:8px;font-size:.84rem;transition:background .15s}.mp-ev-it:hover{background:var(--bgch)}
 .mp-ev-it .ei{font-size:1.1rem}.mp-ev-it .ed{font-size:.72rem;color:var(--t3);white-space:nowrap}.mp-ev-it .en{flex:1;font-weight:500}
-@media(max-width:768px){.mt{font-size:.72rem;height:32px}.mt-lb{padding:0 10px;font-size:.65rem}.mt-it{gap:24px;animation-duration:40s}.mp{top:90px;height:calc(100vh - 90px)}}
+@media(max-width:768px){.mt{font-size:.72rem;height:32px}.mt-lb{padding:0 10px;font-size:.65rem}.mt-it{gap:24px;animation-duration:40s}.mp{top:90px;height:calc(100vh - 90px);right:-100%;width:100%;max-width:100vw}.mp.open{right:0}}
 
 .aj-reg-sel{width:100%;max-width:110px;padding:3px 4px;font-size:.54rem;border-radius:5px;border:1px solid var(--bc);background:var(--bg);color:var(--t1);cursor:pointer;margin-bottom:3px;font-family:var(--fm)}.aj-reg-sel:disabled{opacity:.45;cursor:not-allowed}.aj-reg-sel:focus{outline:none;border-color:var(--ap)}
 
@@ -17336,6 +17336,7 @@ var checks=[
  {n:"proGender",t:function(){return !!document.querySelector("[data-key='mpgender']")}},
  {n:"appVer",t:function(){return (document.body.textContent||"").indexOf("v16")!==-1}}
 ];
+setTimeout(function(){
 var fail=checks.filter(function(c){return !c.t();});
 var now=new Date().toLocaleString("zh-CN");
 if(fail.length===0){
@@ -17350,6 +17351,7 @@ if(fail.length===0){
   navigator.serviceWorker.controller.postMessage({type:"VCHECK_FAIL",version:V,keys:fail.map(function(c){return c.n})});
  }
 }
+},1500);
 
 /* ============ Payment Methods Manager ============ */
 var PM_STORAGE_KEY='nexus_payment_methods';
