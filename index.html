@@ -40,7 +40,7 @@ body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:v
 .apk-dl-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 14px;background:var(--g1);color:#fff;border-radius:10px;font-weight:700;font-size:.85rem;text-decoration:none;margin-top:6px;box-shadow:0 4px 14px rgba(139,92,246,.3);transition:var(--tt);cursor:pointer;border:none;font-family:inherit}
 .apk-dl-btn:hover{box-shadow:0 6px 22px rgba(139,92,246,.45);transform:translateY(-1px)}
 .apk-meta{display:flex;justify-content:space-between;font-size:.65rem;color:var(--t3);font-family:var(--fm);margin-top:8px;padding:6px 10px;background:var(--bg2);border-radius:7px}
-.ld{position:relative}.lb{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:18px;background:transparent;border:1px solid var(--bd);color:#fff;font-size:.85rem;cursor:pointer;transition:var(--tt)}.lb:hover{border-color:var(--bda);color:#fff;background:rgba(255,255,255,.04)}.clang-text{background:linear-gradient(135deg,#06b6d4,#10b981,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;animation:clangGlow 2s ease-in-out infinite alternate}@keyframes clangGlow{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}
+.ld{position:relative}.lb{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:18px;background:transparent;border:1px solid var(--bd);color:#fff;font-size:.85rem;cursor:pointer;transition:var(--tt)}.lb:hover{border-color:var(--bda);color:#fff;background:rgba(255,255,255,.04)}.clang-text{background:linear-gradient(135deg,#06b6d4,#10b981,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;animation:clangGlow 2s ease-in-out infinite alternate}@keyframes clangGlow{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}@keyframes inviteGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes inviteShimmer{0%{left:-100%}40%,60%{left:100%}100%{left:100%}}
 .lm{display:none;position:absolute;top:115%;right:0;background:var(--bgc);border:1px solid var(--bda);border-radius:14px;padding:6px;min-width:210px;max-height:380px;overflow-y:auto;z-index:100;box-shadow:0 14px 44px rgba(0,0,0,.55)}.lm.show{display:block}
 .lmi{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:10px;font-size:.85rem;cursor:pointer;color:var(--t2);transition:var(--tt)}.lmi:hover,.lmi.ac{background:rgba(139,92,246,.18);color:#fff}
 .lmi-f{font-size:1.3rem;line-height:1;flex-shrink:0}
@@ -80,6 +80,9 @@ body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:v
 .bo{background:transparent;border:1.5px solid var(--bda);color:var(--t1)}.bo:hover{border-color:var(--ap);background:rgba(139,92,246,.06)}
 .bg{background:var(--g1);color:#fff;box-shadow:0 4px 14px rgba(139,92,246,.3)}.bg:hover{box-shadow:0 6px 22px rgba(139,92,246,.45);transform:translateY(-1px)}
 .bs{padding:4px 10px;font-size:.68rem;border-radius:14px}.bx{padding:2px 7px;font-size:.62rem;border-radius:10px;font-weight:600}
+.invite-demo-btn{position:relative;padding:8px 16px;font-size:.78rem;font-weight:700;border-radius:20px;border:none;cursor:pointer;color:#fff;background:linear-gradient(135deg,#06b6d4,#10b981,#34d399,#06b6d4);background-size:300% 300%;animation:inviteGradient 3s ease infinite;box-shadow:0 0 12px rgba(6,182,212,.4),0 0 24px rgba(16,185,129,.2);font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;overflow:hidden}
+.invite-demo-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:inviteShimmer 2s ease-in-out infinite}
+.invite-demo-btn:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(6,182,212,.6),0 0 40px rgba(16,185,129,.35)}
 .bs2{background:rgba(139,92,246,.15);color:var(--ap);border:1px solid rgba(139,92,246,.3)}.bs2:hover{background:rgba(139,92,246,.25)}
 .bd2{background:rgba(239,68,68,.15);color:var(--ar);border:1px solid rgba(239,68,68,.3)}.bd2:hover{background:rgba(239,68,68,.25)}
 .bw{width:100%}
@@ -1220,7 +1223,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
   <div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px;font-size:.72rem;line-height:1.7;color:var(--t2);border-left:3px solid var(--ap)" data-key="ac_invite_desc">邀请朋友注册账号，朋友可以获得赠送一千联盟币，你可以让朋友把获赠的一千联盟币在网站市场上按照你和朋友约好的价格挂单，然后你把朋友获赠的联盟币低价收购过来。邀请朋友注册，助你尽享智能科技带来的愉悦快感！</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
     <button class="btn bg bw" onclick="transferInvite()" data-key="invtransfer">划转到余额</button>
-    <button class="btn bo bs" onclick="playInviteDemoVideo()" data-key="invdemo">模拟邀请+1(演示)</button>
+    <button class="invite-demo-btn" onclick="playInviteDemoVideo()" data-key="invdemo">模拟邀请+1(演示)</button>
   </div>
 </div>
 </div>
