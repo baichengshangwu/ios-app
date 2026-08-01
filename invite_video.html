@@ -83,7 +83,7 @@ function getLang() {
 
 // ── Canvas Setup ──
 const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const WRAP = document.getElementById('wrap');
 // Design resolution constants (used for all coordinate calculations)
 const DW = 800, DH = 500;
@@ -798,6 +798,10 @@ function loop(ts) {
   
   progEl.style.width = (currentTime / totalTime * 100) + '%';
 
+  // Force GPU compositor flush for headless/background iframe environments.
+  // getImageData triggers a readback that forces the draw commands to be committed.
+  try { ctx.getImageData(0, 0, 1, 1); } catch(e) {}
+
   if (!_firstFrameDone) {
     _firstFrameDone = true;
     try { window.parent.postMessage('invite-ready', '*'); } catch(e) {}
@@ -823,8 +827,8 @@ var _fallbackStart = performance.now();
 _animId = requestAnimationFrame(loop);
 
 setTimeout(function() {
-  if (!_rafFired) {
-    // rAF not fired (headless / hidden iframe), fall back to setInterval
+  if (!_rafFired || !_firstFrameDone) {
+    // rAF not fired or first frame never rendered (GPU compositor skipped flush)
     if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
     _fallbackId = setInterval(function() {
       loop(performance.now());
