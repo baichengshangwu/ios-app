@@ -1209,9 +1209,9 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
       <h4 style="margin:0;font-size:.88rem;font-weight:800;letter-spacing:.02em;background:linear-gradient(90deg,#06b6d4,#34d399,#a78bfa,#f472b6,#06b6d4);background-size:400% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:inviteTitleShine 4s ease infinite" data-key="inv_demo_title">邀请演示视频</h4>
       <span style="font-size:.62rem;font-weight:700;padding:2px 10px;border-radius:20px;background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(52,211,153,.15));color:#06b6d4;border:1px solid rgba(6,182,212,.25);animation:inviteBadgePulse 2s ease-in-out infinite" data-key="inv_demo_badge">演示</span>
     </div>
-    <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;z-index:1" id="invite-video-player-wrapper">
-      <div style="position:relative">
-        <iframe id="invite-demo-embed" src="invite_video.html?v=" style="width:100%;min-height:200px;aspect-ratio:8/5;border:none;display:block" allow="autoplay" onload="setTimeout(function(){var l=document.getElementById('invite-loader');if(l&&l.style.display!=='none')l.style.display='none'},400)"></iframe>
+    <div style="position:relative;border-radius:8px;z-index:1" id="invite-video-player-wrapper">
+      <div style="position:relative;border-radius:8px;overflow:hidden">
+        <iframe id="invite-demo-embed" src="invite_video.html?v=" style="width:100%;min-height:200px;aspect-ratio:8/5;border:none;display:block;transform:translateZ(0);-webkit-transform:translateZ(0)" allow="autoplay" onload="setTimeout(function(){var l=document.getElementById('invite-loader');if(l&&l.style.display!=='none')l.style.display='none'},400)"></iframe>
         <div id="invite-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.72);z-index:5;pointer-events:none"><div class="invite-spinner"></div></div>
       </div>
       <div onclick="restartInviteEmbed()" style="background:linear-gradient(135deg,rgba(6,182,212,.12),rgba(16,185,129,.08));border:1px solid rgba(6,182,212,.2);border-radius:8px;padding:7px 14px;text-align:center;cursor:pointer;margin-top:6px;transition:all .25s;font-size:.72rem;font-weight:700;color:#06b6d4" onmouseover="this.style.background='linear-gradient(135deg,rgba(6,182,212,.25),rgba(16,185,129,.15))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(6,182,212,.12),rgba(16,185,129,.08))'" data-key="inv_demo_play">▶ 点击播放演示视频</div>

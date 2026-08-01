@@ -775,7 +775,11 @@ function updateSubtitle(t) {
 
 // ── Main Loop ──
 var _firstFrameDone = false;
+var _rafFired = false;
+var _animId = null;
+
 function loop(ts) {
+  if (!_rafFired) { _rafFired = true; }
   if (!startTime) startTime = ts;
   
   if (running) {
@@ -799,11 +803,34 @@ function loop(ts) {
     try { window.parent.postMessage('invite-ready', '*'); } catch(e) {}
   }
   
-  animId = requestAnimationFrame(loop);
+  _animId = requestAnimationFrame(loop);
 }
 
-// Start immediately
-requestAnimationFrame(loop);
+function stopLoop() {
+  if (_animId) {
+    cancelAnimationFrame(_animId);
+    _animId = null;
+  }
+  if (_fallbackId) {
+    clearInterval(_fallbackId);
+    _fallbackId = null;
+  }
+}
+
+// Start: requestAnimationFrame with setInterval fallback
+var _fallbackId = null;
+var _fallbackStart = performance.now();
+_animId = requestAnimationFrame(loop);
+
+setTimeout(function() {
+  if (!_rafFired) {
+    // rAF not fired (headless / hidden iframe), fall back to setInterval
+    if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
+    _fallbackId = setInterval(function() {
+      loop(performance.now());
+    }, 16);
+  }
+}, 250);
 
 // Restart on parent message
 window.addEventListener('message', function(e) {
