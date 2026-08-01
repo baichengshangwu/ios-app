@@ -10,7 +10,13 @@ body{background:#0a0a1a;display:flex;justify-content:center;align-items:center;m
 #wrap{position:relative;width:100%;max-width:800px;aspect-ratio:8/5;margin:0 auto}
 canvas{display:block;width:100%;height:100%;border-radius:12px}
 #subtitles{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;text-align:center;max-width:90%}
-#subtitle-text{display:inline-block;background:rgba(0,0,0,.75);color:#fff;padding:.6em 1.4em;border-radius:24px;font-size:clamp(.65rem,1.8vw,.9rem);letter-spacing:.5px;line-height:1.5;max-width:100%;transition:opacity .4s;text-shadow:0 0 10px rgba(255,215,0,.3)}
+#subtitle-text{display:inline-block;background:rgba(0,0,0,.75);color:#fff;padding:.6em 1.4em;border-radius:24px;font-size:clamp(.75rem,2.2vw,1.05rem);letter-spacing:.5px;line-height:1.5;max-width:100%;transition:opacity .4s;text-shadow:0 0 10px rgba(255,215,0,.3)}
+
+#fs-btn{position:absolute;top:8px;right:8px;z-index:20;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;width:30px;height:30px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
+#fs-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+#sound-btn{position:absolute;top:8px;right:46px;z-index:20;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
+#sound-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+#subtitle-text{font-size:clamp(.7rem,2vw,1rem)}
 #progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#06b6d4,#10b981,#34d399,#ffd700);z-index:10;transition:width .15s linear;border-radius:0 2px 2px 0;box-shadow:0 0 8px rgba(16,185,129,.5)}
 </style>
 </head>
@@ -19,11 +25,29 @@ canvas{display:block;width:100%;height:100%;border-radius:12px}
   <canvas id="c"></canvas>
   <div id="subtitles"><span id="subtitle-text"></span></div>
   <div id="progress" style="width:0%"></div>
+  <button id="fs-btn" title="全屏" onclick="toggleFullscreen()">⛶</button>
+  <button id="sound-btn" title="音效" onclick="toggleSound()">🔊</button>
 </div>
 
 <script>
 // roundRect polyfill for mobile browsers
 (function(){if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){if(typeof r==='number')r={tl:r,tr:r,br:r,bl:r};this.beginPath();this.moveTo(x+r.tl,y);this.lineTo(x+w-r.tr,y);this.quadraticCurveTo(x+w,y,x+w,y+r.tr);this.lineTo(x+w,y+h-r.br);this.quadraticCurveTo(x+w,y+h,x+w-r.br,y+h);this.lineTo(x+r.bl,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r.bl);this.lineTo(x,y+r.tl);this.quadraticCurveTo(x,y,x+r.tl,y);this.closePath();return this}}})();
+
+// ── Sound Engine (Web Audio API) ──
+var _audioCtx = null;
+var _soundOn = true;
+function _getAC() {
+  if (!_audioCtx) { try { _audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e) {} }
+  return _audioCtx;
+}
+function playCoinSound() { if(!_soundOn)return;var ac=_getAC();if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(1200,ac.currentTime);o.frequency.exponentialRampToValueAtTime(600,ac.currentTime+.08);g.gain.setValueAtTime(.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.1);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.1);}
+function playCashSound() { if(!_soundOn)return;var ac=_getAC();if(!ac)return;var n=[523,659,784,1047];for(var i=0;i<n.length;i++){var o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.value=n[i];g.gain.setValueAtTime(.1,ac.currentTime+i*.06);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.06+.15);o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+i*.06);o.stop(ac.currentTime+i*.06+.15);}}
+function playSparkleSound() { if(!_soundOn)return;var ac=_getAC();if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(2400,ac.currentTime);o.frequency.exponentialRampToValueAtTime(800,ac.currentTime+.2);g.gain.setValueAtTime(.06,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.25);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.25);}
+function playWhooshSound() { if(!_soundOn)return;var ac=_getAC();if(!ac)return;var bufLen=ac.sampleRate*.3;var buf=ac.createBuffer(1,bufLen,ac.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<bufLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2)*.08;var s=ac.createBufferSource();s.buffer=buf;var f=ac.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(400,ac.currentTime);f.frequency.exponentialRampToValueAtTime(2000,ac.currentTime+.3);var g=ac.createGain();g.gain.setValueAtTime(.15,ac.currentTime);s.connect(f);f.connect(g);g.connect(ac.destination);s.start();}
+function playCheerSound() { if(!_soundOn)return;var ac=_getAC();if(!ac)return;for(var j=0;j<3;j++){var o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(200+j*80,ac.currentTime+j*.12);g.gain.setValueAtTime(.05,ac.currentTime+j*.12);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+j*.12+.3);o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+j*.12);o.stop(ac.currentTime+j*.12+.3);}}
+function toggleSound() { _soundOn = !_soundOn; var b = document.getElementById('sound-btn'); b.textContent = _soundOn ? '🔊' : '🔇'; b.style.opacity = _soundOn ? '1' : '.5'; }
+function toggleFullscreen() { var el = document.getElementById('wrap'); if (document.fullscreenElement) { document.exitFullscreen(); } else { el.requestFullscreen().catch(function(){}); } }
+
 // ── Multi-language script ──
 const SCRIPT = {
   'zh-CN': [
@@ -97,6 +121,8 @@ function resizeCanvas() {
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+document.addEventListener('fullscreenchange', function(){ setTimeout(resizeCanvas,100); });
+document.addEventListener('webkitfullscreenchange', function(){ setTimeout(resizeCanvas,100); });
 
 const subEl = document.getElementById('subtitle-text');
 const progEl = document.getElementById('progress');
@@ -181,12 +207,21 @@ function drawCartoonPerson(x, y, skin, shirt, pants, scale, anim) {
   ctx.beginPath(); ctx.arc(0, -4*s, 18*s, 0, Math.PI*2); ctx.fill();
   
   // Hair
-  ctx.fillStyle = '#2c1810';
+  var hairColor = anim.hairColor || '#2c1810';
+  ctx.fillStyle = hairColor;
   ctx.beginPath(); ctx.arc(0, -8*s, 19*s, Math.PI, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(-10*s, -12*s, 6*s, 0, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(10*s, -12*s, 6*s, 0, Math.PI*2); ctx.fill();
   
-  // Eyes
+  // Eyebrows for expression
+  var browY = anim.browY || 0;
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 2*s; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-11*s, -10*s+browY); ctx.lineTo(-4*s, -11*s+browY*1.5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(11*s, -10*s+browY); ctx.lineTo(4*s, -11*s+browY*1.5); ctx.stroke();
+  
+  // Eyes with blink
+  var blink = anim.blink || 0;
+  var eyeH = 3*s * (1 - blink*0.9);
   if (expression === 'happy') {
     ctx.fillStyle = '#333';
     ctx.beginPath(); ctx.arc(-7*s, -5*s, 3*s, 0, Math.PI*2); ctx.fill();
@@ -267,6 +302,7 @@ let particles = [];
 let sparkles = [];
 
 function emitSparkles(x, y, count) {
+  playSparkleSound();
   for (let i = 0; i < count; i++) {
     sparkles.push({
       x, y,
@@ -336,6 +372,7 @@ function getScene(t) {
 function initScene(s) {
   if (sceneInitDone[s]) return;
   sceneInitDone[s] = true;
+  playWhooshSound();
   particles = [];
   sparkles = [];
   pile1 = 0; pile2 = 0;
@@ -507,14 +544,16 @@ function renderScene(scene, t) {
   
   switch(scene) {
     case 0: // Friendly exchange
-      var bob1 = Math.sin(t*3)*3;
-      var bob2 = Math.sin(t*3+1)*3;
+      var bob1 = Math.sin(t*3)*4 + (st>14?Math.abs(Math.sin(t*8))*8:0); // jump when excited
+      var bob2 = Math.sin(t*3+1)*3 + (st>14?Math.abs(Math.sin(t*8+.3))*6:0);
       var happy = st > 4 && st < 25;
-      var expr1 = st > 14 ? 'excited' : 'happy';
-      var expr2 = st > 14 ? 'excited' : 'happy';
+      var expr1 = st > 14 ? 'excited' : (st>4?'happy':'neutral');
+      var expr2 = st > 14 ? 'excited' : (st>4?'happy':'neutral');
+      var blinkCycle = Math.sin(t*2.7); // blink every ~2.3 seconds
+      var blink = blinkCycle > 0.92 ? (blinkCycle-0.92)/0.08 : 0;
       
-      drawCartoonPerson(180, 280, '#ffcc99', '#6366f1', '#2c3e50', 1.15, {bob: bob1, expression: expr1, armWave: Math.sin(t*5)*.3});
-      drawCartoonPerson(600, 280, '#ffcc99', '#8b5cf6', '#2c3e50', 1.15, {bob: bob2, expression: expr2, armWave: Math.sin(t*5+1)*.3});
+      drawCartoonPerson(180, 280, '#ffcc99', '#6366f1', '#2c3e50', 1.15, {bob: bob1, expression: expr1, armWave: Math.sin(t*5)*.3, blink: blink, legSpread: Math.sin(t*5)*.15, browY: expr1==='excited'?-2:0});
+      drawCartoonPerson(600, 280, '#ffcc99', '#8b5cf6', '#2c3e50', 1.15, {bob: bob2, expression: expr2, armWave: Math.sin(t*5+1)*.3, blink: blink, legSpread: Math.sin(t*5+1)*.15, hairColor: '#5c2e10', browY: expr2==='excited'?-2:0});
       
       // Labels
       ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
@@ -538,16 +577,19 @@ function renderScene(scene, t) {
       // Coin rain
       if (st > 2 && st < 18 && Math.random() < .4) {
         emitCoin(Math.random()*W, -20, Math.random()<.5?200:600, H-80+Math.random()*30, 0);
+        if (Math.random()<.3) playCoinSound();
       }
       // Bill rain
       if (st > 8 && st < 22 && Math.random() < .25) {
         emitBill(400+Math.random()*200, -30, 400+Math.random()*200, H-80);
+        if (Math.random()<.3) playCashSound();
       }
       if (happy && Math.random() < .15) emitSparkles(Math.random()<.5?180:600, 240+Math.random()*40, 3);
       break;
       
     case 1: // Invite rewards
-      drawCartoonPerson(200, 260, '#ffcc99', '#10b981', '#1a3a2a', 1.2, {bob: Math.sin(t*3)*2, expression: 'excited', armWave: Math.sin(t*4)*.4});
+      var sc1_blink = Math.sin(t*2.5)>.93?(Math.sin(t*2.5)-.93)/.07:0;
+      drawCartoonPerson(200, 260, '#ffcc99', '#10b981', '#1a3a2a', 1.2, {bob: Math.sin(t*3)*3+Math.abs(Math.sin(t*6))*5, expression: 'excited', armWave: Math.sin(t*4)*.5, blink: sc1_blink, legSpread: Math.sin(t*4)*.2, browY: -3});
       
       ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(getLang().startsWith('zh')?'你':'YOU', 200, 350);
@@ -566,6 +608,7 @@ function renderScene(scene, t) {
       
       if (st > 2 && st < 20 && Math.random() < .3) {
         emitCoin(Math.random()*200+100, -20, 200, H-80, 0);
+        if (Math.random()<.3) playCoinSound();
       }
       if (st > 5 && Math.random() < .2) emitSparkles(200, 200+Math.random()*50, 2);
       break;
@@ -579,7 +622,8 @@ function renderScene(scene, t) {
         {text: 'Order #005  0.08 CNY  ...', done: false}
       ]);
       
-      drawCartoonPerson(480, 260, '#ffcc99', '#f59e0b', '#3d2e0a', 1.15, {bob: Math.sin(t*3)*2, expression: st>8?'excited':'happy', armWave: Math.sin(t*5)*.3});
+      var sc2_blink = Math.sin(t*2.3)>.93?(Math.sin(t*2.3)-.93)/.07:0;
+      drawCartoonPerson(480, 260, '#ffcc99', '#f59e0b', '#3d2e0a', 1.15, {bob: Math.sin(t*3)*3, expression: st>8?'excited':'happy', armWave: Math.sin(t*5)*.4, blink: sc2_blink, legSpread: Math.sin(t*5)*.12});
       drawTable(400, 330, 220, 10);
       
       // Bills on table
@@ -590,6 +634,7 @@ function renderScene(scene, t) {
       // Flying bills
       if (st > 3 && st < 22 && Math.random() < .25) {
         emitBill(500+Math.random()*100, -20, 500+Math.random()*100, 320);
+        if (Math.random()<.3) playCashSound();
       }
       if (st > 10 && Math.random() < .2) emitSparkles(480, 200+Math.random()*80, 3);
       break;
@@ -623,6 +668,7 @@ function renderScene(scene, t) {
       // Coin rain
       if (st > 3 && st < 25 && Math.random() < .35) {
         emitCoin(300+Math.random()*200, -20, 300+Math.random()*200, 320, 0);
+        if (Math.random()<.3) playCoinSound();
       }
       if (st > 5 && Math.random() < .2) emitSparkles(400, 180+Math.random()*60, 3);
       
@@ -702,6 +748,7 @@ function renderScene(scene, t) {
       ctx.fillText(getLang().startsWith('zh')?'累计充值越多，等级越高，权益越丰厚！':'More recharge = higher tier = better perks!', 400, 400);
       ctx.fillText(getLang().startsWith('zh')?'🚀 立即邀请朋友，开启财富之旅！':'🚀 Invite friends now, start your fortune!', 400, 435);
       emitSparkles(400, 420, 8);
+      if (st < .5) playCheerSound();
       
       // Animate tier cards appearing
       if (st < 1) {
@@ -753,16 +800,24 @@ function updateSubtitle(t) {
         lastSubtitleIdx = i;
         subEl.textContent = found.txt;
         subEl.style.opacity = '1';
-        // Voice
+        // Voice with voice selection
         if (!spokenSubtitles[i]) {
           spokenSubtitles[i] = true;
           try {
             var lang = getLang();
+            var voiceLang = lang==='zh-CN'?'zh-CN':lang==='zh-TW'?'zh-TW':(lang==='ja'?'ja-JP':lang==='ko'?'ko-KR':lang==='es'?'es-ES':lang==='fr'?'fr-FR':lang==='de'?'de-DE':lang==='pt'?'pt-BR':lang==='ru'?'ru-RU':lang==='ar'?'ar-SA':lang==='th'?'th-TH':lang==='vi'?'vi-VN':'en-US');
             var u = new SpeechSynthesisUtterance(found.txt);
-            u.lang = lang==='zh-CN'?'zh-CN':lang==='zh-TW'?'zh-TW':'en-US';
-            u.rate = 1.0; u.pitch = 1.05; u.volume = 0.85;
+            u.lang = voiceLang;
+            u.rate = voiceLang.startsWith('zh')?1.05:(voiceLang.startsWith('en')?0.95:0.9);
+            u.pitch = 1.08; u.volume = 0.9;
+            // Try to find a matching voice
+            var voices = speechSynthesis.getVoices();
+            for (var v = 0; v < voices.length; v++) {
+              if (voices[v].lang.startsWith(voiceLang.split('-')[0])) { u.voice = voices[v]; break; }
+            }
             speechSynthesis.cancel();
             speechSynthesis.speak(u);
+            playWhooshSound();
           } catch(e) {}
         }
       }
