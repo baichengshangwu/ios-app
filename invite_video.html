@@ -774,6 +774,7 @@ function updateSubtitle(t) {
 }
 
 // ── Main Loop ──
+var _firstFrameDone = false;
 function loop(ts) {
   if (!startTime) startTime = ts;
   
@@ -792,6 +793,11 @@ function loop(ts) {
   updateSubtitle(currentTime);
   
   progEl.style.width = (currentTime / totalTime * 100) + '%';
+
+  if (!_firstFrameDone) {
+    _firstFrameDone = true;
+    try { window.parent.postMessage('invite-ready', '*'); } catch(e) {}
+  }
   
   animId = requestAnimationFrame(loop);
 }
