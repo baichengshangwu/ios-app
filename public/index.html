@@ -18731,7 +18731,7 @@ function md5(string){string=unescape(encodeURIComponent(string));function cmn(q,
 var V="snap_05_v16_2026-07-14",MD5_H="465439a42b3694d83efe1595a9f31386";
 var dot=document.getElementById("vcheck-dot"),tip=document.getElementById("vcheck-tip");
 var checks=[
- {n:"appDlTabs",t:function(){return document.querySelectorAll(".app-dl-tab").length>=2}},
+ {n:"appDlTabs",t:function(){return !!document.querySelector(".apk-dl-btn")}},
  {n:"proLoc",t:function(){return !!document.querySelector("[data-key='mploc']")}},
  {n:"proBirth",t:function(){return !!document.querySelector("[data-key='mpbirth']")}},
  {n:"proGender",t:function(){return !!document.querySelector("[data-key='mpgender']")}},
