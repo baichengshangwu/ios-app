@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-key="page_title">AI联盟智能办公室</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg: #0a0e17;
+  --card: #111827;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --scarf-red: #ef4444;
+  --scarf-blue: #3b82f6;
+  --scarf-pink: #ec4899;
+  --scarf-white: #cbd5e1;
+  --scarf-yellow: #facc15;
+  --scarf-green: #22c55e;
+}
+body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header{
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1{
+  font-size: 17px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
+.header-right{display:flex;align-items:center;gap:16px}
+.lang-switch select{
+  background: var(--bg);border:1px solid var(--border);border-radius:6px;
+  color: var(--text);padding:4px 8px;font-size:12px;outline:none;cursor:pointer;
+}
+
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{
+  width:260px;background:var(--card);border-right:1px solid var(--border);
+  padding:12px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;
+}
+.sidebar h3{
+  font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:2px;padding:0 4px;
+}
+
+/* Sidebar agent card with mini panda */
+.agent-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;gap:10px;
+}
+.agent-card:hover{border-color:var(--accent);transform:translateX(2px)}
+.agent-card.active{border-color:var(--accent2);background:rgba(99,102,241,0.08)}
+
+.mini-panda{
+  width:42px;height:42px;flex-shrink:0;position:relative;
+}
+.mini-panda .head{
+  width:30px;height:30px;background:#fff;border-radius:50%;
+  position:absolute;top:0;left:6px;z-index:2;
+}
+.mini-panda .ear{
+  width:12px;height:12px;background:#1a1a2e;border-radius:50%;
+  position:absolute;top:-2px;z-index:1;
+}
+.mini-panda .ear.l{left:4px}
+.mini-panda .ear.r{right:4px}
+.mini-panda .eye{
+  width:7px;height:9px;background:#1a1a2e;border-radius:50%;
+  position:absolute;top:9px;z-index:3;
+}
+.mini-panda .eye.l{left:10px}
+.mini-panda .eye.r{right:10px}
+.mini-panda .pupil{
+  width:3px;height:3px;background:#fff;border-radius:50%;
+  position:absolute;top:11px;z-index:4;
+}
+.mini-panda .pupil.l{left:12px}
+.mini-panda .pupil.r{right:12px}
+.mini-panda .nose{
+  width:6px;height:5px;background:#1a1a2e;border-radius:50%;
+  position:absolute;top:15px;left:50%;transform:translateX(-50%);z-index:3;
+}
+.mini-panda .scarf-bar{
+  width:36px;height:5px;border-radius:3px;position:absolute;top:26px;left:3px;z-index:4;
+}
+.agent-card .info{flex:1;min-width:0}
+.agent-card .name{font-size:13px;font-weight:600}
+.agent-card .role{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.chat-area{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+
+/* Welcome area - desk scene */
+.welcome-msg{text-align:center;margin:auto;max-width:900px}
+.welcome-msg h2{
+  font-size:26px;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.welcome-msg .subtitle{color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.5}
+
+/* Desk scene container */
+.desk-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+}
+.desk-scene{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:16px 10px 10px;cursor:pointer;transition:all 0.25s;
+  position:relative;overflow:hidden;min-height:240px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.desk-scene:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(99,102,241,0.12)}
+.desk-scene.active{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2)}
+
+/* Full body panda */
+.panda-body-wrap{
+  position:relative;width:90px;height:130px;margin-bottom:8px;
+}
+.panda-body-wrap.anim{animation:pandaBob 3s ease-in-out infinite}
+
+/* Panda head */
+.panda-head{
+  width:48px;height:48px;background:#f5f5f5;border-radius:50%;
+  position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:5;
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+.panda-ear{
+  width:16px;height:16px;background:#1a1a2e;border-radius:50%;
+  position:absolute;z-index:4;top:2px;
+}
+.panda-ear.l{left:14px}
+.panda-ear.r{right:14px}
+.panda-eye-patch{
+  width:14px;height:17px;background:#1a1a2e;border-radius:50%;
+  position:absolute;top:14px;z-index:6;
+}
+.panda-eye-patch.l{left:12px;transform:rotate(-8deg)}
+.panda-eye-patch.r{right:12px;transform:rotate(8deg)}
+.panda-pupil{
+  width:5px;height:6px;background:#fff;border-radius:50%;
+  position:absolute;top:18px;z-index:7;
+}
+.panda-pupil.l{left:15px}
+.panda-pupil.r{right:15px}
+.panda-nose{
+  width:10px;height:7px;background:#1a1a2e;border-radius:0 0 50% 50%;
+  position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:6;
+}
+.panda-mouth{
+  width:14px;height:6px;border:1.5px solid #1a1a2e;border-top:none;
+  border-radius:0 0 50% 50%;position:absolute;top:29px;left:50%;
+  transform:translateX(-50%);z-index:6;
+}
+
+/* Panda body */
+.panda-torso{
+  width:44px;height:50px;background:#f5f5f5;border-radius:50%;
+  position:absolute;top:40px;left:50%;transform:translateX(-50%);z-index:3;
+}
+/* Arms */
+.panda-arm{
+  width:18px;height:32px;background:#1a1a2e;border-radius:12px;
+  position:absolute;top:48px;z-index:2;transform-origin:top center;
+}
+.panda-arm.l{left:10px;animation:armWaveL 2s ease-in-out infinite}
+.panda-arm.r{right:10px;animation:armWaveR 2s ease-in-out infinite}
+/* Legs */
+.panda-leg{
+  width:18px;height:24px;background:#1a1a2e;border-radius:10px;
+  position:absolute;top:85px;z-index:2;
+}
+.panda-leg.l{left:20px}
+.panda-leg.r{right:20px}
+/* Foot */
+.panda-foot{
+  width:22px;height:10px;background:#1a1a2e;border-radius:50%;
+  position:absolute;top:107px;z-index:1;
+}
+.panda-foot.l{left:14px}
+.panda-foot.r{right:14px}
+
+/* Scarf */
+.panda-scarf{
+  width:48px;height:8px;border-radius:4px;
+  position:absolute;top:42px;left:50%;transform:translateX(-50%);z-index:4;
+}
+.panda-scarf-tail{
+  width:8px;height:22px;border-radius:4px;
+  position:absolute;top:42px;left:60px;z-index:2;
+}
+
+/* Desk */
+.desk-table{
+  width:100%;height:12px;background:linear-gradient(180deg,#8B6914,#6B4F12);
+  border-radius:3px;position:relative;margin-top:2px;
+}
+.desk-leg-l,.desk-leg-r{
+  width:6px;height:8px;background:#6B4F12;position:absolute;bottom:-6px;
+  border-radius:0 0 3px 3px;
+}
+.desk-leg-l{left:18px}
+.desk-leg-r{right:18px}
+
+/* Computer on desk */
+.computer{
+  position:absolute;top:-36px;left:50%;transform:translateX(-50%);
+}
+.monitor{
+  width:36px;height:26px;background:#1e293b;border-radius:4px;
+  border:2px solid #334155;
+}
+.monitor-screen{
+  width:28px;height:18px;background:#1e3a5f;border-radius:2px;
+  margin:2px auto 0;
+}
+.monitor-stand{
+  width:10px;height:8px;background:#475569;margin:0 auto;
+}
+.monitor-base{
+  width:20px;height:3px;background:#475569;border-radius:1px;margin:0 auto;
+}
+.keyboard{
+  width:24px;height:4px;background:#475569;border-radius:1px;
+  position:absolute;top:-8px;left:50%;transform:translateX(50%);
+}
+
+/* Work description in desk scene */
+.desk-name{
+  font-size:13px;font-weight:700;margin-top:6px;
+}
+.desk-scarf-label{
+  font-size:9px;padding:1px 8px;border-radius:8px;margin-bottom:6px;font-weight:600;
+}
+.desk-work{
+  display:flex;flex-direction:column;gap:3px;width:100%;margin-top:4px;
+}
+.desk-work-item{
+  font-size:10px;color:var(--muted);text-align:left;line-height:1.3;
+  padding:2px 4px;border-left:2px solid transparent;
+}
+.desk-scene:hover .desk-work-item{border-left-color:var(--border)}
+
+@keyframes pandaBob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@keyframes armWaveL{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(-10deg)}
+}
+@keyframes armWaveR{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(10deg)}
+}
+@keyframes blink{
+  0%,94%,100%{transform:scaleY(1)}
+  97%{transform:scaleY(0.1)}
+}
+
+/* Chat messages */
+.msg{
+  display:flex;gap:12px;max-width:80%;animation:slideIn 0.3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.agent{align-self:flex-start}
+.msg .avatar{
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:18px;flex-shrink:0;
+}
+.msg.user .avatar{background:var(--accent)}
+.msg.agent .avatar{background:var(--border)}
+.msg .bubble{
+  padding:12px 16px;border-radius:14px;line-height:1.5;font-size:14px;
+}
+.msg.user .bubble{background:#1e3a5f;border-bottom-right-radius:4px}
+.msg.agent .bubble{background:#1a1f2e;border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg .sender{font-size:11px;color:var(--accent);margin-bottom:4px;font-weight:600}
+
+.typing-indicator{display:flex;gap:4px;padding:8px 0}
+.typing-indicator span{
+  width:6px;height:6px;background:var(--accent);border-radius:50%;
+  animation:bounce 1.4s infinite;
+}
+.typing-indicator span:nth-child(2){animation-delay:0.2s}
+.typing-indicator span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+.input-bar{
+  background:var(--card);border-top:1px solid var(--border);
+  padding:14px 20px;display:flex;gap:10px;
+}
+.input-bar input{
+  flex:1;background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:10px 16px;color:var(--text);
+  font-size:14px;outline:none;transition:border 0.2s;
+}
+.input-bar input:focus{border-color:var(--accent)}
+.input-bar input::placeholder{color:var(--muted)}
+.input-bar button{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:10px;padding:10px 20px;
+  font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;
+}
+.input-bar button:hover{opacity:0.9}
+.input-bar button:disabled{opacity:0.5;cursor:not-allowed}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .msg{max-width:95%}
+  .desk-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){.desk-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="title-icon">🐼</span><span data-key="header_title">AI联盟智能办公室</span></h1>
+  <div class="header-right">
+    <div class="lang-switch">
+      <select id="langSelect" onchange="setLang(this.value)">
+        <option value="zh-CN">🇨🇳 简体中文</option>
+        <option value="zh-TW">🇹🇼 繁體中文</option>
+        <option value="en">🇺🇸 English</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="ko">🇰🇷 한국어</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="pt">🇵🇹 Português</option>
+        <option value="ru">🇷🇺 Русский</option>
+        <option value="ar">🇸🇦 العربية</option>
+        <option value="hi">🇮🇳 हिन्दी</option>
+        <option value="th">🇹🇭 ไทย</option>
+        <option value="vi">🇻🇳 Tiếng Việt</option>
+        <option value="id">🇮🇩 Bahasa Indonesia</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3 data-key="sidebar_title">团队成员</h3>
+    <div class="agent-card active" onclick="selectAgent('mengzhu')" id="card-mengzhu">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#ef4444"></div></div>
+      <div class="info"><div class="name" data-key="mz_name">盟主</div><div class="role" data-key="mz_role">任务调度 · 协调分发</div></div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('mengge')" id="card-mengge">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#3b82f6"></div></div>
+      <div class="info"><div class="name" data-key="mg_name">萌哥</div><div class="role" data-key="mg_role">文件管理 · 数据处理</div></div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('mengjie')" id="card-mengjie">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#ec4899"></div></div>
+      <div class="info"><div class="name" data-key="mj_name">萌姐</div><div class="role" data-key="mj_role">信息检索 · 资料调研</div></div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('mengdi')" id="card-mengdi">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#94a3b8"></div></div>
+      <div class="info"><div class="name" data-key="md_name">萌弟</div><div class="role" data-key="md_role">代码分析 · 开发辅助</div></div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('mengmei')" id="card-mengmei">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#facc15"></div></div>
+      <div class="info"><div class="name" data-key="mm_name">萌妹</div><div class="role" data-key="mm_role">文案撰写 · 内容创作</div></div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('mengmeng')" id="card-mengmeng">
+      <div class="mini-panda"><div class="ear l"></div><div class="ear r"></div><div class="head"></div><div class="eye l"></div><div class="eye r"></div><div class="pupil l"></div><div class="pupil r"></div><div class="nose"></div><div class="scarf-bar" style="background:#22c55e"></div></div>
+      <div class="info"><div class="name" data-key="mm2_name">萌萌</div><div class="role" data-key="mm2_role">全能辅助 · 综合支持</div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="chat-area" id="chatArea">
+    </div>
+    <div class="input-bar">
+      <input type="text" id="msgInput" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()" id="sendBtn" data-key="send">开始办公</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANG_DATA = {"zh-CN": {"f": "🇨🇳", "n": "简体中文", "sidebar_title": "团队成员", "mz_name": "盟主", "mz_role": "任务调度 · 协调分发", "mz_scarf": "🔴 红围脖", "mz_role_short": "队长", "mg_name": "萌哥", "mg_role": "文件管理 · 数据处理", "mg_scarf": "🔵 蓝围脖", "mg_role_short": "文件", "mj_name": "萌姐", "mj_role": "信息检索 · 资料调研", "mj_scarf": "💗 粉围脖", "mj_role_short": "搜索", "md_name": "萌弟", "md_role": "代码分析 · 开发辅助", "md_scarf": "🤍 白围脖", "md_role_short": "开发", "mm_name": "萌妹", "mm_role": "文案撰写 · 内容创作", "mm_scarf": "💛 黄围脖", "mm_role_short": "创作", "mm2_name": "萌萌", "mm2_role": "全能辅助 · 综合支持", "mm2_scarf": "💚 绿围脖", "mm2_role_short": "全能", "welcome_p": "专为一人公司打造的办公团队，由盟主统一调度，各队员分工协作，高效完成你的每一项任务。", "rsp_mz": "收到！盟主已分析你的需求，正在协调最合适的队员处理。", "rsp_mg": "萌哥收到！文件相关任务交给我来搞定。", "rsp_mj": "萌姐收到！我这就去搜集和分析相关资料。", "rsp_md": "萌弟收到！代码相关问题交给我来处理。", "rsp_mm": "萌妹收到！文案和内容创作就交给我吧。", "rsp_mm2": "萌萌收到！无论什么问题，我都全力协助！", "rsp_task": "任务内容：", "work_title": "工作职责", "mz_work1": "智能需求分析 - 理解用户意图，拆解复杂任务", "mz_work2": "多Agent调度 - 自动匹配子Agent，协调分工协作", "mz_work3": "结果验收 - 汇总各Agent结果，质量把关，交付最终产出", "mg_work1": "文件搜索定位 - 快速查找本地文档、图片、视频等文件", "mg_work2": "文件处理 - 读写编辑、格式转换、批量重命名", "mg_work3": "文档问答 - 基于文件内容的智能问答与摘要", "mj_work1": "网页搜索 - 多引擎联网搜索，获取最新资讯", "mj_work2": "资料调研 - 深度对比分析、行业报告、学术论文检索", "mj_work3": "信息验证 - 多源交叉验证，确保信息准确性", "md_work1": "代码开发 - 多语言编程、架构设计、脚本编写", "md_work2": "Bug修复 - 错误诊断、代码审查、性能优化", "md_work3": "技术方案 - 技术选型建议、API对接、数据库设计", "mm_work1": "文案创作 - 多语种撰写、创意策划、品牌文案", "mm_work2": "翻译润色 - 16语种互译、文档润色、风格转换", "mm_work3": "内容排版 - Markdown/HTML格式化、表格制作、代码高亮", "mm2_work1": "综合协调 - 跨领域任务承接、多Agent协作枢纽", "mm2_work2": "应急响应 - 快速处理突发需求、兜底保障", "mm2_work3": "全栈支持 - 从文件到代码到搜索，全能型助手", "header_title": "AI联盟智能办公室", "page_title": "AI联盟智能办公室", "welcome_h2": "AI联盟智能办公室", "send": "开始办公", "input_placeholder": "输入任务，盟主将自动分发给最合适的队员..."}, "zh-TW": {"f": "🇹🇼", "n": "繁體中文", "sidebar_title": "團隊成員", "mz_name": "盟主", "mz_role": "任務調度 · 協調分發", "mz_scarf": "🔴 紅圍脖", "mz_role_short": "隊長", "mg_name": "萌哥", "mg_role": "檔案管理 · 資料處理", "mg_scarf": "🔵 藍圍脖", "mg_role_short": "檔案", "mj_name": "萌姐", "mj_role": "資訊檢索 · 資料調研", "mj_scarf": "💗 粉圍脖", "mj_role_short": "搜尋", "md_name": "萌弟", "md_role": "程式碼分析 · 開發輔助", "md_scarf": "🤍 白圍脖", "md_role_short": "創作", "mm_name": "萌妹", "mm_role": "文案撰寫 · 內容創作", "mm_scarf": "💛 黃圍脖", "mm2_name": "萌萌", "mm2_role": "全能輔助 · 綜合支援", "mm2_scarf": "💚 綠圍脖", "mm2_role_short": "全能", "welcome_p": "專為一人公司打造的辦公團隊，由盟主統一調度，各隊員分工協作，高效完成你的每一項任務。", "rsp_mz": "收到！盟主已分析你的需求，正在協調最合適的隊員處理。", "rsp_mg": "萌哥收到！檔案相關任務交給我來搞定。", "rsp_mj": "萌姐收到！我這就去搜集和分析相關資料。", "rsp_md": "萌弟收到！程式碼相關問題交給我來處理。", "rsp_mm": "萌妹收到！文案和內容創作就交給我吧。", "rsp_mm2": "萌萌收到！無論什麼問題，我都全力協助！", "rsp_task": "任務內容：", "work_title": "工作職責", "mz_work1": "智能需求分析 - 理解用戶意圖，拆解複雜任務", "mz_work2": "多Agent調度 - 自動匹配子Agent，協調分工協作", "mz_work3": "結果驗收 - 匯總各Agent結果，品質把關，交付最終產出", "mg_work1": "檔案搜尋定位 - 快速查找本地文件、圖片、影片等檔案", "mg_work2": "檔案處理 - 讀寫編輯、格式轉換、批次重命名", "mg_work3": "文件問答 - 基於檔案內容的智能問答與摘要", "mj_work1": "網頁搜尋 - 多引擎聯網搜尋，獲取最新資訊", "mj_work2": "資料調研 - 深度對比分析、行業報告、學術論文檢索", "mj_work3": "資訊驗證 - 多源交叉驗證，確保資訊準確性", "md_work1": "程式碼開發 - 多語言程式設計、架構設計、腳本編寫", "md_work2": "Bug修復 - 錯誤診斷、程式碼審查、效能最佳化", "md_work3": "技術方案 - 技術選型建議、API對接、資料庫設計", "mm_work1": "文案創作 - 多語種撰寫、創意策劃、品牌文案", "mm_work2": "翻譯潤色 - 16語種互譯、文件潤色、風格轉換", "mm_work3": "內容排版 - Markdown/HTML格式化、表格製作、程式碼高亮", "mm2_work1": "綜合協調 - 跨領域任務承接、多Agent協作樞紐", "mm2_work2": "應急響應 - 快速處理突發需求、兜底保障", "mm2_work3": "全端支援 - 從檔案到程式碼到搜尋，全能型助手", "header_title": "AI聯盟智能辦公室", "page_title": "AI聯盟智能辦公室", "welcome_h2": "AI聯盟智能辦公室", "send": "開始辦公", "input_placeholder": "輸入任務，盟主將自動分發給最合適的隊員..."}, "en": {"f": "🇺🇸", "n": "English", "sidebar_title": "Team Members", "mz_name": "Chief Panda", "mz_role": "Task Dispatch · Coordination", "mz_scarf": "🔴 Red Scarf", "mz_role_short": "Lead", "mg_name": "Bro Panda", "mg_role": "File Management · Data", "mg_scarf": "🔵 Blue Scarf", "mg_role_short": "Files", "mj_name": "Sis Panda", "mj_role": "Info Retrieval · Research", "mj_scarf": "💗 Pink Scarf", "mj_role_short": "Search", "md_name": "Lil Bro", "md_role": "Code Analysis · Dev", "md_scarf": "🤍 White Scarf", "md_role_short": "Dev", "mm_name": "Lil Sis", "mm_role": "Copywriting · Content", "mm_scarf": "💛 Yellow Scarf", "mm_role_short": "Write", "mm2_name": "Baby Panda", "mm2_role": "General Support · All-Round", "mm2_scarf": "💚 Green Scarf", "mm2_role_short": "All", "welcome_p": "An office team built for one-person businesses, orchestrated by the Chief Panda, with specialized team members collaborating to efficiently complete every task.", "rsp_mz": "Got it! Chief Panda has analyzed your request and is coordinating the best team member to handle it.", "rsp_mg": "Bro Panda here! Leave file-related tasks to me.", "rsp_mj": "Sis Panda here! I'll gather and analyze the relevant information right away.", "rsp_md": "Lil Bro here! Code-related issues are my specialty.", "rsp_mm": "Lil Sis here! Leave the writing and content creation to me.", "rsp_mm2": "Baby Panda here! Whatever you need, I'm here to help with everything!", "rsp_task": "Task:", "work_title": "Responsibilities", "mz_work1": "Smart Analysis - Understand user intent, decompose complex tasks", "mz_work2": "Multi-Agent Dispatch - Auto-match sub-agents, coordinate teamwork", "mz_work3": "Quality Assurance - Aggregate results, verify quality, deliver final output", "mg_work1": "File Search - Quick locate documents, images, videos and more", "mg_work2": "File Processing - Read/Write/Edit, format conversion, batch rename", "mg_work3": "Document Q&A - Smart Q&A and summarization based on file content", "mj_work1": "Web Search - Multi-engine search for the latest information", "mj_work2": "Research - Deep comparative analysis, industry reports, paper search", "mj_work3": "Fact Check - Cross-verify from multiple sources for accuracy", "md_work1": "Code Development - Multi-language programming, architecture, scripting", "md_work2": "Bug Fix - Error diagnosis, code review, performance optimization", "md_work3": "Tech Solutions - Stack recommendations, API integration, DB design", "mm_work1": "Copywriting - Multi-language writing, creative planning, brand copy", "mm_work2": "Translation - 16-language translation, document polishing, style adaptation", "mm_work3": "Formatting - Markdown/HTML, table creation, syntax highlighting", "mm2_work1": "Coordination - Cross-domain task handling, multi-agent hub", "mm2_work2": "Quick Response - Handle urgent needs, provide backup support", "mm2_work3": "Full-Stack Support - From files to code to search, all-around assistant", "header_title": "AI Alliance Smart Office", "page_title": "AI Alliance Smart Office", "welcome_h2": "AI Alliance Smart Office", "send": "Start Working", "input_placeholder": "Enter task, Chief Panda will auto-delegate to the best team member..."}, "ja": {"f": "🇯🇵", "n": "日本語", "sidebar_title": "チームメンバー", "mz_name": "盟主", "mz_role": "タスクスケジューリング · 調整", "mz_scarf": "🔴 赤スカーフ", "mz_role_short": "隊長", "mg_name": "萌哥", "mg_role": "ファイル管理 · データ処理", "mg_scarf": "🔵 青スカーフ", "mg_role_short": "ファイル", "mj_name": "萌姐", "mj_role": "情報検索 · リサーチ", "mj_scarf": "💗 ピンクスカーフ", "mj_role_short": "検索", "md_name": "萌弟", "md_role": "コード分析 · 開発補助", "md_scarf": "🤍 白スカーフ", "md_role_short": "開発", "mm_name": "萌妹", "mm_role": "コピーライティング · コンテンツ", "mm_scarf": "💛 黄色スカーフ", "mm_role_short": "執筆", "mm2_name": "萌萌", "mm2_role": "総合サポート · オールラウンド", "mm2_scarf": "💚 緑スカーフ", "mm2_role_short": "全能", "welcome_p": "一人企業のために構築されたオフィスチーム。盟主が統括し、各メンバーが協働してあらゆるタスクを効率的に完了します。", "rsp_mz": "了解！盟主があなたのリクエストを分析し、最適なメンバーを調整しています。", "rsp_mg": "萌哥です！ファイル関連のタスクは私にお任せください。", "rsp_mj": "萌姐です！すぐに関連情報を収集・分析します。", "rsp_md": "萌弟です！コード関連の問題は私の専門です。", "rsp_mm": "萌妹です！執筆とコンテンツ作成は私にお任せください。", "rsp_mm2": "萌萌です！どんなことでも全力でサポートします！", "rsp_task": "タスク内容：", "work_title": "仕事内容", "mz_work1": "スマート分析 - ユーザー意図を理解し複雑なタスクを分解", "mz_work2": "マルチエージェント調整 - サブエージェントを自動マッチングし協働を調整", "mz_work3": "品質管理 - 各エージェントの結果を集約し品質チェック、最終成果物を納品", "mg_work1": "ファイル検索 - 文書、画像、動画などのファイルを高速検索", "mg_work2": "ファイル処理 - 読み書き編集、フォーマット変換、一括リネーム", "mg_work3": "文書Q&A - ファイル内容に基づくスマートな質疑応答と要約", "mj_work1": "ウェブ検索 - マルチエンジン検索で最新情報を取得", "mj_work2": "リサーチ - 深い比較分析、業界レポート、論文検索", "mj_work3": "ファクトチェック - 複数ソースのクロス検証で正確性を確保", "md_work1": "コード開発 - マルチ言語プログラミング、アーキテクチャ設計、スクリプト作成", "md_work2": "バグ修正 - エラー診断、コードレビュー、パフォーマンス最適化", "md_work3": "技術ソリューション - 技術選定、API統合、DB設計", "mm_work1": "コピーライティング - 多言語執筆、クリエイティブ企画、ブランドコピー", "mm_work2": "翻訳 - 16言語翻訳、文書校正、スタイル変換", "mm_work3": "フォーマット - Markdown/HTML整形、表作成、シンタックスハイライト", "mm2_work1": "総合調整 - 分野横断タスク対応、マルチエージェント協働ハブ", "mm2_work2": "緊急対応 - 突発的なニーズに迅速対応、バックアップ保証", "mm2_work3": "フルスタックサポート - ファイルからコード、検索まで全能アシスタント", "header_title": "AIアライアンス スマートオフィス", "page_title": "AIアライアンス スマートオフィス", "welcome_h2": "AIアライアンス スマートオフィス", "send": "仕事を始める", "input_placeholder": "タスクを入力、盟主が最適なメンバーに自動委任します..."}, "ko": {"f": "🇰🇷", "n": "한국어", "sidebar_title": "팀 멤버", "mz_name": "맹주", "mz_role": "작업 스케줄링 · 조정", "mz_scarf": "🔴 빨간 목도리", "mz_role_short": "대장", "mg_name": "멍거", "mg_role": "파일 관리 · 데이터 처리", "mg_scarf": "🔵 파란 목도리", "mg_role_short": "파일", "mj_name": "멍지에", "mj_role": "정보 검색 · 리서치", "mj_scarf": "💗 분홍 목도리", "mj_role_short": "검색", "md_name": "멍디", "md_role": "코드 분석 · 개발", "md_scarf": "🤍 흰 목도리", "md_role_short": "개발", "mm_name": "멍메이", "mm_role": "카피라이팅 · 콘텐츠", "mm_scarf": "💛 노란 목도리", "mm_role_short": "작문", "mm2_name": "멍멍", "mm2_role": "종합 지원 · 만능", "mm2_scarf": "💚 초록 목도리", "mm2_role_short": "만능", "welcome_p": "1인 기업을 위해 구축된 오피스 팀. 맹주가 통합 관리하고 각 멤버가 협업하여 모든 작업을 효율적으로 완료합니다.", "rsp_mz": "알겠습니다! 맹주가 요청을 분석하고 최적의 멤버를 조정 중입니다.", "rsp_mg": "멍거입니다! 파일 관련 작업은 제게 맡기세요.", "rsp_mj": "멍지에입니다! 관련 정보를 바로 수집하고 분석하겠습니다.", "rsp_md": "멍디입니다! 코드 관련 문제는 제 전문입니다.", "rsp_mm": "멍메이입니다! 작문과 콘텐츠 제작은 제게 맡기세요.", "rsp_mm2": "멍멍입니다! 어떤 일이든 최선을 다해 도와드리겠습니다!", "rsp_task": "작업 내용:", "work_title": "업무 내용", "mz_work1": "스마트 분석 - 사용자 의도 이해, 복잡한 작업 분해", "mz_work2": "멀티에이전트 스케줄링 - 하위 에이전트 자동 매칭 및 협업 조정", "mz_work3": "결과 검수 - 에이전트 결과 취합, 품질 검증, 최종 산출물 전달", "mg_work1": "파일 검색 - 문서, 이미지, 비디오 등 파일 빠른 검색", "mg_work2": "파일 처리 - 읽기/쓰기/편집, 형식 변환, 일괄 이름 변경", "mg_work3": "문서 Q&A - 파일 내용 기반 스마트 질의응답 및 요약", "mj_work1": "웹 검색 - 다중 엔진 검색으로 최신 정보 획득", "mj_work2": "자료 조사 - 심층 비교 분석, 산업 보고서, 논문 검색", "mj_work3": "정보 검증 - 다중 소스 교차 검증으로 정확성 확보", "md_work1": "코드 개발 - 다중 언어 프로그래밍, 아키텍처 설계, 스크립팅", "md_work2": "버그 수정 - 오류 진단, 코드 리뷰, 성능 최적화", "md_work3": "기술 솔루션 - 기술 스택 추천, API 통합, DB 설계", "mm_work1": "카피라이팅 - 다국어 작성, 창의 기획, 브랜드 카피", "mm_work2": "번역 - 16개 언어 번역, 문서 다듬기, 스타일 변환", "mm_work3": "콘텐츠 포맷팅 - Markdown/HTML, 표 작성, 구문 강조", "mm2_work1": "종합 조정 - 도메인 간 작업 처리, 멀티에이전트 협업 허브", "mm2_work2": "긴급 대응 - 긴급 요구 신속 처리, 백업 지원", "mm2_work3": "풀스택 지원 - 파일부터 코드, 검색까지 만능 도우미", "header_title": "AI 얼라이언스 스마트 오피스", "page_title": "AI 얼라이언스 스마트 오피스", "welcome_h2": "AI 얼라이언스 스마트 오피스", "send": "업무 시작", "input_placeholder": "작업을 입력하면 맹주가 최적의 멤버에게 자동 위임합니다..."}, "es": {"f": "🇪🇸", "n": "Español", "sidebar_title": "Miembros del Equipo", "mz_name": "Jefe Panda", "mz_role": "Despacho de Tareas · Coordinación", "mz_scarf": "🔴 Bufanda Roja", "mz_role_short": "Líder", "mg_name": "Hermano Panda", "mg_role": "Gestión de Archivos · Datos", "mg_scarf": "🔵 Bufanda Azul", "mg_role_short": "Archivos", "mj_name": "Hermana Panda", "mj_role": "Búsqueda de Info · Investigación", "mj_scarf": "💗 Bufanda Rosa", "mj_role_short": "Búsqueda", "md_name": "Hermanito", "md_role": "Análisis de Código · Dev", "md_scarf": "🤍 Bufanda Blanca", "md_role_short": "Dev", "mm_name": "Hermanita", "mm_role": "Redacción · Contenido", "mm_scarf": "💛 Bufanda Amarilla", "mm_role_short": "Redacción", "mm2_name": "Peque Panda", "mm2_role": "Soporte General · Todoterreno", "mm2_scarf": "💚 Bufanda Verde", "mm2_role_short": "Todo", "welcome_p": "Un equipo de oficina para negocios unipersonales, orquestado por el Jefe Panda, con miembros especializados que colaboran para completar cada tarea eficientemente.", "rsp_mz": "¡Entendido! El Jefe Panda ha analizado tu solicitud y está coordinando al mejor miembro del equipo.", "rsp_mg": "¡Hermano Panda aquí! Déjame las tareas de archivos a mí.", "rsp_mj": "¡Hermana Panda aquí! Recopilaré y analizaré la información relevante de inmediato.", "rsp_md": "¡Hermanito aquí! Los problemas de código son mi especialidad.", "rsp_mm": "¡Hermanita aquí! Déjame la redacción y creación de contenido a mí.", "rsp_mm2": "¡Peque Panda aquí! ¡Lo que necesites, estoy aquí para ayudar con todo!", "rsp_task": "Tarea:", "work_title": "Responsabilidades", "mz_work1": "Análisis inteligente - Comprender la intención y descomponer tareas complejas", "mz_work2": "Despacho Multi-Agente - Emparejar y coordinar sub-agentes", "mz_work3": "Control de calidad - Agregar resultados, verificar y entregar", "mg_work1": "Búsqueda de archivos - Localizar documentos, imágenes, videos", "mg_work2": "Procesamiento - Leer/Editar, convertir formatos, renombrar en lote", "mg_work3": "Documentos Q&A - Preguntas y resúmenes inteligentes sobre archivos", "mj_work1": "Búsqueda web - Búsqueda multi-motor para la información más reciente", "mj_work2": "Investigación - Análisis comparativo, informes, búsqueda académica", "mj_work3": "Verificación - Verificación cruzada de múltiples fuentes", "md_work1": "Desarrollo - Programación multi-lenguaje, arquitectura, scripting", "md_work2": "Corrección - Diagnóstico, revisión de código, optimización", "md_work3": "Soluciones técnicas - Recomendaciones, integración API, diseño BD", "mm_work1": "Redacción - Escritura multilingüe, planificación creativa, copy de marca", "mm_work2": "Traducción - Traducción a 16 idiomas, pulido, adaptación de estilo", "mm_work3": "Formato - Markdown/HTML, creación de tablas, resaltado de sintaxis", "mm2_work1": "Coordinación - Manejo de tareas entre dominios, hub multi-agente", "mm2_work2": "Respuesta rápida - Atender necesidades urgentes, respaldo", "mm2_work3": "Soporte completo - De archivos a código a búsqueda, asistente integral", "header_title": "Oficina Inteligente de la Alianza IA", "page_title": "Oficina Inteligente de la Alianza IA", "welcome_h2": "Oficina Inteligente de la Alianza IA", "send": "Comenzar", "input_placeholder": "Ingrese tarea, Jefe Panda delegará al mejor miembro..."}, "fr": {"f": "🇫🇷", "n": "Français", "sidebar_title": "Membres de l'Équipe", "mz_name": "Chef Panda", "mz_role": "Répartition des Tâches · Coordination", "mz_scarf": "🔴 Écharpe Rouge", "mz_role_short": "Chef", "mg_name": "Frère Panda", "mg_role": "Gestion de Fichiers · Données", "mg_scarf": "🔵 Écharpe Bleue", "mg_role_short": "Fichiers", "mj_name": "Sœur Panda", "mj_role": "Recherche d'Info · Étude", "mj_scarf": "💗 Écharpe Rose", "mj_role_short": "Recherche", "md_name": "Petit Frère", "md_role": "Analyse de Code · Dev", "md_scarf": "🤍 Écharpe Blanche", "md_role_short": "Dev", "mm_name": "Petite Sœur", "mm_role": "Rédaction · Contenu", "mm_scarf": "💛 Écharpe Jaune", "mm_role_short": "Rédaction", "mm2_name": "Bébé Panda", "mm2_role": "Support Général · Polyvalent", "mm2_scarf": "💚 Écharpe Verte", "mm2_role_short": "Tout", "welcome_p": "Une équipe de bureau conçue pour les entreprises individuelles, orchestrée par le Chef Panda, avec des membres spécialisés collaborant pour accomplir chaque tâche efficacement.", "rsp_mz": "Compris ! Le Chef Panda a analysé votre demande et coordonne le meilleur membre de l'équipe.", "rsp_mg": "Frère Panda ici ! Laissez-moi les tâches de fichiers.", "rsp_mj": "Sœur Panda ici ! Je vais collecter et analyser les informations pertinentes immédiatement.", "rsp_md": "Petit Frère ici ! Les problèmes de code sont ma spécialité.", "rsp_mm": "Petite Sœur ici ! Laissez-moi la rédaction et la création de contenu.", "rsp_mm2": "Bébé Panda ici ! Quoi que vous ayez besoin, je suis là pour tout !", "rsp_task": "Tâche :", "work_title": "Responsabilités", "mz_work1": "Analyse intelligente - Comprendre l'intention et décomposer les tâches", "mz_work2": "Répartition multi-agent - Associer et coordonner les sous-agents", "mz_work3": "Assurance qualité - Agréger les résultats, vérifier et livrer", "mg_work1": "Recherche de fichiers - Localiser documents, images, vidéos", "mg_work2": "Traitement - Lire/Éditer, convertir, renommer par lot", "mg_work3": "Documents Q&R - Questions-réponses et résumés basés sur le contenu", "mj_work1": "Recherche web - Recherche multi-moteur pour les dernières infos", "mj_work2": "Recherche documentaire - Analyse comparative, rapports, articles", "mj_work3": "Vérification - Vérification croisée multi-sources pour l'exactitude", "md_work1": "Développement - Programmation multi-langage, architecture, scripts", "md_work2": "Correction - Diagnostic, revue de code, optimisation", "md_work3": "Solutions techniques - Recommandations, intégration API, conception BD", "mm_work1": "Rédaction - Écriture multilingue, planification créative, copy de marque", "mm_work2": "Traduction - Traduction 16 langues, polissage, adaptation de style", "mm_work3": "Formatage - Markdown/HTML, création de tableaux, coloration syntaxique", "mm2_work1": "Coordination - Gestion de tâches inter-domaines, hub multi-agent", "mm2_work2": "Réponse rapide - Gérer les besoins urgents, soutien de secours", "mm2_work3": "Support complet - Des fichiers au code à la recherche, assistant polyvalent", "header_title": "Bureau Intelligent de l'Alliance IA", "page_title": "Bureau Intelligent de l'Alliance IA", "welcome_h2": "Bureau Intelligent de l'Alliance IA", "send": "Commencer", "input_placeholder": "Saisissez une tâche, Chef Panda déléguera au meilleur membre..."}, "de": {"f": "🇩🇪", "n": "Deutsch", "sidebar_title": "Teammitglieder", "mz_name": "Chef-Panda", "mz_role": "Aufgabenverteilung · Koordination", "mz_scarf": "🔴 Roter Schal", "mz_role_short": "Leitung", "mg_name": "Bruder Panda", "mg_role": "Dateiverwaltung · Daten", "mg_scarf": "🔵 Blauer Schal", "mg_role_short": "Dateien", "mj_name": "Schwester Panda", "mj_role": "Informationssuche · Recherche", "mj_scarf": "💗 Rosa Schal", "mj_role_short": "Suche", "md_name": "Kleiner Bruder", "md_role": "Codeanalyse · Entwicklung", "md_scarf": "🤍 Weißer Schal", "md_role_short": "Dev", "mm_name": "Kleine Schwester", "mm_role": "Texterstellung · Inhalt", "mm_scarf": "💛 Gelber Schal", "mm_role_short": "Text", "mm2_name": "Baby Panda", "mm2_role": "Allgemeine Unterstützung · Allrounder", "mm2_scarf": "💚 Grüner Schal", "mm2_role_short": "Alles", "welcome_p": "Ein Büroteam für Ein-Personen-Unternehmen, orchestriert vom Chef-Panda, mit spezialisierten Mitgliedern, die zusammenarbeiten, um jede Aufgabe effizient zu erledigen.", "rsp_mz": "Verstanden! Chef-Panda hat Ihre Anfrage analysiert und koordiniert das beste Teammitglied.", "rsp_mg": "Bruder Panda hier! Dateiaufgaben übernehme ich.", "rsp_mj": "Schwester Panda hier! Ich sammle und analysiere sofort die relevanten Informationen.", "rsp_md": "Kleiner Bruder hier! Code-Probleme sind meine Spezialität.", "rsp_mm": "Kleine Schwester hier! Texterstellung und Inhalte übernehme ich.", "rsp_mm2": "Baby Panda hier! Was auch immer Sie brauchen, ich helfe bei allem!", "rsp_task": "Aufgabe:", "work_title": "Aufgaben", "mz_work1": "Intelligente Analyse - Benutzerabsicht verstehen, komplexe Aufgaben zerlegen", "mz_work2": "Multi-Agent-Verteilung - Unteragenten zuordnen und koordinieren", "mz_work3": "Qualitätssicherung - Ergebnisse zusammenführen, prüfen und liefern", "mg_work1": "Dateisuche - Dokumente, Bilder, Videos schnell finden", "mg_work2": "Dateiverarbeitung - Lesen/Schreiben, Formatkonvertierung, Stapelumbenennung", "mg_work3": "Dokument-Fragen - Intelligente Fragen und Zusammenfassungen", "mj_work1": "Websuche - Multi-Engine-Suche nach neuesten Informationen", "mj_work2": "Recherche - Vergleichende Analyse, Branchenberichte, Paper-Suche", "mj_work3": "Faktencheck - Quellenübergreifende Überprüfung auf Genauigkeit", "md_work1": "Code-Entwicklung - Mehrsprachige Programmierung, Architektur, Skripting", "md_work2": "Bugfix - Fehlerdiagnose, Code-Review, Leistungsoptimierung", "md_work3": "Technische Lösungen - Stack-Empfehlungen, API-Integration, DB-Design", "mm_work1": "Texterstellung - Mehrsprachiges Schreiben, kreative Planung, Branding", "mm_work2": "Übersetzung - 16-Sprachen-Übersetzung, Dokumentpolitur, Stilanpassung", "mm_work3": "Formatierung - Markdown/HTML, Tabellenerstellung, Syntax-Highlighting", "mm2_work1": "Koordination - Domänenübergreifende Aufgaben, Multi-Agent-Hub", "mm2_work2": "Schnelle Reaktion - Dringende Anforderungen, Absicherung", "mm2_work3": "Full-Stack-Support - Von Dateien über Code bis Suche, Allround-Assistent", "header_title": "KI-Allianz Smart-Büro", "page_title": "KI-Allianz Smart-Büro", "welcome_h2": "KI-Allianz Smart-Büro", "send": "Arbeit starten", "input_placeholder": "Aufgabe eingeben, Chef-Panda delegiert an bestes Mitglied..."}, "pt": {"f": "🇵🇹", "n": "Português", "sidebar_title": "Membros da Equipe", "mz_name": "Chefe Panda", "mz_role": "Despacho de Tarefas · Coordenação", "mz_scarf": "🔴 Cachecol Vermelho", "mz_role_short": "Líder", "mg_name": "Irmão Panda", "mg_role": "Gestão de Arquivos · Dados", "mg_scarf": "🔵 Cachecol Azul", "mg_role_short": "Arquivos", "mj_name": "Irmã Panda", "mj_role": "Busca de Info · Pesquisa", "mj_scarf": "💗 Cachecol Rosa", "mj_role_short": "Busca", "md_name": "Irmãozinho", "md_role": "Análise de Código · Dev", "md_scarf": "🤍 Cachecol Branco", "md_role_short": "Dev", "mm_name": "Irmãzinha", "mm_role": "Redação · Conteúdo", "mm_scarf": "💛 Cachecol Amarelo", "mm_role_short": "Redação", "mm2_name": "Bebê Panda", "mm2_role": "Suporte Geral · Versátil", "mm2_scarf": "💚 Cachecol Verde", "mm2_role_short": "Tudo", "welcome_p": "Uma equipe de escritório para negócios individuais, orquestrada pelo Chefe Panda, com membros especializados colaborando para completar cada tarefa com eficiência.", "rsp_mz": "Entendido! O Chefe Panda analisou sua solicitação e está coordenando o melhor membro da equipe.", "rsp_mg": "Irmão Panda aqui! Deixe as tarefas de arquivos comigo.", "rsp_mj": "Irmã Panda aqui! Vou coletar e analisar as informações relevantes imediatamente.", "rsp_md": "Irmãozinho aqui! Problemas de código são minha especialidade.", "rsp_mm": "Irmãzinha aqui! Deixe a redação e criação de conteúdo comigo.", "rsp_mm2": "Bebê Panda aqui! O que você precisar, estou aqui para ajudar com tudo!", "rsp_task": "Tarefa:", "work_title": "Responsabilidades", "mz_work1": "Análise inteligente - Compreender intenção e decompor tarefas", "mz_work2": "Despacho Multi-Agente - Associar e coordenar sub-agentes", "mz_work3": "Garantia de qualidade - Agregar resultados, verificar e entregar", "mg_work1": "Busca de arquivos - Localizar documentos, imagens, vídeos", "mg_work2": "Processamento - Ler/Editar, converter, renomear em lote", "mg_work3": "Documentos Q&A - Perguntas e resumos inteligentes sobre arquivos", "mj_work1": "Busca web - Busca multi-motor para as informações mais recentes", "mj_work2": "Pesquisa - Análise comparativa, relatórios, busca acadêmica", "mj_work3": "Verificação - Verificação cruzada de múltiplas fontes", "md_work1": "Desenvolvimento - Programação multi-linguagem, arquitetura, scripts", "md_work2": "Correção - Diagnóstico, revisão de código, otimização", "md_work3": "Soluções técnicas - Recomendações, integração API, design BD", "mm_work1": "Redação - Escrita multilíngue, planejamento criativo, copy de marca", "mm_work2": "Tradução - Tradução em 16 idiomas, polimento, adaptação de estilo", "mm_work3": "Formatação - Markdown/HTML, criação de tabelas, destaque de sintaxe", "mm2_work1": "Coordenação - Tarefas entre domínios, hub multi-agente", "mm2_work2": "Resposta rápida - Atender necessidades urgentes, suporte reserva", "mm2_work3": "Suporte completo - De arquivos a código a busca, assistente versátil", "header_title": "Escritório Inteligente da Aliança IA", "page_title": "Escritório Inteligente da Aliança IA", "welcome_h2": "Escritório Inteligente da Aliança IA", "send": "Começar", "input_placeholder": "Insira a tarefa, Chefe Panda delegará ao melhor membro..."}, "ru": {"f": "🇷🇺", "n": "Русский", "sidebar_title": "Члены команды", "mz_name": "Главный Панда", "mz_role": "Распределение задач · Координация", "mz_scarf": "🔴 Красный шарф", "mz_role_short": "Лидер", "mg_name": "Брат Панда", "mg_role": "Управление файлами · Данные", "mg_scarf": "🔵 Синий шарф", "mg_role_short": "Файлы", "mj_name": "Сестра Панда", "mj_role": "Поиск информации · Исследование", "mj_scarf": "💗 Розовый шарф", "mj_role_short": "Поиск", "md_name": "Младший Брат", "md_role": "Анализ кода · Разработка", "md_scarf": "🤍 Белый шарф", "md_role_short": "Dev", "mm_name": "Младшая Сестра", "mm_role": "Копирайтинг · Контент", "mm_scarf": "💛 Жёлтый шарф", "mm_role_short": "Текст", "mm2_name": "Малыш Панда", "mm2_role": "Общая поддержка · Универсал", "mm2_scarf": "💚 Зелёный шарф", "mm2_role_short": "Всё", "welcome_p": "Офисная команда для бизнеса одного человека, управляемая Главным Пандой, со специализированными членами, сотрудничающими для эффективного выполнения каждой задачи.", "rsp_mz": "Понял! Главный Панда проанализировал ваш запрос и координирует лучшего члена команды.", "rsp_mg": "Брат Панда здесь! Оставьте файловые задачи мне.", "rsp_mj": "Сестра Панда здесь! Я немедленно соберу и проанализирую соответствующую информацию.", "rsp_md": "Младший Брат здесь! Проблемы с кодом — моя специальность.", "rsp_mm": "Младшая Сестра здесь! Оставьте написание и создание контента мне.", "rsp_mm2": "Малыш Панда здесь! Что бы вам ни понадобилось, я помогу со всем!", "rsp_task": "Задача:", "work_title": "Обязанности", "mz_work1": "Умный анализ - Понимание намерений, декомпозиция сложных задач", "mz_work2": "Мульти-агентное распределение - Подбор и координация субагентов", "mz_work3": "Контроль качества - Агрегация результатов, проверка и доставка", "mg_work1": "Поиск файлов - Быстрый поиск документов, изображений, видео", "mg_work2": "Обработка - Чтение/Запись, конвертация, пакетное переименование", "mg_work3": "Вопросы по документам - Умные ответы и резюме по содержимому", "mj_work1": "Веб-поиск - Мультидвижковый поиск актуальной информации", "mj_work2": "Исследования - Глубокий анализ, отраслевые отчеты, поиск статей", "mj_work3": "Проверка фактов - Перекрестная проверка из нескольких источников", "md_work1": "Разработка кода - Многоязычное программирование, архитектура, скрипты", "md_work2": "Исправление ошибок - Диагностика, код-ревью, оптимизация", "md_work3": "Технические решения - Рекомендации по стеку, интеграция API, БД", "mm_work1": "Копирайтинг - Многоязычное написание, креативное планирование, бренд-тексты", "mm_work2": "Перевод - Перевод на 16 языков, шлифовка текста, адаптация стиля", "mm_work3": "Форматирование - Markdown/HTML, создание таблиц, подсветка синтаксиса", "mm2_work1": "Координация - Междоменные задачи, мульти-агентный хаб", "mm2_work2": "Быстрое реагирование - Срочные запросы, резервная поддержка", "mm2_work3": "Полная поддержка - От файлов до кода и поиска, универсальный помощник", "header_title": "Умный офис Альянса ИИ", "page_title": "Умный офис Альянса ИИ", "welcome_h2": "Умный офис Альянса ИИ", "send": "Начать работу", "input_placeholder": "Введите задачу, Главный Панда делегирует лучшему члену..."}, "ar": {"f": "🇸🇦", "n": "العربية", "sidebar_title": "أعضاء الفريق", "mz_name": "الباندا الرئيس", "mz_role": "توزيع المهام · التنسيق", "mz_scarf": "🔴 وشاح أحمر", "mz_role_short": "قائد", "mg_name": "الأخ باندا", "mg_role": "إدارة الملفات · البيانات", "mg_scarf": "🔵 وشاح أزرق", "mg_role_short": "ملفات", "mj_name": "الأخت باندا", "mj_role": "استرجاع المعلومات · البحث", "mj_scarf": "💗 وشاح وردي", "mj_role_short": "بحث", "md_name": "الأخ الصغير", "md_role": "تحليل الكود · التطوير", "md_scarf": "🤍 وشاح أبيض", "md_role_short": "تطوير", "mm_name": "الأخت الصغيرة", "mm_role": "كتابة المحتوى · الإبداع", "mm_scarf": "💛 وشاح أصفر", "mm_role_short": "كتابة", "mm2_name": "الباندا الصغير", "mm2_role": "الدعم العام · متعدد المهارات", "mm2_scarf": "💚 وشاح أخضر", "mm2_role_short": "شامل", "welcome_p": "فريق مكتبي مصمم للشركات الفردية، يديره الباندا الرئيس، مع أعضاء متخصصين يتعاونون لإنجاز كل مهمة بكفاءة.", "rsp_mz": "فهمت! قام الباندا الرئيس بتحليل طلبك ويتولى تنسيق أفضل عضو في الفريق.", "rsp_mg": "الأخ باندا هنا! اترك لي مهام الملفات.", "rsp_mj": "الأخت باندا هنا! سأقوم بجمع وتحليل المعلومات ذات الصلة فوراً.", "rsp_md": "الأخ الصغير هنا! مشاكل الكود هي تخصصي.", "rsp_mm": "الأخت الصغيرة هنا! اترك لي الكتابة وإنشاء المحتوى.", "rsp_mm2": "الباندا الصغير هنا! مهما كان ما تحتاجه، أنا هنا للمساعدة في كل شيء!", "rsp_task": "المهمة:", "work_title": "المسؤوليات", "mz_work1": "تحليل ذكي - فهم نية المستخدم وتفكيك المهام المعقدة", "mz_work2": "توزيع متعدد الوكلاء - مطابقة وتنسيق الوكلاء الفرعيين", "mz_work3": "ضمان الجودة - تجميع النتائج والتحقق منها وتسليم الناتج النهائي", "mg_work1": "البحث عن الملفات - تحديد موقع المستندات والصور ومقاطع الفيديو", "mg_work2": "معالجة الملفات - قراءة/كتابة/تحرير، تحويل التنسيق، إعادة تسمية جماعية", "mg_work3": "أسئلة وأجوبة المستندات - إجابات وملخصات ذكية بناءً على المحتوى", "mj_work1": "البحث على الويب - بحث متعدد المحركات للحصول على أحدث المعلومات", "mj_work2": "البحث - تحليل مقارن عميق، تقارير الصناعة، البحث الأكاديمي", "mj_work3": "تدقيق الحقائق - التحقق المتبادل من مصادر متعددة للدقة", "md_work1": "تطوير الكود - برمجة متعددة اللغات، تصميم معماري، كتابة السكريبتات", "md_work2": "إصلاح الأخطاء - تشخيص الأخطاء، مراجعة الكود، تحسين الأداء", "md_work3": "الحلول التقنية - توصيات التقنيات، تكامل API، تصميم قواعد البيانات", "mm_work1": "كتابة المحتوى - كتابة متعددة اللغات، تخطيط إبداعي، نصوص العلامة التجارية", "mm_work2": "الترجمة - ترجمة 16 لغة، تنقيح المستندات، تكييف الأسلوب", "mm_work3": "التنسيق - Markdown/HTML، إنشاء الجداول، تظليل التركيب", "mm2_work1": "التنسيق - معالجة المهام عبر المجالات، مركز متعدد الوكلاء", "mm2_work2": "الاستجابة السريعة - معالجة الاحتياجات العاجلة، دعم احتياطي", "mm2_work3": "دعم شامل - من الملفات إلى الكود إلى البحث، مساعد متعدد المهارات", "header_title": "مكتب تحالف الذكاء الاصطناعي الذكي", "page_title": "مكتب تحالف الذكاء الاصطناعي الذكي", "welcome_h2": "مكتب تحالف الذكاء الاصطناعي الذكي", "send": "بدء العمل", "input_placeholder": "أدخل المهمة، سيقوم الباندا الرئيس بتفويضها لأفضل عضو..."}, "hi": {"f": "🇮🇳", "n": "हिन्दी", "sidebar_title": "टीम सदस्य", "mz_name": "मुख्य पांडा", "mz_role": "कार्य वितरण · समन्वय", "mz_scarf": "🔴 लाल दुपट्टा", "mz_role_short": "नेता", "mg_name": "भाई पांडा", "mg_role": "फ़ाइल प्रबंधन · डेटा", "mg_scarf": "🔵 नीला दुपट्टा", "mg_role_short": "फ़ाइलें", "mj_name": "बहन पांडा", "mj_role": "सूचना खोज · अनुसंधान", "mj_scarf": "💗 गुलाबी दुपट्टा", "mj_role_short": "खोज", "md_name": "छोटा भाई", "md_role": "कोड विश्लेषण · विकास", "md_scarf": "🤍 सफ़ेद दुपट्टा", "md_role_short": "Dev", "mm_name": "छोटी बहन", "mm_role": "लेखन · सामग्री", "mm_scarf": "💛 पीला दुपट्टा", "mm_role_short": "लेखन", "mm2_name": "छोटा पांडा", "mm2_role": "सामान्य सहायता · सर्वगुण", "mm2_scarf": "💚 हरा दुपट्टा", "mm2_role_short": "सब", "welcome_p": "एक-व्यक्ति व्यवसायों के लिए कार्यालय टीम, मुख्य पांडा द्वारा संचालित, विशेषज्ञ सदस्यों के साथ मिलकर हर कार्य को कुशलतापूर्वक पूरा करती है।", "rsp_mz": "समझ गया! मुख्य पांडा ने आपके अनुरोध का विश्लेषण किया है और सर्वश्रेष्ठ सदस्य का समन्वय कर रहा है।", "rsp_mg": "भाई पांडा यहाँ! फ़ाइल संबंधी कार्य मुझ पर छोड़ दें।", "rsp_mj": "बहन पांडा यहाँ! मैं तुरंत प्रासंगिक जानकारी एकत्र और विश्लेषण करूंगी।", "rsp_md": "छोटा भाई यहाँ! कोड समस्याएं मेरी विशेषता हैं।", "rsp_mm": "छोटी बहन यहाँ! लेखन और सामग्री निर्माण मुझ पर छोड़ दें।", "rsp_mm2": "छोटा पांडा यहाँ! आपको जो भी चाहिए, मैं हर चीज़ में मदद के लिए यहाँ हूँ!", "rsp_task": "कार्य:", "work_title": "जिम्मेदारियां", "mz_work1": "स्मार्ट विश्लेषण - उपयोगकर्ता इरादा समझें, जटिल कार्यों को विभाजित करें", "mz_work2": "मल्टी-एजेंट डिस्पैच - उप-एजेंटों का स्वचालित मिलान और समन्वय", "mz_work3": "गुणवत्ता आश्वासन - परिणाम एकत्रित करें, जांचें और अंतिम आउटपुट वितरित करें", "mg_work1": "फ़ाइल खोज - दस्तावेज़, चित्र, वीडियो तुरंत खोजें", "mg_work2": "फ़ाइल प्रोसेसिंग - पढ़ें/लिखें/संपादित करें, फ़ॉर्मेट बदलें, बैच नाम बदलें", "mg_work3": "दस्तावेज़ Q&A - फ़ाइल सामग्री पर आधारित स्मार्ट प्रश्नोत्तर और सारांश", "mj_work1": "वेब खोज - नवीनतम जानकारी के लिए मल्टी-इंजन खोज", "mj_work2": "अनुसंधान - गहन तुलनात्मक विश्लेषण, उद्योग रिपोर्ट, पेपर खोज", "mj_work3": "तथ्य जांच - सटीकता के लिए कई स्रोतों से क्रॉस-सत्यापन", "md_work1": "कोड विकास - बहुभाषी प्रोग्रामिंग, आर्किटेक्चर डिज़ाइन, स्क्रिप्टिंग", "md_work2": "बग फिक्स - त्रुटि निदान, कोड समीक्षा, प्रदर्शन अनुकूलन", "md_work3": "तकनीकी समाधान - स्टैक अनुशंसाएं, API एकीकरण, DB डिज़ाइन", "mm_work1": "कॉपीराइटिंग - बहुभाषी लेखन, रचनात्मक योजना, ब्रांड कॉपी", "mm_work2": "अनुवाद - 16-भाषा अनुवाद, दस्तावेज़ पॉलिशिंग, शैली अनुकूलन", "mm_work3": "फ़ॉर्मेटिंग - Markdown/HTML, तालिका निर्माण, सिंटैक्स हाइलाइटिंग", "mm2_work1": "समन्वय - क्रॉस-डोमेन कार्य प्रबंधन, मल्टी-एजेंट हब", "mm2_work2": "त्वरित प्रतिक्रिया - तत्काल जरूरतों का प्रबंधन, बैकअप सहायता", "mm2_work3": "फुल-स्टैक सपोर्ट - फ़ाइलों से कोड से खोज तक, सर्वगुण सहायक", "header_title": "AI एलायंस स्मार्ट कार्यालय", "page_title": "AI एलायंस स्मार्ट कार्यालय", "welcome_h2": "AI एलायंस स्मार्ट कार्यालय", "send": "काम शुरू करें", "input_placeholder": "कार्य दर्ज करें, मुख्य पांडा सर्वश्रेष्ठ सदस्य को सौंपेगा..."}, "th": {"f": "🇹🇭", "n": "ไทย", "sidebar_title": "สมาชิกทีม", "mz_name": "หัวหน้าแพนด้า", "mz_role": "การมอบหมายงาน · การประสานงาน", "mz_scarf": "🔴 ผ้าพันคอสีแดง", "mz_role_short": "หัวหน้า", "mg_name": "พี่แพนด้า", "mg_role": "จัดการไฟล์ · ข้อมูล", "mg_scarf": "🔵 ผ้าพันคอสีน้ำเงิน", "mg_role_short": "ไฟล์", "mj_name": "พี่สาวแพนด้า", "mj_role": "ค้นหาข้อมูล · วิจัย", "mj_scarf": "💗 ผ้าพันคอสีชมพู", "mj_role_short": "ค้นหา", "md_name": "น้องชาย", "md_role": "วิเคราะห์โค้ด · พัฒนา", "md_scarf": "🤍 ผ้าพันคอสีขาว", "md_role_short": "Dev", "mm_name": "น้องสาว", "mm_role": "การเขียน · เนื้อหา", "mm_scarf": "💛 ผ้าพันคอสีเหลือง", "mm_role_short": "เขียน", "mm2_name": "แพนด้าน้อย", "mm2_role": "สนับสนุนทั่วไป · รอบด้าน", "mm2_scarf": "💚 ผ้าพันคอสีเขียว", "mm2_role_short": "ทั้งหมด", "welcome_p": "ทีมออฟฟิศที่สร้างขึ้นสำหรับธุรกิจคนเดียว จัดการโดยหัวหน้าแพนด้า พร้อมสมาชิกผู้เชี่ยวชาญที่ทำงานร่วมกันเพื่อทำงานทุกอย่างให้สำเร็จอย่างมีประสิทธิภาพ", "rsp_mz": "เข้าใจแล้ว! หัวหน้าแพนด้าได้วิเคราะห์คำขอของคุณและกำลังประสานงานสมาชิกที่ดีที่สุด", "rsp_mg": "พี่แพนด้าที่นี่! ฝากงานไฟล์ไว้กับผม", "rsp_mj": "พี่สาวแพนด้าที่นี่! ฉันจะรวบรวมและวิเคราะห์ข้อมูลที่เกี่ยวข้องทันที", "rsp_md": "น้องชายที่นี่! ปัญหาโค้ดเป็นความเชี่ยวชาญของผม", "rsp_mm": "น้องสาวที่นี่! ฝากงานเขียนและสร้างเนื้อหาไว้กับฉัน", "rsp_mm2": "แพนด้าน้อยที่นี่! ไม่ว่าคุณต้องการอะไร ฉันพร้อมช่วยทุกอย่าง!", "rsp_task": "งาน:", "work_title": "หน้าที่", "mz_work1": "การวิเคราะห์อัจฉริยะ - เข้าใจความต้องการและแยกงานที่ซับซ้อน", "mz_work2": "การจัดส่งหลายเอเจนต์ - จับคู่และประสานงานเอเจนต์ย่อย", "mz_work3": "การประกันคุณภาพ - รวบรวมผลลัพธ์ ตรวจสอบและส่งมอบผลลัพธ์สุดท้าย", "mg_work1": "ค้นหาไฟล์ - ค้นหาเอกสาร รูปภาพ วิดีโออย่างรวดเร็ว", "mg_work2": "การประมวลผลไฟล์ - อ่าน/เขียน/แก้ไข แปลงรูปแบบ เปลี่ยนชื่อเป็นชุด", "mg_work3": "ถามตอบเอกสาร - ตอบคำถามและสรุปอัจฉริยะตามเนื้อหาไฟล์", "mj_work1": "ค้นหาเว็บ - ค้นหาหลายเครื่องมือเพื่อข้อมูลล่าสุด", "mj_work2": "การวิจัย - วิเคราะห์เปรียบเทียบเชิงลึก รายงานอุตสาหกรรม ค้นหาบทความ", "mj_work3": "ตรวจสอบข้อเท็จจริง - ตรวจสอบข้ามจากหลายแหล่งเพื่อความถูกต้อง", "md_work1": "การพัฒนาโค้ด - เขียนโปรแกรมหลายภาษา ออกแบบสถาปัตยกรรม สคริปต์", "md_work2": "แก้ไขบั๊ก - วินิจฉัยข้อผิดพลาด ตรวจสอบโค้ด เพิ่มประสิทธิภาพ", "md_work3": "โซลูชันเทคนิค - คำแนะนำเทคโนโลยี การรวม API ออกแบบฐานข้อมูล", "mm_work1": "การเขียนเนื้อหา - เขียนหลายภาษา วางแผนสร้างสรรค์ เนื้อหาแบรนด์", "mm_work2": "การแปล - แปล 16 ภาษา ขัดเกลาเอกสาร ปรับสไตล์", "mm_work3": "การจัดรูปแบบ - Markdown/HTML สร้างตาราง เน้นไวยากรณ์", "mm2_work1": "การประสานงาน - รับงานข้ามโดเมน ศูนย์กลางหลายเอเจนต์", "mm2_work2": "การตอบสนองด่วน - จัดการความต้องการเร่งด่วน สำรองข้อมูล", "mm2_work3": "การสนับสนุนเต็มรูปแบบ - จากไฟล์ถึงโค้ดถึงการค้นหา ผู้ช่วยรอบด้าน", "header_title": "สำนักงานอัจฉริยะพันธมิตร AI", "page_title": "สำนักงานอัจฉริยะพันธมิตร AI", "welcome_h2": "สำนักงานอัจฉริยะพันธมิตร AI", "send": "เริ่มทำงาน", "input_placeholder": "ป้อนงาน หัวหน้าแพนด้าจะมอบหมายให้สมาชิกที่ดีที่สุด..."}, "vi": {"f": "🇻🇳", "n": "Tiếng Việt", "sidebar_title": "Thành Viên", "mz_name": "Trưởng Gấu Trúc", "mz_role": "Phân công · Điều phối", "mz_scarf": "🔴 Khăn Đỏ", "mz_role_short": "Trưởng", "mg_name": "Anh Gấu Trúc", "mg_role": "Quản lý Tệp · Dữ liệu", "mg_scarf": "🔵 Khăn Xanh", "mg_role_short": "Tệp", "mj_name": "Chị Gấu Trúc", "mj_role": "Tìm kiếm · Nghiên cứu", "mj_scarf": "💗 Khăn Hồng", "mj_role_short": "Tìm", "md_name": "Em Trai", "md_role": "Phân tích Mã · Phát triển", "md_scarf": "🤍 Khăn Trắng", "md_role_short": "Dev", "mm_name": "Em Gái", "mm_role": "Viết lách · Nội dung", "mm_scarf": "💛 Khăn Vàng", "mm_role_short": "Viết", "mm2_name": "Gấu Trúc Nhỏ", "mm2_role": "Hỗ trợ Chung · Đa năng", "mm2_scarf": "💚 Khăn Xanh Lá", "mm2_role_short": "Tất cả", "welcome_p": "Đội ngũ văn phòng dành cho doanh nghiệp một người, được điều phối bởi Trưởng Gấu Trúc, với các thành viên chuyên biệt hợp tác để hoàn thành mọi nhiệm vụ hiệu quả.", "rsp_mz": "Đã hiểu! Trưởng Gấu Trúc đã phân tích yêu cầu của bạn và đang điều phối thành viên tốt nhất.", "rsp_mg": "Anh Gấu Trúc đây! Để việc tệp cho tôi.", "rsp_mj": "Chị Gấu Trúc đây! Tôi sẽ thu thập và phân tích thông tin liên quan ngay.", "rsp_md": "Em Trai đây! Vấn đề mã là chuyên môn của tôi.", "rsp_mm": "Em Gái đây! Để việc viết lách và tạo nội dung cho tôi.", "rsp_mm2": "Gấu Trúc Nhỏ đây! Dù bạn cần gì, tôi luôn sẵn sàng giúp đỡ mọi thứ!", "rsp_task": "Nhiệm vụ:", "work_title": "Trách nhiệm", "mz_work1": "Phân tích thông minh - Hiểu ý định người dùng, phân rã nhiệm vụ phức tạp", "mz_work2": "Điều phối đa tác nhân - Tự động ghép nối và phối hợp tác nhân phụ", "mz_work3": "Đảm bảo chất lượng - Tổng hợp kết quả, kiểm tra và bàn giao", "mg_work1": "Tìm kiếm tệp - Định vị nhanh tài liệu, hình ảnh, video", "mg_work2": "Xử lý tệp - Đọc/Ghi/Sửa, chuyển đổi định dạng, đổi tên hàng loạt", "mg_work3": "Hỏi đáp tài liệu - Hỏi đáp và tóm tắt thông minh dựa trên nội dung tệp", "mj_work1": "Tìm kiếm web - Tìm kiếm đa công cụ để có thông tin mới nhất", "mj_work2": "Nghiên cứu - Phân tích so sánh chuyên sâu, báo cáo ngành, tìm kiếm học thuật", "mj_work3": "Kiểm chứng - Xác minh chéo từ nhiều nguồn để đảm bảo độ chính xác", "md_work1": "Phát triển mã - Lập trình đa ngôn ngữ, thiết kế kiến trúc, viết script", "md_work2": "Sửa lỗi - Chẩn đoán lỗi, đánh giá mã, tối ưu hiệu suất", "md_work3": "Giải pháp kỹ thuật - Đề xuất công nghệ, tích hợp API, thiết kế CSDL", "mm_work1": "Viết nội dung - Viết đa ngôn ngữ, lập kế hoạch sáng tạo, nội dung thương hiệu", "mm_work2": "Dịch thuật - Dịch 16 ngôn ngữ, trau chuốt tài liệu, chuyển đổi phong cách", "mm_work3": "Định dạng - Markdown/HTML, tạo bảng, tô sáng cú pháp", "mm2_work1": "Điều phối - Xử lý nhiệm vụ liên miền, trung tâm đa tác nhân", "mm2_work2": "Phản hồi nhanh - Xử lý nhu cầu khẩn cấp, hỗ trợ dự phòng", "mm2_work3": "Hỗ trợ toàn diện - Từ tệp đến mã đến tìm kiếm, trợ lý đa năng", "header_title": "Văn phòng Thông minh Liên minh AI", "page_title": "Văn phòng Thông minh Liên minh AI", "welcome_h2": "Văn phòng Thông minh Liên minh AI", "send": "Bắt đầu làm việc", "input_placeholder": "Nhập nhiệm vụ, Trưởng Gấu Trúc sẽ phân công cho thành viên tốt nhất..."}, "id": {"f": "🇮🇩", "n": "Bahasa Indonesia", "sidebar_title": "Anggota Tim", "mz_name": "Kepala Panda", "mz_role": "Pengiriman Tugas · Koordinasi", "mz_scarf": "🔴 Syal Merah", "mz_role_short": "Pemimpin", "mg_name": "Kakak Panda", "mg_role": "Manajemen File · Data", "mg_scarf": "🔵 Syal Biru", "mg_role_short": "File", "mj_name": "Kakak Panda", "mj_role": "Pencarian Info · Riset", "mj_scarf": "💗 Syal Merah Muda", "mj_role_short": "Cari", "md_name": "Adik Laki", "md_role": "Analisis Kode · Pengembangan", "md_scarf": "🤍 Syal Putih", "md_role_short": "Dev", "mm_name": "Adik Perempuan", "mm_role": "Penulisan · Konten", "mm_scarf": "💛 Syal Kuning", "mm_role_short": "Tulis", "mm2_name": "Panda Kecil", "mm2_role": "Dukungan Umum · Serba Bisa", "mm2_scarf": "💚 Syal Hijau", "mm2_role_short": "Semua", "welcome_p": "Tim kantor yang dibangun untuk bisnis satu orang, diorkestrasi oleh Kepala Panda, dengan anggota spesialis yang berkolaborasi untuk menyelesaikan setiap tugas secara efisien.", "rsp_mz": "Dimengerti! Kepala Panda telah menganalisis permintaan Anda dan mengoordinasikan anggota tim terbaik.", "rsp_mg": "Kakak Panda di sini! Serahkan tugas file kepada saya.", "rsp_mj": "Kakak Panda di sini! Saya akan mengumpulkan dan menganalisis informasi yang relevan segera.", "rsp_md": "Adik Laki di sini! Masalah kode adalah keahlian saya.", "rsp_mm": "Adik Perempuan di sini! Serahkan penulisan dan pembuatan konten kepada saya.", "rsp_mm2": "Panda Kecil di sini! Apa pun yang Anda butuhkan, saya siap membantu semuanya!", "rsp_task": "Tugas:", "work_title": "Tanggung Jawab", "mz_work1": "Analisis Cerdas - Memahami maksud pengguna, mengurai tugas kompleks", "mz_work2": "Pengiriman Multi-Agen - Mencocokkan dan mengkoordinasikan sub-agen", "mz_work3": "Jaminan Kualitas - Mengumpulkan hasil, memverifikasi dan menyerahkan", "mg_work1": "Pencarian File - Temukan dokumen, gambar, video dengan cepat", "mg_work2": "Pemrosesan File - Baca/Tulis/Edit, konversi format, ganti nama massal", "mg_work3": "Tanya Jawab Dokumen - Tanya jawab dan ringkasan cerdas berdasarkan konten", "mj_work1": "Pencarian Web - Pencarian multi-mesin untuk informasi terbaru", "mj_work2": "Riset - Analisis perbandingan mendalam, laporan industri, pencarian makalah", "mj_work3": "Verifikasi Fakta - Verifikasi silang dari berbagai sumber untuk akurasi", "md_work1": "Pengembangan Kode - Pemrograman multi-bahasa, arsitektur, scripting", "md_work2": "Perbaikan Bug - Diagnosis kesalahan, tinjauan kode, optimasi kinerja", "md_work3": "Solusi Teknis - Rekomendasi stack, integrasi API, desain database", "mm_work1": "Copywriting - Penulisan multi-bahasa, perencanaan kreatif, copy merek", "mm_work2": "Terjemahan - Terjemahan 16 bahasa, pemolesan dokumen, adaptasi gaya", "mm_work3": "Pemformatan - Markdown/HTML, pembuatan tabel, penyorotan sintaks", "mm2_work1": "Koordinasi - Penanganan tugas lintas domain, hub multi-agen", "mm2_work2": "Respons Cepat - Menangani kebutuhan mendesak, dukungan cadangan", "mm2_work3": "Dukungan Full-Stack - Dari file ke kode ke pencarian, asisten serba bisa", "header_title": "Kantor Cerdas Aliansi AI", "page_title": "Kantor Cerdas Aliansi AI", "welcome_h2": "Kantor Cerdas Aliansi AI", "send": "Mulai Bekerja", "input_placeholder": "Masukkan tugas, Kepala Panda akan mendelegasikan ke anggota terbaik..."}, "it": {"f": "🇮🇹", "n": "Italiano", "sidebar_title": "Membri del Team", "mz_name": "Capo Panda", "mz_role": "Smistamento Compiti · Coordinamento", "mz_scarf": "🔴 Sciarpa Rossa", "mz_role_short": "Capo", "mg_name": "Fratello Panda", "mg_role": "Gestione File · Dati", "mg_scarf": "🔵 Sciarpa Blu", "mg_role_short": "File", "mj_name": "Sorella Panda", "mj_role": "Ricerca Info · Studio", "mj_scarf": "💗 Sciarpa Rosa", "mj_role_short": "Ricerca", "md_name": "Fratellino", "md_role": "Analisi Codice · Sviluppo", "md_scarf": "🤍 Sciarpa Bianca", "md_role_short": "Dev", "mm_name": "Sorellina", "mm_role": "Copywriting · Contenuti", "mm_scarf": "💛 Sciarpa Gialla", "mm_role_short": "Scrittura", "mm2_name": "Piccolo Panda", "mm2_role": "Supporto Generale · Tuttofare", "mm2_scarf": "💚 Sciarpa Verde", "mm2_role_short": "Tutto", "welcome_p": "Un team d'ufficio per aziende individuali, orchestrato dal Capo Panda, con membri specializzati che collaborano per completare ogni compito in modo efficiente.", "rsp_mz": "Capito! Capo Panda ha analizzato la tua richiesta e sta coordinando il miglior membro del team.", "rsp_mg": "Fratello Panda qui! Lascia a me i compiti sui file.", "rsp_mj": "Sorella Panda qui! Raccolgo e analizzo subito le informazioni pertinenti.", "rsp_md": "Fratellino qui! I problemi di codice sono la mia specialità.", "rsp_mm": "Sorellina qui! Lascia a me la scrittura e la creazione di contenuti.", "rsp_mm2": "Piccolo Panda qui! Qualsiasi cosa ti serva, sono qui per aiutare con tutto!", "rsp_task": "Compito:", "work_title": "Responsabilità", "mz_work1": "Analisi intelligente - Comprendere l'intento e scomporre compiti complessi", "mz_work2": "Smistamento multi-agente - Abbinare e coordinare i sotto-agenti", "mz_work3": "Garanzia qualità - Aggregare risultati, verificare e consegnare", "mg_work1": "Ricerca file - Localizzare documenti, immagini, video", "mg_work2": "Elaborazione file - Leggi/Scrivi/Modifica, conversione, rinomina in blocco", "mg_work3": "Domande e risposte su documenti - Q&A e riassunti intelligenti", "mj_work1": "Ricerca web - Ricerca multi-motore per le ultime informazioni", "mj_work2": "Ricerca - Analisi comparativa approfondita, report, ricerca accademica", "mj_work3": "Fact-check - Verifica incrociata da più fonti per l'accuratezza", "md_work1": "Sviluppo codice - Programmazione multi-linguaggio, architettura, scripting", "md_work2": "Correzione bug - Diagnosi errori, revisione codice, ottimizzazione", "md_work3": "Soluzioni tecniche - Consigli stack, integrazione API, progettazione DB", "mm_work1": "Copywriting - Scrittura multilingue, pianificazione creativa, copy brand", "mm_work2": "Traduzione - Traduzione in 16 lingue, rifinitura, adattamento stile", "mm_work3": "Formattazione - Markdown/HTML, creazione tabelle, evidenziazione sintassi", "mm2_work1": "Coordinamento - Gestione compiti interdominio, hub multi-agente", "mm2_work2": "Risposta rapida - Gestire esigenze urgenti, supporto di riserva", "mm2_work3": "Supporto completo - Dai file al codice alla ricerca, assistente versatile", "header_title": "Ufficio Intelligente Alleanza IA", "page_title": "Ufficio Intelligente Alleanza IA", "welcome_h2": "Ufficio Intelligente Alleanza IA", "send": "Inizia a lavorare", "input_placeholder": "Inserisci compito, Capo Panda delegherà al miglior membro..."}};
+
+let curLang = 'zh-CN';
+function L(key) {
+  const d = LANG_DATA[curLang];
+  if (!d) return key;
+  if (d[key] !== undefined) return d[key];
+  if (LANG_DATA['zh-CN'] && LANG_DATA['zh-CN'][key] !== undefined) return LANG_DATA['zh-CN'][key];
+  return key;
+}
+
+function applyI18N() {
+  document.querySelectorAll('[data-key]').forEach(el => { const v = L(el.getAttribute('data-key')); if (v !== undefined) el.textContent = v; });
+  document.querySelectorAll('[data-key-placeholder]').forEach(el => { const v = L(el.getAttribute('data-key-placeholder')); if (v) el.placeholder = v; });
+  document.title = L('page_title');
+}
+
+function setLang(lang) {
+  if (!LANG_DATA[lang]) return;
+  curLang = lang;
+  document.getElementById('langSelect').value = lang;
+  applyI18N();
+  renderWelcome();
+  renderMessages();
+}
+
+// Agent config
+const SCARF_COLORS = {
+  mengzhu: '#ef4444', mengge: '#3b82f6', mengjie: '#ec4899',
+  mengdi: '#94a3b8', mengmei: '#facc15', mengmeng: '#22c55e'
+};
+const AGENT_IDS = ['mengzhu','mengge','mengjie','mengdi','mengmei','mengmeng'];
+const AGENT_PREFIX = {
+  mengzhu:'mz', mengge:'mg', mengjie:'mj', mengdi:'md', mengmei:'mm', mengmeng:'mm2'
+};
+const AGENT_COLORS = {
+  mengzhu:'#ef4444', mengge:'#3b82f6', mengjie:'#ec4899',
+  mengdi:'#cbd5e1', mengmei:'#facc15', mengmeng:'#22c55e'
+};
+
+function getAgentName(id) { return L(AGENT_PREFIX[id]+'_name') || id; }
+
+let state = { activeAgent:'mengzhu', messages:[], isProcessing:false };
+
+function selectAgent(id) {
+  state.activeAgent = id;
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-'+id);
+  if (card) card.classList.add('active');
+  if (state.messages.length === 0) renderWelcome();
+}
+
+function focusInput() { document.getElementById('msgInput').focus(); }
+
+// Build panda desk scene HTML
+function buildDeskScene(id) {
+  const prefix = AGENT_PREFIX[id];
+  const color = SCARF_COLORS[id];
+  return '<div class="desk-scene" onclick="selectAgent(''+id+'')" style="position:relative">'+
+    '<div class="panda-body-wrap anim">'+
+      '<div class="panda-head"></div>'+
+      '<div class="panda-ear l"></div><div class="panda-ear r"></div>'+
+      '<div class="panda-eye-patch l" style="animation:blink 4s ease-in-out infinite"></div>'+
+      '<div class="panda-eye-patch r" style="animation:blink 4s ease-in-out infinite"></div>'+
+      '<div class="panda-pupil l"></div><div class="panda-pupil r"></div>'+
+      '<div class="panda-nose"></div><div class="panda-mouth"></div>'+
+      '<div class="panda-scarf" style="background:'+color+'"></div>'+
+      '<div class="panda-scarf-tail" style="background:'+color+'"></div>'+
+      '<div class="panda-torso"></div>'+
+      '<div class="panda-arm l"></div><div class="panda-arm r"></div>'+
+      '<div class="panda-leg l"></div><div class="panda-leg r"></div>'+
+      '<div class="panda-foot l"></div><div class="panda-foot r"></div>'+
+    '</div>'+
+    '<div style="width:100%;position:relative;height:32px">'+
+      '<div class="computer"><div class="monitor"><div class="monitor-screen"></div></div><div class="monitor-stand"></div><div class="monitor-base"></div></div>'+
+      '<div class="keyboard"></div>'+
+      '<div class="desk-table"><div class="desk-leg-l"></div><div class="desk-leg-r"></div></div>'+
+    '</div>'+
+    '<div class="desk-name">'+L(prefix+'_name')+'</div>'+
+    '<div class="desk-scarf-label" style="background:rgba('+ (color==='#ef4444'?'239,68,68':color==='#3b82f6'?'59,130,246':color==='#ec4899'?'236,72,153':color==='#94a3b8'?'148,163,184':color==='#facc15'?'250,204,21':'34,197,94') +',0.15);color:'+color+'">'+L(prefix+'_scarf')+'</div>'+
+    '<div class="desk-work">'+
+      '<div class="desk-work-item">📋 '+L(prefix+'_work1')+'</div>'+
+      '<div class="desk-work-item">⚡ '+L(prefix+'_work2')+'</div>'+
+      '<div class="desk-work-item">✅ '+L(prefix+'_work3')+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderWelcome() {
+  const chat = document.getElementById('chatArea');
+  let html = '<div class="welcome-msg">'+
+    '<h2 data-key="welcome_h2">'+L('welcome_h2')+'</h2>'+
+    '<p class="subtitle" data-key="welcome_p">'+L('welcome_p')+'</p>'+
+    '<div class="desk-grid">';
+  AGENT_IDS.forEach(id => { html += buildDeskScene(id); });
+  html += '</div></div>';
+  chat.innerHTML = html;
+}
+
+function renderMessages() {
+  const chat = document.getElementById('chatArea');
+  chat.innerHTML = '';
+  if (state.messages.length === 0) { renderWelcome(); return; }
+  state.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (m.role==='user'?'user':'agent');
+    if (m.role==='user') {
+      div.innerHTML = '<div class="avatar">👤</div><div class="bubble">'+m.text.replace(/\n/g,'<br>')+'</div>';
+    } else {
+      const info = AGENT_PREFIX[m.agentId] || 'mz';
+      div.innerHTML = '<div class="avatar">🐼</div><div class="bubble"><div class="sender">'+getAgentName(m.agentId)+'</div>'+m.text.replace(/\n/g,'<br>')+'</div>';
+    }
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addTyping(agentId) {
+  const chat = document.getElementById('chatArea');
+  const welcome = chat.querySelector('.welcome-msg');
+  if (welcome) welcome.remove();
+  const div = document.createElement('div');
+  div.className = 'msg agent'; div.id = 'typing-'+agentId;
+  div.innerHTML = '<div class="avatar">🐼</div><div class="bubble"><div class="sender">'+getAgentName(agentId)+'</div><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping(agentId) {
+  const el = document.getElementById('typing-'+agentId);
+  if (el) el.remove();
+}
+
+function dispatchTask(userMsg) {
+  const lower = userMsg.toLowerCase();
+  const keywords = {
+    mengge:['文件','文件夹','路径','读取','写入','保存','删除','重命名','下载','上传','压缩','解压','file','folder','path','read','write','save','delete','rename','download','zip','csv','json','xml'],
+    mengjie:['搜索','查找','查询','调研','对比','最新','新闻','资料','论文','报告','排行','search','find','query','research','latest','news','compare','paper','report','price'],
+    mengdi:['代码','编程','函数','bug','错误','调试','算法','接口','api','前端','后端','数据库','code','function','debug','error','algorithm','sql','python','js','html','css','git'],
+    mengmei:['写','翻译','文案','文章','文档','报告','邮件','润色','总结','摘要','介绍','write','translate','article','email','document','summary','polish','essay'],
+    mengmeng:['帮助','帮忙','支持','协助','综合','help','support','assist']
+  };
+  let scores = {mengge:0,mengjie:0,mengdi:0,mengmei:0,mengmeng:0};
+  Object.entries(keywords).forEach(([agent,words]) => { words.forEach(w => { if (lower.includes(w.toLowerCase())) scores[agent]++; }); });
+  let best='mengzhu', bestScore=0, ties=[];
+  Object.entries(scores).forEach(([agent,score]) => {
+    if (score>bestScore) { bestScore=score; best=agent; ties=[agent]; }
+    else if (score===bestScore && score>0) ties.push(agent);
+  });
+  if (bestScore===0) best='mengzhu';
+  else if (ties.length>1) best='mengzhu';
+  return best;
+}
+
+function generateResponse(agentId, userMsg) {
+  const prefix = AGENT_PREFIX[agentId];
+  const rsp = L('rsp_'+prefix);
+  return (rsp || L('rsp_mz')) + '\n\n' + L('rsp_task') + '「' + userMsg + '」';
+}
+
+function sendMsg() {
+  if (state.isProcessing) return;
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const welcome = document.getElementById('chatArea').querySelector('.welcome-msg');
+  if (welcome) welcome.remove();
+
+  state.messages.push({role:'user',agentId:'mengzhu',text:text,time:Date.now()});
+
+  const targetAgent = dispatchTask(text);
+  state.isProcessing = true;
+  document.getElementById('sendBtn').disabled = true;
+  addTyping(targetAgent);
+
+  const delay = 800 + Math.random()*1200;
+  setTimeout(() => {
+    removeTyping(targetAgent);
+    const response = generateResponse(targetAgent, text);
+    state.messages.push({role:'agent',agentId:targetAgent,text:response,time:Date.now()});
+    state.isProcessing = false;
+    document.getElementById('sendBtn').disabled = false;
+    renderMessages();
+    focusInput();
+  }, delay);
+}
+
+renderWelcome();
+focusInput();
+</script>
+</body>
+</html>
