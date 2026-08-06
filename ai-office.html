@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-key="page_title">AI Office - 智能办公团队</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg: #0a0e17;
+  --card: #111827;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --user-bubble: #1e3a5f;
+  --agent-bubble: #1a1f2e;
+}
+body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header{
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1{
+  font-size: 17px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-right{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lang-switch{
+  position: relative;
+}
+.lang-switch select{
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.team-status{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.agent-dot{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.agent-dot .dot{
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+.dot.offline{ background: var(--muted); animation: none; }
+.dot.busy{ background: var(--warn); }
+@keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.layout{
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.sidebar{
+  width: 260px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.sidebar h3{
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.agent-card{
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.agent-card:hover{
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+.agent-card.active{
+  border-color: var(--accent2);
+  background: rgba(99,102,241,0.08);
+}
+.agent-card .icon{
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.agent-card .name{
+  font-size: 13px;
+  font-weight: 600;
+}
+.agent-card .role{
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.agent-card .badge{
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 6px;
+  background: rgba(99,102,241,0.15);
+  color: var(--accent);
+}
+
+.main{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chat-area{
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.welcome-msg{
+  text-align: center;
+  margin: auto;
+  max-width: 500px;
+}
+.welcome-msg h2{
+  font-size: 28px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.welcome-msg p{
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.team-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.team-grid .mini-agent{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.team-grid .mini-agent:hover{
+  border-color: var(--accent);
+}
+.team-grid .mini-agent .mi{
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.msg{
+  display: flex;
+  gap: 12px;
+  max-width: 80%;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.msg.user{ align-self: flex-end; flex-direction: row-reverse; }
+.msg.agent{ align-self: flex-start; }
+.msg .avatar{
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.msg.user .avatar{ background: var(--accent); }
+.msg.agent .avatar{ background: var(--border); }
+.msg .bubble{
+  padding: 12px 16px;
+  border-radius: 14px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.msg.user .bubble{
+  background: var(--user-bubble);
+  border-bottom-right-radius: 4px;
+}
+.msg.agent .bubble{
+  background: var(--agent-bubble);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.msg .sender{
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.msg .bubble pre{
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.msg .bubble code{
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.dispatch-card{
+  background: var(--card);
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.typing-indicator{
+  display: flex;
+  gap: 4px;
+  padding: 8px 0;
+}
+.typing-indicator span{
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite;
+}
+.typing-indicator span:nth-child(2){ animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3){ animation-delay: 0.4s; }
+@keyframes bounce{ 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+.input-bar{
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+}
+.input-bar input{
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+}
+.input-bar input:focus{ border-color: var(--accent); }
+.input-bar input::placeholder{ color: var(--muted); }
+.input-bar button{
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.input-bar button:hover{ opacity: 0.9; }
+.input-bar button:disabled{ opacity: 0.5; cursor: not-allowed; }
+.auto-btn{
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+  font-size: 12px !important;
+}
+
+@media (max-width: 768px){
+  .sidebar{ display: none; }
+  .msg{ max-width: 95%; }
+  .team-status{ display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 data-key="header_title">AI Office - 智能办公团队</h1>
+  <div class="header-right">
+    <div class="lang-switch">
+      <select id="langSelect" onchange="setLang(this.value)">
+        <option value="zh-CN">🇨🇳 简体中文</option>
+        <option value="zh-TW">🇹🇼 繁體中文</option>
+        <option value="en">🇺🇸 English</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="ko">🇰🇷 한국어</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="pt">🇵🇹 Português</option>
+        <option value="ru">🇷🇺 Русский</option>
+        <option value="ar">🇸🇦 العربية</option>
+        <option value="hi">🇮🇳 हिन्दी</option>
+        <option value="th">🇹🇭 ไทย</option>
+        <option value="vi">🇻🇳 Tiếng Việt</option>
+        <option value="id">🇮🇩 Bahasa Indonesia</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+    </div>
+    <div class="team-status">
+      <div class="agent-dot"><span class="dot" id="dot-manager"></span>Manager</div>
+      <div class="agent-dot"><span class="dot" id="dot-file"></span>File Agent</div>
+      <div class="agent-dot"><span class="dot" id="dot-search"></span>Search Agent</div>
+      <div class="agent-dot"><span class="dot" id="dot-code"></span>Code Agent</div>
+      <div class="agent-dot"><span class="dot" id="dot-writer"></span>Writer</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3 data-key="sidebar_title">团队成员</h3>
+    <div class="agent-card active" onclick="selectAgent('manager')" id="card-manager">
+      <div class="icon">🧠</div>
+      <div class="name" data-key="mgr_name">Manager</div>
+      <div class="role" data-key="mgr_role">任务调度 & 协调分发</div>
+      <div class="badge" data-key="mgr_badge">主控</div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('file')" id="card-file">
+      <div class="icon">📁</div>
+      <div class="name" data-key="file_name">File Agent</div>
+      <div class="role" data-key="file_role">文件管理 & 数据处理</div>
+      <div class="badge" data-key="file_badge">文件</div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('search')" id="card-search">
+      <div class="icon">🔍</div>
+      <div class="name" data-key="srch_name">Search Agent</div>
+      <div class="role" data-key="srch_role">信息检索 & 资料调研</div>
+      <div class="badge" data-key="srch_badge">搜索</div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('code')" id="card-code">
+      <div class="icon">💻</div>
+      <div class="name" data-key="code_name">Code Agent</div>
+      <div class="role" data-key="code_role">代码分析 & 开发辅助</div>
+      <div class="badge" data-key="code_badge">开发</div>
+    </div>
+    <div class="agent-card" onclick="selectAgent('writer')" id="card-writer">
+      <div class="icon">✍️</div>
+      <div class="name" data-key="wrt_name">Writer</div>
+      <div class="role" data-key="wrt_role">文案撰写 & 内容创作</div>
+      <div class="badge" data-key="wrt_badge">创作</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="chat-area" id="chatArea">
+      <div class="welcome-msg">
+        <h2 data-key="welcome_h2">AI Office 办公团队</h2>
+        <p data-key="welcome_p">一个像 Marvis 办公室一样的智能团队，由 Manager 统一调度，各专业 Agent 分工协作，高效完成你的每一项任务。</p>
+      </div>
+    </div>
+    <div class="input-bar">
+      <button class="auto-btn" onclick="toggleAuto()" id="autoBtn">🔀 Auto</button>
+      <input type="text" id="msgInput" data-key-placeholder="input_auto" placeholder="输入任务，Manager 将自动分发给最合适的 Agent..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()" id="sendBtn" data-key="send">发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ i18n ============
+const LANG_DATA = JSON.parse(document.getElementById('lang-data-json').textContent);
+
+let curLang = 'zh-CN';
+function getLang() { return curLang; }
+
+function L(key) {
+  const d = LANG_DATA[curLang];
+  if (!d) return key;
+  if (d[key] !== undefined) return d[key];
+  if (LANG_DATA['zh-CN'] && LANG_DATA['zh-CN'][key] !== undefined) return LANG_DATA['zh-CN'][key];
+  return key;
+}
+
+function applyI18N() {
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const k = el.getAttribute('data-key');
+    if (!k || k.startsWith('aio_')) return; // skip index.html keys
+    const v = L(k);
+    if (v !== undefined) el.textContent = v;
+  });
+  document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-key-placeholder');
+    const v = L(k);
+    if (v) el.placeholder = v;
+  });
+  // Update document title
+  document.title = L('page_title');
+  // Update welcome panel if visible
+  updateWelcomePanel();
+  updateAutoLabel();
+  updateInputPlaceholder();
+}
+
+function updateWelcomePanel() {
+  const welcome = document.querySelector('.welcome-msg');
+  if (!welcome) return;
+  const h2 = welcome.querySelector('h2');
+  const p = welcome.querySelector('p');
+  if (h2 && h2.hasAttribute('data-key')) h2.textContent = L(h2.getAttribute('data-key'));
+  if (p && p.hasAttribute('data-key')) p.textContent = L(p.getAttribute('data-key'));
+}
+
+function updateAutoLabel() {
+  const btn = document.getElementById('autoBtn');
+  if (btn) btn.textContent = '🔀 ' + L(state.autoMode ? 'auto_checked' : 'auto');
+}
+
+function updateInputPlaceholder() {
+  const input = document.getElementById('msgInput');
+  if (!input) return;
+  if (state.autoMode || state.activeAgent === 'manager') {
+    input.setAttribute('data-key-placeholder', 'input_auto');
+    input.placeholder = L('input_auto');
+  } else {
+    input.placeholder = L('input_direct').replace('{name}', AGENTS[state.activeAgent].name);
+  }
+}
+
+function setLang(lang) {
+  if (!LANG_DATA[lang]) return;
+  curLang = lang;
+  document.getElementById('langSelect').value = lang;
+  applyI18N();
+  // Re-render chat messages to update dispatch cards
+  renderMessages();
+}
+
+// ============ Agent definitions ============
+const AGENT_ICONS = {
+  manager: '🧠', file: '📁', search: '🔍', code: '💻', writer: '✍️'
+};
+const AGENT_KEY_PREFIX = {
+  manager: 'mgr_', file: 'file_', search: 'srch_', code: 'code_', writer: 'wrt_'
+};
+
+function getAgentName(id) { return L(AGENT_KEY_PREFIX[id] + 'name') || id; }
+function getAgentRole(id) { return L(AGENT_KEY_PREFIX[id] + 'role') || ''; }
+
+const AGENTS = {};
+['manager','file','search','code','writer'].forEach(id => {
+  AGENTS[id] = {
+    id: id,
+    get name() { return getAgentName(id); },
+    get role() { return getAgentRole(id); },
+    icon: AGENT_ICONS[id],
+    emoji: id === 'file' ? '📂' : id === 'search' ? '🌐' : id === 'code' ? '⚡' : id === 'writer' ? '📝' : '🧠'
+  };
+});
+
+// ============ State ============
+let state = {
+  activeAgent: 'manager',
+  autoMode: true,
+  messages: [],
+  isProcessing: false
+};
+
+// ============ UI ============
+function selectAgent(id) {
+  state.activeAgent = id;
+  state.autoMode = false;
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.add('active');
+  updateAutoLabel();
+  updateInputPlaceholder();
+}
+
+function toggleAuto() {
+  state.autoMode = !state.autoMode;
+  if (state.autoMode) {
+    document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+    const card = document.getElementById('card-manager');
+    if (card) card.classList.add('active');
+    state.activeAgent = 'manager';
+  }
+  updateAutoLabel();
+  updateInputPlaceholder();
+}
+
+function focusInput() { document.getElementById('msgInput').focus(); }
+
+function setDot(id, status) {
+  const dot = document.getElementById('dot-' + id);
+  if (!dot) return;
+  dot.className = 'dot ' + status;
+}
+
+// ============ Render ============
+function renderMessages() {
+  const chat = document.getElementById('chatArea');
+  chat.innerHTML = '';
+  if (state.messages.length === 0) {
+    chat.innerHTML = '<div class="welcome-msg"><h2 data-key="welcome_h2">' + L('welcome_h2') + '</h2><p data-key="welcome_p">' + L('welcome_p') + '</p></div>';
+    return;
+  }
+  state.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (m.role === 'user' ? 'user' : 'agent');
+    const agent = AGENTS[m.agentId] || AGENTS.manager;
+    let bubbleHtml = '';
+
+    if (m.role === 'user') {
+      bubbleHtml = m.text.replace(/\n/g, '<br>');
+      div.innerHTML = '<div class="avatar">👤</div><div class="bubble">' + bubbleHtml + '</div>';
+    } else {
+      let dispatchHtml = '';
+      if (m.dispatchLog) {
+        dispatchHtml = '<div class="dispatch-card">🔀 ' + L('dispatch_flow') + '：' + m.dispatchLog.flow + '</div>';
+      }
+      let textHtml = m.text
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      div.innerHTML = '<div class="avatar">' + agent.icon + '</div><div class="bubble"><div class="sender">' + agent.name + '</div>' + dispatchHtml + textHtml + '</div>';
+    }
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addTyping(agentId) {
+  const chat = document.getElementById('chatArea');
+  const welcome = chat.querySelector('.welcome-msg');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.id = 'typing-' + agentId;
+  const agent = AGENTS[agentId];
+  div.innerHTML = '<div class="avatar">' + agent.icon + '</div><div class="bubble"><div class="sender">' + agent.name + '</div><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping(agentId) {
+  const el = document.getElementById('typing-' + agentId);
+  if (el) el.remove();
+}
+
+// ============ Dispatch ============
+function dispatchTask(userMsg) {
+  const lower = userMsg.toLowerCase();
+  const keywords = {
+    file: ['文件','文件夹','路径','读取','写入','保存','删除','重命名','下载','上传','压缩','解压','file','folder','path','read','write','save','delete','rename','download','zip','csv','json','xml'],
+    search: ['搜索','查找','查询','调研','对比','最新','新闻','资料','论文','报告','排行','search','find','query','research','latest','news','compare','paper','report','price'],
+    code: ['代码','编程','函数','bug','错误','调试','算法','接口','api','前端','后端','数据库','code','function','debug','error','algorithm','sql','python','js','html','css','git'],
+    writer: ['写','翻译','文案','文章','文档','报告','邮件','润色','总结','摘要','介绍','write','translate','article','email','document','summary','polish','essay']
+  };
+
+  let scores = { file: 0, search: 0, code: 0, writer: 0 };
+  Object.entries(keywords).forEach(([agent, words]) => {
+    words.forEach(w => { if (lower.includes(w.toLowerCase())) scores[agent] += 1; });
+  });
+
+  let best = 'file', bestScore = 0, ties = [];
+  Object.entries(scores).forEach(([agent, score]) => {
+    if (score > bestScore) { bestScore = score; best = agent; ties = [agent]; }
+    else if (score === bestScore && score > 0) { ties.push(agent); }
+  });
+  if (bestScore === 0) best = 'manager';
+  else if (ties.length > 1) best = 'manager';
+  return best;
+}
+
+// ============ Generate Response ============
+function generateResponse(agentId, userMsg) {
+  const lower = userMsg.toLowerCase();
+  const lang = curLang;
+
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  const prefixes = {
+    manager: ['rsp_mgr_1','rsp_mgr_2','rsp_mgr_3'],
+    file: ['rsp_file_1','rsp_file_2','rsp_file_3'],
+    search: ['rsp_srch_1','rsp_srch_2','rsp_srch_3'],
+    code: ['rsp_code_1','rsp_code_2','rsp_code_3'],
+    writer: ['rsp_wrt_1','rsp_wrt_2','rsp_wrt_3']
+  };
+
+  let prefix = L(pick(prefixes[agentId] || prefixes.manager));
+  let body = '';
+
+  if (agentId === 'file') {
+    if (lower.includes('搜索') || lower.includes('找') || lower.includes('search') || lower.includes('find')) {
+      body = L('rsp_gen_file_search') + '\n\n```\nsearch: ' + userMsg + '\ntarget: /workspace/\nstatus: ready\n```';
+    } else if (lower.includes('读') || lower.includes('查看') || lower.includes('read')) {
+      body = L('rsp_gen_file_read');
+    } else {
+      body = L('rsp_gen_file_default');
+    }
+  } else if (agentId === 'search') {
+    body = L('rsp_gen_srch') + '\n\n| ' + L('table_dim') + ' | ' + L('table_content') + ' |\n|------|------|\n| ' + L('table_topic') + ' | ' + userMsg + ' |\n| ' + L('table_source') + ' | ' + L('table_multi_source') + ' |\n| ' + L('table_status') + ' | ' + L('table_ready') + ' |';
+  } else if (agentId === 'code') {
+    if (lower.includes('生成') || lower.includes('写') || lower.includes('generate') || lower.includes('write')) {
+      body = '```javascript\n' + L('rsp_gen_code_gen') + '\nfunction main() {\n  // ' + userMsg + '\n  console.log("Hello from Code Agent");\n}\n```';
+    } else if (lower.includes('错') || lower.includes('bug') || lower.includes('error')) {
+      body = L('rsp_gen_code_bug') + '\n1. Check call stack for exception point\n2. Review variable scope and types\n3. Verify boundary conditions\n\nPlease provide complete error details for precise diagnosis.';
+    } else {
+      body = L('rsp_gen_code_default') + '\n- Language: JavaScript/Python\n- Architecture: Modular design\n- Dependencies: Minimal external libraries\n\nConfirm to proceed with implementation.';
+    }
+  } else if (agentId === 'writer') {
+    if (lower.includes('翻译') || lower.includes('translate')) {
+      body = L('rsp_gen_wrt_trans');
+    } else {
+      body = L('rsp_gen_wrt_default') + '\n\n---\n**Key Points**\n1. Structured presentation with clear hierarchy\n2. Key information highlighted\n3. Style matched to target scenario\n\n---\n\nConfirm direction, can refine further.';
+    }
+  } else {
+    body = 'Manager has completed task analysis. Please clarify requirements for detailed execution.';
+  }
+
+  return prefix + '\n\n' + body;
+}
+
+// ============ Send Message ============
+function sendMsg() {
+  if (state.isProcessing) return;
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const welcome = document.getElementById('chatArea').querySelector('.welcome-msg');
+  if (welcome) welcome.remove();
+
+  // User message
+  state.messages.push({ role: 'user', agentId: 'manager', text: text, dispatchLog: null, time: Date.now() });
+
+  // Auto dispatch
+  let targetAgent = state.activeAgent;
+  let dispatchLog = null;
+
+  if (state.autoMode || state.activeAgent === 'manager') {
+    const dispatched = dispatchTask(text);
+    if (dispatched !== 'manager') {
+      targetAgent = dispatched;
+      dispatchLog = { flow: 'Manager → ' + getAgentName(dispatched) };
+    }
+  }
+
+  state.isProcessing = true;
+  document.getElementById('sendBtn').disabled = true;
+  setDot(targetAgent, 'busy');
+  addTyping(targetAgent);
+
+  const delay = 800 + Math.random() * 1200;
+  setTimeout(() => {
+    removeTyping(targetAgent);
+    setDot(targetAgent, '');
+    const response = generateResponse(targetAgent, text);
+    state.messages.push({ role: 'agent', agentId: targetAgent, text: response, dispatchLog: dispatchLog, time: Date.now() });
+    state.isProcessing = false;
+    document.getElementById('sendBtn').disabled = false;
+    renderMessages();
+    focusInput();
+  }, delay);
+}
+
+// ============ Init ============
+updateAutoLabel();
+updateInputPlaceholder();
+focusInput();
+</script>
+
+<script id="lang-data-json" type="application/json">{"zh-CN":{"f":"🇨🇳","n":"简体中文","auto_checked":"自动 ✓","page_title":"AI Office - 智能办公团队","header_title":"AI Office - 智能办公团队","sidebar_title":"团队成员","mgr_name":"Manager","mgr_role":"任务调度 & 协调分发","mgr_skills":"任务分析 | Agent调度 | 结果汇总 | 流程编排","mgr_badge":"主控","file_name":"File Agent","file_role":"文件管理 & 数据处理","file_skills":"文件搜索 | 读写操作 | 格式转换 | 批量处理","file_badge":"文件","srch_name":"Search Agent","srch_role":"信息检索 & 资料调研","srch_skills":"联网搜索 | 资料调研 | 对比分析 | 综述报告","srch_badge":"搜索","code_name":"Code Agent","code_role":"代码分析 & 开发辅助","code_skills":"代码生成 | Bug分析 | 代码审查 | 架构设计","code_badge":"开发","wrt_name":"Writer","wrt_role":"文案撰写 & 内容创作","wrt_skills":"文案创作 | 多语翻译 | 文档编写 | 内容润色","wrt_badge":"创作","auto":"自动","send":"发送","input_auto":"输入任务，Manager 将自动分发给最合适的 Agent...","input_direct":"直接与 {name} 对话...","dispatch_flow":"任务分派","welcome_h2":"AI Office 办公团队","welcome_p":"一个像 Marvis 办公室一样的智能团队，由 Manager 统一调度，各专业 Agent 分工协作，高效完成你的每一项任务。","status_online":"在线","thinking":"思考中...","rsp_mgr_1":"收到任务。经分析，该需求涉及多个领域，已协调相关 Agent 协同处理。核心结论如下：","rsp_mgr_2":"已理解你的需求。Manager 已完成任务分解和 Agent 调度。以下是汇总结果：","rsp_mgr_3":"任务已接收并分派完毕。根据各 Agent 反馈，整理如下：","rsp_file_1":"文件任务已受理。建议操作路径如下，请确认后执行：","rsp_file_2":"文件操作请求已分析。当前可行的处理方案：","rsp_file_3":"已扫描相关文件结构。处理建议：","rsp_srch_1":"检索任务已启动。根据多渠道搜索结果，关键信息如下：","rsp_srch_2":"多源搜索已完成。汇总核心发现：","rsp_srch_3":"信息调研结果如下，附来源标注：","rsp_code_1":"代码任务已分析。以下是实现方案：","rsp_code_2":"技术方案已评估。推荐的代码实现：","rsp_code_3":"代码审查/生成结果如下：","rsp_wrt_1":"文案任务已接收。根据你的需求，内容如下：","rsp_wrt_2":"已理解创作方向。成品如下：","rsp_wrt_3":"内容已生成，请审阅：","rsp_gen_file_search":"在指定目录中搜索匹配文件，返回结果列表供选择。","rsp_gen_file_read":"已定位目标文件，内容提取中。请指定需要读取的具体文件路径。","rsp_gen_file_default":"文件操作已受理，请进一步指定目标路径和操作类型。","rsp_gen_srch":"调研结果：","rsp_gen_code_gen":"// 根据需求生成的代码框架","rsp_gen_code_bug":"Bug 分析：","rsp_gen_code_default":"代码需求已分析。技术方案：","rsp_gen_wrt_trans":"翻译任务已完成。源语言 → 目标语言映射已应用，保持语义一致性和术语准确。请提供原文及目标语种。","rsp_gen_wrt_default":"相关内容已生成：","table_dim":"维度","table_content":"内容","table_topic":"主题","table_source":"来源","table_status":"状态","table_multi_source":"多渠道检索","table_ready":"数据可用"},"zh-TW":{"f":"🇹🇼","n":"繁體中文","auto_checked":"自動 ✓","page_title":"AI Office - 智能辦公團隊","header_title":"AI Office - 智能辦公團隊","sidebar_title":"團隊成員","mgr_name":"Manager","mgr_role":"任務調度 & 協調分發","mgr_skills":"任務分析 | Agent調度 | 結果匯總 | 流程編排","mgr_badge":"主控","file_name":"File Agent","file_role":"檔案管理 & 資料處理","file_skills":"檔案搜尋 | 讀寫操作 | 格式轉換 | 批次處理","file_badge":"檔案","srch_name":"Search Agent","srch_role":"資訊檢索 & 資料調研","srch_skills":"聯網搜尋 | 資料調研 | 對比分析 | 綜述報告","srch_badge":"搜尋","code_name":"Code Agent","code_role":"程式碼分析 & 開發輔助","code_skills":"程式碼生成 | Bug分析 | 程式碼審查 | 架構設計","code_badge":"開發","wrt_name":"Writer","wrt_role":"文案撰寫 & 內容創作","wrt_skills":"文案創作 | 多語翻譯 | 文件編寫 | 內容潤色","wrt_badge":"創作","auto":"自動","send":"發送","input_auto":"輸入任務，Manager 將自動分發給最合適的 Agent...","input_direct":"直接與 {name} 對話...","dispatch_flow":"任務分派","welcome_h2":"AI Office 辦公團隊","welcome_p":"一個像 Marvis 辦公室一樣的智能團隊，由 Manager 統一調度，各專業 Agent 分工協作，高效完成你的每一項任務。","status_online":"線上","thinking":"思考中...","rsp_mgr_1":"收到任務。經分析，該需求涉及多個領域，已協調相關 Agent 協同處理。核心結論如下：","rsp_mgr_2":"已理解你的需求。Manager 已完成任務分解和 Agent 調度。以下是匯總結果：","rsp_mgr_3":"任務已接收並分派完畢。根據各 Agent 回饋，整理如下：","rsp_file_1":"檔案任務已受理。建議操作路徑如下，請確認後執行：","rsp_file_2":"檔案操作請求已分析。當前可行的處理方案：","rsp_file_3":"已掃描相關檔案結構。處理建議：","rsp_srch_1":"檢索任務已啟動。根據多渠道搜尋結果，關鍵資訊如下：","rsp_srch_2":"多源搜尋已完成。匯總核心發現：","rsp_srch_3":"資訊調研結果如下，附來源標註：","rsp_code_1":"程式碼任務已分析。以下是實現方案：","rsp_code_2":"技術方案已評估。推薦的程式碼實現：","rsp_code_3":"程式碼審查/生成結果如下：","rsp_wrt_1":"文案任務已接收。根據你的需求，內容如下：","rsp_wrt_2":"已理解創作方向。成品如下：","rsp_wrt_3":"內容已生成，請審閱：","rsp_gen_file_search":"在指定目錄中搜尋匹配檔案，返回結果列表供選擇。","rsp_gen_file_read":"已定位目標檔案，內容提取中。請指定需要讀取的具體檔案路徑。","rsp_gen_file_default":"檔案操作已受理，請進一步指定目標路徑和操作類型。","rsp_gen_srch":"調研結果：","rsp_gen_code_gen":"// 根據需求生成的程式碼框架","rsp_gen_code_bug":"Bug 分析：","rsp_gen_code_default":"程式碼需求已分析。技術方案：","rsp_gen_wrt_trans":"翻譯任務已完成。來源語言 → 目標語言映射已應用，保持語義一致性和術語準確。請提供原文及目標語種。","rsp_gen_wrt_default":"相關內容已生成：","table_dim":"維度","table_content":"內容","table_topic":"主題","table_source":"來源","table_status":"狀態","table_multi_source":"多渠道檢索","table_ready":"資料可用"},"en":{"f":"🇺🇸","n":"English","auto_checked":"Auto ✓","page_title":"AI Office - Intelligent Team","header_title":"AI Office - Intelligent Team","sidebar_title":"Team Members","mgr_name":"Manager","mgr_role":"Task Scheduling & Dispatch","mgr_skills":"Task Analysis | Agent Dispatch | Result Synthesis | Workflow","mgr_badge":"Lead","file_name":"File Agent","file_role":"File Management & Data","file_skills":"File Search | Read/Write | Format Convert | Batch","file_badge":"Files","srch_name":"Search Agent","srch_role":"Info Retrieval & Research","srch_skills":"Web Search | Research | Compare | Report","srch_badge":"Search","code_name":"Code Agent","code_role":"Code Analysis & Dev","code_skills":"Code Gen | Bug Fix | Review | Architecture","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Copywriting & Content","wrt_skills":"Writing | Translation | Docs | Polish","wrt_badge":"Write","auto":"Auto","send":"Send","input_auto":"Enter task, Manager will auto-delegate to the best Agent...","input_direct":"Chat directly with {name}...","dispatch_flow":"Task Dispatch","welcome_h2":"AI Office Team","welcome_p":"An intelligent team like the Marvis office, orchestrated by Manager, with specialized Agents collaborating to efficiently complete every task.","status_online":"Online","thinking":"Thinking...","rsp_mgr_1":"Task received. After analysis, this involves multiple domains. Coordinated with relevant Agents. Core conclusions:","rsp_mgr_2":"Understood your request. Manager has completed task decomposition and Agent scheduling. Summary:","rsp_mgr_3":"Task received and dispatched. Based on Agent feedback, summary as follows:","rsp_file_1":"File task accepted. Suggested operation path, please confirm:","rsp_file_2":"File operation analyzed. Available processing options:","rsp_file_3":"File structure scanned. Processing suggestion:","rsp_srch_1":"Search task initiated. Based on multi-channel search results, key information:","rsp_srch_2":"Multi-source search completed. Core findings summary:","rsp_srch_3":"Research results with source annotations:","rsp_code_1":"Code task analyzed. Implementation plan:","rsp_code_2":"Technical solution evaluated. Recommended implementation:","rsp_code_3":"Code review/generation results:","rsp_wrt_1":"Copywriting task received. Based on your requirements, content as follows:","rsp_wrt_2":"Creative direction understood. Result:","rsp_wrt_3":"Content generated, please review:","rsp_gen_file_search":"Searching matched files in specified directory, returning results list for selection.","rsp_gen_file_read":"Target file located, extracting content. Please specify the exact file path to read.","rsp_gen_file_default":"File operation accepted, please further specify target path and operation type.","rsp_gen_srch":"Research results:","rsp_gen_code_gen":"// Code framework generated based on requirements","rsp_gen_code_bug":"Bug analysis:","rsp_gen_code_default":"Code requirements analyzed. Technical solution:","rsp_gen_wrt_trans":"Translation complete. Source → target language mapping applied with semantic consistency. Please provide source text and target language.","rsp_gen_wrt_default":"Related content generated:","table_dim":"Dimension","table_content":"Content","table_topic":"Topic","table_source":"Source","table_status":"Status","table_multi_source":"Multi-channel search","table_ready":"Data available"},"ja":{"f":"🇯🇵","n":"日本語","auto_checked":"Auto ✓","page_title":"AI Office - インテリジェントチーム","header_title":"AI Office - インテリジェントチーム","sidebar_title":"チームメンバー","mgr_name":"Manager","mgr_role":"タスクスケジューリング & ディスパッチ","mgr_skills":"タスク分析 | エージェント派遣 | 結果統合 | ワークフロー","mgr_badge":"統括","file_name":"File Agent","file_role":"ファイル管理 & データ処理","file_skills":"ファイル検索 | 読み書き | 形式変換 | バッチ","file_badge":"ファイル","srch_name":"Search Agent","srch_role":"情報検索 & リサーチ","srch_skills":"Web検索 | 調査 | 比較 | レポート","srch_badge":"検索","code_name":"Code Agent","code_role":"コード分析 & 開発補助","code_skills":"コード生成 | バグ修正 | レビュー | アーキテクチャ","code_badge":"開発","wrt_name":"Writer","wrt_role":"コピーライティング & コンテンツ","wrt_skills":"執筆 | 翻訳 | ドキュメント | 推敲","wrt_badge":"執筆","auto":"自動","send":"送信","input_auto":"タスクを入力、Managerが最適なAgentに自動委任...","input_direct":"{name}と直接チャット...","dispatch_flow":"タスク分派","welcome_h2":"AI Office チーム","welcome_p":"Marvisオフィスのようなインテリジェントチーム。Managerが統括し、各専門Agentが協働してあらゆるタスクを効率的に完了します。","status_online":"オンライン","thinking":"思考中...","rsp_mgr_1":"タスクを受信しました。分析の結果、複数領域にまたがるため、関連Agentと連携しました。核心的結論：","rsp_mgr_2":"ご依頼を理解しました。Managerがタスク分解とAgentスケジューリングを完了。サマリー：","rsp_mgr_3":"タスク受信・派遣完了。各Agentのフィードバックに基づくサマリー：","rsp_file_1":"ファイルタスク受諾。推奨操作パス、確認をお願いします：","rsp_file_2":"ファイル操作を分析。利用可能な処理オプション：","rsp_file_3":"ファイル構造をスキャン。処理提案：","rsp_srch_1":"検索タスク開始。マルチチャネル検索結果に基づく重要情報：","rsp_srch_2":"マルチソース検索完了。主要発見サマリー：","rsp_srch_3":"調査結果（ソース注釈付き）：","rsp_code_1":"コードタスク分析完了。実装計画：","rsp_code_2":"技術ソリューション評価。推奨実装：","rsp_code_3":"コードレビュー/生成結果：","rsp_wrt_1":"コピーライティングタスク受信。ご要望に基づく内容：","rsp_wrt_2":"クリエイティブディレクションを理解。成果物：","rsp_wrt_3":"コンテンツ生成完了、ご確認ください：","rsp_gen_file_search":"指定ディレクトリで一致するファイルを検索中、結果リストを返します。","rsp_gen_file_read":"対象ファイルを特定、内容抽出中。読み取るファイルパスを指定してください。","rsp_gen_file_default":"ファイル操作受諾。対象パスと操作タイプを指定してください。","rsp_gen_srch":"調査結果：","rsp_gen_code_gen":"// 要件に基づいて生成されたコードフレームワーク","rsp_gen_code_bug":"バグ分析：","rsp_gen_code_default":"コード要件分析済み。技術ソリューション：","rsp_gen_wrt_trans":"翻訳完了。ソース→ターゲット言語マッピング適用済み。原文とターゲット言語を提供してください。","rsp_gen_wrt_default":"関連コンテンツ生成：","table_dim":"次元","table_content":"内容","table_topic":"トピック","table_source":"ソース","table_status":"ステータス","table_multi_source":"マルチチャネル検索","table_ready":"データ利用可能"},"ko":{"f":"🇰🇷","n":"한국어","auto_checked":"Auto ✓","page_title":"AI Office - 인텔리전트 팀","header_title":"AI Office - 인텔리전트 팀","sidebar_title":"팀 멤버","mgr_name":"Manager","mgr_role":"작업 스케줄링 & 디스패치","mgr_skills":"작업 분석 | 에이전트 디스패치 | 결과 통합 | 워크플로우","mgr_badge":"리드","file_name":"File Agent","file_role":"파일 관리 & 데이터 처리","file_skills":"파일 검색 | 읽기/쓰기 | 형식 변환 | 배치","file_badge":"파일","srch_name":"Search Agent","srch_role":"정보 검색 & 리서치","srch_skills":"웹 검색 | 조사 | 비교 | 보고서","srch_badge":"검색","code_name":"Code Agent","code_role":"코드 분석 & 개발","code_skills":"코드 생성 | 버그 수정 | 리뷰 | 아키텍처","code_badge":"개발","wrt_name":"Writer","wrt_role":"카피라이팅 & 콘텐츠","wrt_skills":"작문 | 번역 | 문서 | 다듬기","wrt_badge":"작문","auto":"자동","send":"전송","input_auto":"작업 입력, Manager가 최적의 Agent에 자동 위임...","input_direct":"{name}과(와) 직접 대화...","dispatch_flow":"작업 디스패치","welcome_h2":"AI Office 팀","welcome_p":"Marvis 오피스와 같은 인텔리전트 팀. Manager가 통합 관리하고 각 전문 Agent가 협업하여 모든 작업을 효율적으로 완료합니다.","status_online":"온라인","thinking":"생각 중...","rsp_mgr_1":"작업 수신. 분석 결과 여러 영역에 걸쳐 있어 관련 Agent와 협력했습니다. 핵심 결론:","rsp_mgr_2":"요청을 이해했습니다. Manager가 작업 분해 및 Agent 스케줄링을 완료했습니다. 요약:","rsp_mgr_3":"작업 수신 및 디스패치 완료. Agent 피드백 기반 요약:","rsp_file_1":"파일 작업 수락. 권장 작업 경로, 확인 바랍니다:","rsp_file_2":"파일 작업 분석. 사용 가능한 처리 옵션:","rsp_file_3":"파일 구조 스캔. 처리 제안:","rsp_srch_1":"검색 작업 시작. 다중 채널 검색 결과 기반 주요 정보:","rsp_srch_2":"다중 소스 검색 완료. 주요 발견 요약:","rsp_srch_3":"조사 결과 (출처 주석 포함):","rsp_code_1":"코드 작업 분석. 구현 계획:","rsp_code_2":"기술 솔루션 평가. 권장 구현:","rsp_code_3":"코드 리뷰/생성 결과:","rsp_wrt_1":"카피라이팅 작업 수신. 요구사항에 따른 내용:","rsp_wrt_2":"창의적 방향 이해. 결과물:","rsp_wrt_3":"콘텐츠 생성 완료, 검토 바랍니다:","rsp_gen_file_search":"지정된 디렉토리에서 일치하는 파일 검색 중, 결과 목록 반환.","rsp_gen_file_read":"대상 파일 위치 확인, 내용 추출 중. 읽을 파일 경로를 지정하세요.","rsp_gen_file_default":"파일 작업 수락. 대상 경로와 작업 유형을 지정하세요.","rsp_gen_srch":"조사 결과:","rsp_gen_code_gen":"// 요구사항에 따라 생성된 코드 프레임워크","rsp_gen_code_bug":"버그 분석:","rsp_gen_code_default":"코드 요구사항 분석 완료. 기술 솔루션:","rsp_gen_wrt_trans":"번역 완료. 소스→타겟 언어 매핑 적용. 원문과 타겟 언어를 제공하세요.","rsp_gen_wrt_default":"관련 콘텐츠 생성:","table_dim":"차원","table_content":"내용","table_topic":"주제","table_source":"출처","table_status":"상태","table_multi_source":"다중 채널 검색","table_ready":"데이터 사용 가능"},"es":{"f":"🇪🇸","n":"Español","auto_checked":"Auto ✓","page_title":"AI Office - Equipo Inteligente","header_title":"AI Office - Equipo Inteligente","sidebar_title":"Miembros del Equipo","mgr_name":"Manager","mgr_role":"Programación y Despacho de Tareas","mgr_skills":"Análisis | Despacho | Síntesis | Flujo de Trabajo","mgr_badge":"Líder","file_name":"File Agent","file_role":"Gestión de Archivos y Datos","file_skills":"Búsqueda | Lectura/Escritura | Conversión | Lote","file_badge":"Archivos","srch_name":"Search Agent","srch_role":"Recuperación de Información","srch_skills":"Búsqueda Web | Investigación | Comparación | Informe","srch_badge":"Búsqueda","code_name":"Code Agent","code_role":"Análisis de Código y Desarrollo","code_skills":"Generación | Depuración | Revisión | Arquitectura","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Redacción y Contenido","wrt_skills":"Escritura | Traducción | Documentos | Pulido","wrt_badge":"Redacción","auto":"Auto","send":"Enviar","input_auto":"Ingrese tarea, Manager delegará al mejor Agent...","input_direct":"Chatear directamente con {name}...","dispatch_flow":"Despacho de Tareas","welcome_h2":"Equipo AI Office","welcome_p":"Un equipo inteligente como la oficina Marvis, orquestado por Manager, con Agents especializados que colaboran para completar cada tarea eficientemente.","status_online":"En línea","thinking":"Pensando...","rsp_mgr_1":"Tarea recibida. Tras el análisis, involucra múltiples dominios. Coordinado con Agents relevantes. Conclusiones clave:","rsp_mgr_2":"Solicitud comprendida. Manager completó la descomposición de tareas y programación de Agents. Resumen:","rsp_mgr_3":"Tarea recibida y despachada. Basado en comentarios de Agents, resumen:","rsp_file_1":"Tarea de archivo aceptada. Ruta de operación sugerida, confirme:","rsp_file_2":"Operación de archivo analizada. Opciones de procesamiento disponibles:","rsp_file_3":"Estructura de archivos escaneada. Sugerencia de procesamiento:","rsp_srch_1":"Búsqueda iniciada. Según resultados de búsqueda multicanal, información clave:","rsp_srch_2":"Búsqueda multifuente completada. Resumen de hallazgos:","rsp_srch_3":"Resultados de investigación con anotaciones de fuente:","rsp_code_1":"Tarea de código analizada. Plan de implementación:","rsp_code_2":"Solución técnica evaluada. Implementación recomendada:","rsp_code_3":"Resultados de revisión/generación de código:","rsp_wrt_1":"Tarea de redacción recibida. Según sus requisitos, contenido:","rsp_wrt_2":"Dirección creativa comprendida. Resultado:","rsp_wrt_3":"Contenido generado, por favor revise:","rsp_gen_file_search":"Buscando archivos coincidentes en el directorio especificado, devolviendo lista de resultados.","rsp_gen_file_read":"Archivo objetivo localizado, extrayendo contenido. Especifique la ruta exacta del archivo a leer.","rsp_gen_file_default":"Operación de archivo aceptada, especifique la ruta de destino y el tipo de operación.","rsp_gen_srch":"Resultados de investigación:","rsp_gen_code_gen":"// Framework de código generado según requisitos","rsp_gen_code_bug":"Análisis de bug:","rsp_gen_code_default":"Requisitos de código analizados. Solución técnica:","rsp_gen_wrt_trans":"Traducción completa. Mapeo de idioma origen→destino aplicado. Proporcione texto fuente e idioma de destino.","rsp_gen_wrt_default":"Contenido relacionado generado:","table_dim":"Dimensión","table_content":"Contenido","table_topic":"Tema","table_source":"Fuente","table_status":"Estado","table_multi_source":"Búsqueda multicanal","table_ready":"Datos disponibles"},"fr":{"f":"🇫🇷","n":"Français","auto_checked":"Auto ✓","page_title":"AI Office - Équipe Intelligente","header_title":"AI Office - Équipe Intelligente","sidebar_title":"Membres de l'Équipe","mgr_name":"Manager","mgr_role":"Planification et Répartition des Tâches","mgr_skills":"Analyse | Répartition | Synthèse | Workflow","mgr_badge":"Chef","file_name":"File Agent","file_role":"Gestion de Fichiers et Données","file_skills":"Recherche | Lecture/Écriture | Conversion | Lot","file_badge":"Fichiers","srch_name":"Search Agent","srch_role":"Recherche d'Information","srch_skills":"Recherche Web | Étude | Comparaison | Rapport","srch_badge":"Recherche","code_name":"Code Agent","code_role":"Analyse de Code et Développement","code_skills":"Génération | Débogage | Revue | Architecture","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Rédaction et Contenu","wrt_skills":"Écriture | Traduction | Documents | Polissage","wrt_badge":"Rédaction","auto":"Auto","send":"Envoyer","input_auto":"Saisir la tâche, le Manager déléguera au meilleur Agent...","input_direct":"Discuter directement avec {name}...","dispatch_flow":"Répartition des Tâches","welcome_h2":"Équipe AI Office","welcome_p":"Une équipe intelligente comme le bureau Marvis, orchestrée par le Manager, avec des Agents spécialisés collaborant pour accomplir chaque tâche efficacement.","status_online":"En ligne","thinking":"Réflexion...","rsp_mgr_1":"Tâche reçue. Après analyse, implique plusieurs domaines. Coordonné avec les Agents concernés. Conclusions clés:","rsp_mgr_2":"Demande comprise. Le Manager a terminé la décomposition des tâches et la planification des Agents. Résumé:","rsp_mgr_3":"Tâche reçue et répartie. Basé sur les retours des Agents, résumé:","rsp_file_1":"Tâche de fichier acceptée. Chemin d'opération suggéré, veuillez confirmer:","rsp_file_2":"Opération de fichier analysée. Options de traitement disponibles:","rsp_file_3":"Structure de fichiers analysée. Suggestion de traitement:","rsp_srch_1":"Recherche lancée. Selon les résultats de recherche multicanal, informations clés:","rsp_srch_2":"Recherche multi-source terminée. Résumé des conclusions:","rsp_srch_3":"Résultats de recherche avec annotations de source:","rsp_code_1":"Tâche de code analysée. Plan d'implémentation:","rsp_code_2":"Solution technique évaluée. Implémentation recommandée:","rsp_code_3":"Résultats de revue/génération de code:","rsp_wrt_1":"Tâche de rédaction reçue. Selon vos exigences, contenu:","rsp_wrt_2":"Direction créative comprise. Résultat:","rsp_wrt_3":"Contenu généré, veuillez réviser:","rsp_gen_file_search":"Recherche de fichiers correspondants dans le répertoire spécifié, retour de la liste des résultats.","rsp_gen_file_read":"Fichier cible localisé, extraction du contenu. Veuillez spécifier le chemin exact du fichier à lire.","rsp_gen_file_default":"Opération de fichier acceptée, veuillez préciser le chemin cible et le type d'opération.","rsp_gen_srch":"Résultats de recherche:","rsp_gen_code_gen":"// Framework de code généré selon les exigences","rsp_gen_code_bug":"Analyse de bug:","rsp_gen_code_default":"Exigences de code analysées. Solution technique:","rsp_gen_wrt_trans":"Traduction terminée. Mappage langue source→cible appliqué. Veuillez fournir le texte source et la langue cible.","rsp_gen_wrt_default":"Contenu associé généré:","table_dim":"Dimension","table_content":"Contenu","table_topic":"Sujet","table_source":"Source","table_status":"Statut","table_multi_source":"Recherche multicanal","table_ready":"Données disponibles"},"de":{"f":"🇩🇪","n":"Deutsch","auto_checked":"Auto ✓","page_title":"AI Office - Intelligentes Team","header_title":"AI Office - Intelligentes Team","sidebar_title":"Teammitglieder","mgr_name":"Manager","mgr_role":"Aufgabenplanung und -verteilung","mgr_skills":"Analyse | Verteilung | Synthese | Workflow","mgr_badge":"Leitung","file_name":"File Agent","file_role":"Dateiverwaltung und Daten","file_skills":"Suche | Lesen/Schreiben | Konvertierung | Batch","file_badge":"Dateien","srch_name":"Search Agent","srch_role":"Informationsbeschaffung","srch_skills":"Websuche | Recherche | Vergleich | Bericht","srch_badge":"Suche","code_name":"Code Agent","code_role":"Codeanalyse und Entwicklung","code_skills":"Generierung | Debugging | Review | Architektur","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Texterstellung und Inhalte","wrt_skills":"Schreiben | Übersetzung | Dokumente | Feinschliff","wrt_badge":"Text","auto":"Auto","send":"Senden","input_auto":"Aufgabe eingeben, Manager delegiert an besten Agent...","input_direct":"Direkt mit {name} chatten...","dispatch_flow":"Aufgabenverteilung","welcome_h2":"AI Office Team","welcome_p":"Ein intelligentes Team wie das Marvis-Büro, orchestriert vom Manager, mit spezialisierten Agents, die zusammenarbeiten, um jede Aufgabe effizient zu erledigen.","status_online":"Online","thinking":"Denkt nach...","rsp_mgr_1":"Aufgabe erhalten. Nach Analyse umfasst sie mehrere Bereiche. Mit relevanten Agents koordiniert. Kernschlussfolgerungen:","rsp_mgr_2":"Anfrage verstanden. Manager hat Aufgabenzerlegung und Agent-Planung abgeschlossen. Zusammenfassung:","rsp_mgr_3":"Aufgabe erhalten und verteilt. Basierend auf Agent-Feedback, Zusammenfassung:","rsp_file_1":"Dateiaufgabe angenommen. Vorgeschlagener Operationspfad, bitte bestätigen:","rsp_file_2":"Dateioperation analysiert. Verfügbare Verarbeitungsoptionen:","rsp_file_3":"Dateistruktur gescannt. Verarbeitungsvorschlag:","rsp_srch_1":"Suche gestartet. Basierend auf Mehrkanal-Suchergebnissen, Schlüsselinformationen:","rsp_srch_2":"Mehrquellensuche abgeschlossen. Zusammenfassung der Erkenntnisse:","rsp_srch_3":"Forschungsergebnisse mit Quellenangaben:","rsp_code_1":"Codeaufgabe analysiert. Implementierungsplan:","rsp_code_2":"Technische Lösung bewertet. Empfohlene Implementierung:","rsp_code_3":"Code-Review/Generierungsergebnisse:","rsp_wrt_1":"Textaufgabe erhalten. Basierend auf Ihren Anforderungen, Inhalt:","rsp_wrt_2":"Kreative Richtung verstanden. Ergebnis:","rsp_wrt_3":"Inhalt generiert, bitte überprüfen:","rsp_gen_file_search":"Suche nach passenden Dateien im angegebenen Verzeichnis, Rückgabe der Ergebnisliste.","rsp_gen_file_read":"Zieldatei gefunden, Inhalt wird extrahiert. Bitte geben Sie den genauen Dateipfad zum Lesen an.","rsp_gen_file_default":"Dateioperation angenommen, bitte Zielpfad und Operationstyp angeben.","rsp_gen_srch":"Forschungsergebnisse:","rsp_gen_code_gen":"// Code-Framework basierend auf Anforderungen generiert","rsp_gen_code_bug":"Bug-Analyse:","rsp_gen_code_default":"Codeanforderungen analysiert. Technische Lösung:","rsp_gen_wrt_trans":"Übersetzung abgeschlossen. Quell→Zielsprachen-Mapping angewendet. Bitte Quelltext und Zielsprache angeben.","rsp_gen_wrt_default":"Zugehöriger Inhalt generiert:","table_dim":"Dimension","table_content":"Inhalt","table_topic":"Thema","table_source":"Quelle","table_status":"Status","table_multi_source":"Mehrkanalsuche","table_ready":"Daten verfügbar"},"pt":{"f":"🇵🇹","n":"Português","auto_checked":"Auto ✓","page_title":"AI Office - Equipe Inteligente","header_title":"AI Office - Equipe Inteligente","sidebar_title":"Membros da Equipe","mgr_name":"Manager","mgr_role":"Agendamento e Despacho de Tarefas","mgr_skills":"Análise | Despacho | Síntese | Fluxo de Trabalho","mgr_badge":"Líder","file_name":"File Agent","file_role":"Gestão de Arquivos e Dados","file_skills":"Busca | Leitura/Escrita | Conversão | Lote","file_badge":"Arquivos","srch_name":"Search Agent","srch_role":"Recuperação de Informação","srch_skills":"Busca Web | Pesquisa | Comparação | Relatório","srch_badge":"Busca","code_name":"Code Agent","code_role":"Análise de Código e Desenvolvimento","code_skills":"Geração | Depuração | Revisão | Arquitetura","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Redação e Conteúdo","wrt_skills":"Escrita | Tradução | Documentos | Polimento","wrt_badge":"Redação","auto":"Auto","send":"Enviar","input_auto":"Insira a tarefa, o Manager delegará ao melhor Agent...","input_direct":"Conversar diretamente com {name}...","dispatch_flow":"Despacho de Tarefas","welcome_h2":"Equipe AI Office","welcome_p":"Uma equipe inteligente como o escritório Marvis, orquestrada pelo Manager, com Agents especializados colaborando para completar cada tarefa com eficiência.","status_online":"Online","thinking":"Pensando...","rsp_mgr_1":"Tarefa recebida. Após análise, envolve vários domínios. Coordenado com Agents relevantes. Conclusões principais:","rsp_mgr_2":"Solicitação compreendida. O Manager concluiu a decomposição de tarefas e o agendamento de Agents. Resumo:","rsp_mgr_3":"Tarefa recebida e despachada. Com base no feedback dos Agents, resumo:","rsp_file_1":"Tarefa de arquivo aceita. Caminho de operação sugerido, confirme:","rsp_file_2":"Operação de arquivo analisada. Opções de processamento disponíveis:","rsp_file_3":"Estrutura de arquivos verificada. Sugestão de processamento:","rsp_srch_1":"Busca iniciada. Com base nos resultados de busca multicanal, informações principais:","rsp_srch_2":"Busca multifonte concluída. Resumo das descobertas:","rsp_srch_3":"Resultados da pesquisa com anotações de fonte:","rsp_code_1":"Tarefa de código analisada. Plano de implementação:","rsp_code_2":"Solução técnica avaliada. Implementação recomendada:","rsp_code_3":"Resultados de revisão/geração de código:","rsp_wrt_1":"Tarefa de redação recebida. De acordo com seus requisitos, conteúdo:","rsp_wrt_2":"Direção criativa compreendida. Resultado:","rsp_wrt_3":"Conteúdo gerado, por favor revise:","rsp_gen_file_search":"Buscando arquivos correspondentes no diretório especificado, retornando lista de resultados.","rsp_gen_file_read":"Arquivo alvo localizado, extraindo conteúdo. Especifique o caminho exato do arquivo a ser lido.","rsp_gen_file_default":"Operação de arquivo aceita, especifique o caminho de destino e o tipo de operação.","rsp_gen_srch":"Resultados da pesquisa:","rsp_gen_code_gen":"// Framework de código gerado com base nos requisitos","rsp_gen_code_bug":"Análise de bug:","rsp_gen_code_default":"Requisitos de código analisados. Solução técnica:","rsp_gen_wrt_trans":"Tradução concluída. Mapeamento de idioma origem→destino aplicado. Forneça o texto fonte e o idioma de destino.","rsp_gen_wrt_default":"Conteúdo relacionado gerado:","table_dim":"Dimensão","table_content":"Conteúdo","table_topic":"Tópico","table_source":"Fonte","table_status":"Status","table_multi_source":"Busca multicanal","table_ready":"Dados disponíveis"},"ru":{"f":"🇷🇺","n":"Русский","auto_checked":"Auto ✓","page_title":"AI Office - Интеллектуальная команда","header_title":"AI Office - Интеллектуальная команда","sidebar_title":"Члены команды","mgr_name":"Manager","mgr_role":"Планирование и распределение задач","mgr_skills":"Анализ | Распределение | Синтез | Рабочий процесс","mgr_badge":"Лидер","file_name":"File Agent","file_role":"Управление файлами и данными","file_skills":"Поиск | Чтение/Запись | Конвертация | Пакет","file_badge":"Файлы","srch_name":"Search Agent","srch_role":"Поиск информации","srch_skills":"Веб-поиск | Исследование | Сравнение | Отчёт","srch_badge":"Поиск","code_name":"Code Agent","code_role":"Анализ кода и разработка","code_skills":"Генерация | Отладка | Ревью | Архитектура","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Копирайтинг и контент","wrt_skills":"Написание | Перевод | Документы | Доработка","wrt_badge":"Текст","auto":"Авто","send":"Отправить","input_auto":"Введите задачу, Manager делегирует лучшему Agent...","input_direct":"Общаться напрямую с {name}...","dispatch_flow":"Распределение задач","welcome_h2":"Команда AI Office","welcome_p":"Интеллектуальная команда как офис Marvis, управляемая Manager, со специализированными Agents, сотрудничающими для эффективного выполнения каждой задачи.","status_online":"Онлайн","thinking":"Думаю...","rsp_mgr_1":"Задача получена. После анализа охватывает несколько областей. Скоординировано с соответствующими Agents. Ключевые выводы:","rsp_mgr_2":"Запрос понят. Manager завершил декомпозицию задач и планирование Agents. Резюме:","rsp_mgr_3":"Задача получена и распределена. На основе отзывов Agents, резюме:","rsp_file_1":"Файловая задача принята. Предлагаемый путь операции, подтвердите:","rsp_file_2":"Файловая операция проанализирована. Доступные варианты обработки:","rsp_file_3":"Структура файлов просканирована. Предложение по обработке:","rsp_srch_1":"Поиск запущен. На основе результатов многоканального поиска, ключевая информация:","rsp_srch_2":"Многоисточниковый поиск завершён. Резюме выводов:","rsp_srch_3":"Результаты исследования с аннотациями источников:","rsp_code_1":"Задача по коду проанализирована. План реализации:","rsp_code_2":"Техническое решение оценено. Рекомендуемая реализация:","rsp_code_3":"Результаты ревью/генерации кода:","rsp_wrt_1":"Задача по тексту получена. Согласно вашим требованиям, содержание:","rsp_wrt_2":"Творческое направление понято. Результат:","rsp_wrt_3":"Контент сгенерирован, пожалуйста, проверьте:","rsp_gen_file_search":"Поиск совпадающих файлов в указанном каталоге, возврат списка результатов.","rsp_gen_file_read":"Целевой файл найден, извлечение содержимого. Укажите точный путь к файлу для чтения.","rsp_gen_file_default":"Файловая операция принята, укажите целевой путь и тип операции.","rsp_gen_srch":"Результаты исследования:","rsp_gen_code_gen":"// Фреймворк кода, сгенерированный на основе требований","rsp_gen_code_bug":"Анализ ошибки:","rsp_gen_code_default":"Требования к коду проанализированы. Техническое решение:","rsp_gen_wrt_trans":"Перевод завершён. Применено сопоставление исходного→целевого языка. Предоставьте исходный текст и целевой язык.","rsp_gen_wrt_default":"Связанный контент сгенерирован:","table_dim":"Измерение","table_content":"Содержание","table_topic":"Тема","table_source":"Источник","table_status":"Статус","table_multi_source":"Многоканальный поиск","table_ready":"Данные доступны"},"ar":{"f":"🇸🇦","n":"العربية","auto_checked":"Auto ✓","page_title":"AI Office - فريق ذكي","header_title":"AI Office - فريق ذكي","sidebar_title":"أعضاء الفريق","mgr_name":"Manager","mgr_role":"جدولة وتوزيع المهام","mgr_skills":"تحليل | توزيع | توليف | سير العمل","mgr_badge":"قائد","file_name":"File Agent","file_role":"إدارة الملفات والبيانات","file_skills":"بحث | قراءة/كتابة | تحويل | دفعة","file_badge":"ملفات","srch_name":"Search Agent","srch_role":"استرجاع المعلومات","srch_skills":"بحث ويب | دراسة | مقارنة | تقرير","srch_badge":"بحث","code_name":"Code Agent","code_role":"تحليل الكود والتطوير","code_skills":"توليد | تصحيح | مراجعة | هندسة","code_badge":"تطوير","wrt_name":"Writer","wrt_role":"كتابة المحتوى","wrt_skills":"كتابة | ترجمة | مستندات | تحرير","wrt_badge":"كتابة","auto":"تلقائي","send":"إرسال","input_auto":"أدخل المهمة، سيقوم المدير بتفويضها لأفضل وكيل...","input_direct":"تحدث مباشرة مع {name}...","dispatch_flow":"توزيع المهام","welcome_h2":"فريق AI Office","welcome_p":"فريق ذكي مثل مكتب Marvis، يديره المدير، مع وكلاء متخصصين يتعاونون لإنجاز كل مهمة بكفاءة.","status_online":"متصل","thinking":"يفكر...","rsp_mgr_1":"تم استلام المهمة. بعد التحليل، تشمل عدة مجالات. تم التنسيق مع الوكلاء المعنيين. الاستنتاجات الرئيسية:","rsp_mgr_2":"تم فهم طلبك. أكمل المدير تحليل المهام وجدولة الوكلاء. ملخص:","rsp_mgr_3":"تم استلام المهمة وتوزيعها. بناءً على ملاحظات الوكلاء، ملخص:","rsp_file_1":"تم قبول مهمة الملف. مسار العملية المقترح، يرجى التأكيد:","rsp_file_2":"تم تحليل عملية الملف. خيارات المعالجة المتاحة:","rsp_file_3":"تم فحص بنية الملفات. اقتراح المعالجة:","rsp_srch_1":"بدأ البحث. بناءً على نتائج البحث متعدد القنوات، معلومات رئيسية:","rsp_srch_2":"اكتمل البحث متعدد المصادر. ملخص النتائج:","rsp_srch_3":"نتائج البحث مع توضيح المصادر:","rsp_code_1":"تم تحليل مهمة الكود. خطة التنفيذ:","rsp_code_2":"تم تقييم الحل التقني. التنفيذ الموصى به:","rsp_code_3":"نتائج مراجعة/توليد الكود:","rsp_wrt_1":"تم استلام مهمة الكتابة. وفقاً لمتطلباتك، المحتوى:","rsp_wrt_2":"تم فهم الاتجاه الإبداعي. النتيجة:","rsp_wrt_3":"تم إنشاء المحتوى، يرجى المراجعة:","rsp_gen_file_search":"البحث عن ملفات مطابقة في الدليل المحدد، إرجاع قائمة النتائج.","rsp_gen_file_read":"تم تحديد الملف الهدف، جاري استخراج المحتوى. يرجى تحديد مسار الملف الدقيق للقراءة.","rsp_gen_file_default":"تم قبول عملية الملف، يرجى تحديد المسار الهدف ونوع العملية.","rsp_gen_srch":"نتائج البحث:","rsp_gen_code_gen":"// إطار كود تم إنشاؤه بناءً على المتطلبات","rsp_gen_code_bug":"تحليل الخطأ:","rsp_gen_code_default":"تم تحليل متطلبات الكود. الحل التقني:","rsp_gen_wrt_trans":"اكتملت الترجمة. تم تطبيق مطابقة اللغة المصدر→الهدف. يرجى تقديم النص المصدر واللغة الهدف.","rsp_gen_wrt_default":"تم إنشاء محتوى ذي صلة:","table_dim":"البعد","table_content":"المحتوى","table_topic":"الموضوع","table_source":"المصدر","table_status":"الحالة","table_multi_source":"بحث متعدد القنوات","table_ready":"البيانات متاحة"},"hi":{"f":"🇮🇳","n":"हिन्दी","auto_checked":"Auto ✓","page_title":"AI Office - इंटेलिजेंट टीम","header_title":"AI Office - इंटेलिजेंट टीम","sidebar_title":"टीम सदस्य","mgr_name":"Manager","mgr_role":"कार्य शेड्यूलिंग और डिस्पैच","mgr_skills":"विश्लेषण | डिस्पैच | संश्लेषण | वर्कफ़्लो","mgr_badge":"लीड","file_name":"File Agent","file_role":"फ़ाइल प्रबंधन और डेटा","file_skills":"खोज | पढ़ना/लिखना | रूपांतरण | बैच","file_badge":"फ़ाइलें","srch_name":"Search Agent","srch_role":"सूचना पुनर्प्राप्ति","srch_skills":"वेब खोज | अनुसंधान | तुलना | रिपोर्ट","srch_badge":"खोज","code_name":"Code Agent","code_role":"कोड विश्लेषण और विकास","code_skills":"जनरेशन | डिबग | समीक्षा | आर्किटेक्चर","code_badge":"Dev","wrt_name":"Writer","wrt_role":"कॉपीराइटिंग और सामग्री","wrt_skills":"लेखन | अनुवाद | दस्तावेज़ | पॉलिश","wrt_badge":"लेखन","auto":"ऑटो","send":"भेजें","input_auto":"कार्य दर्ज करें, Manager सर्वश्रेष्ठ Agent को सौंपेगा...","input_direct":"{name} से सीधे बात करें...","dispatch_flow":"कार्य डिस्पैच","welcome_h2":"AI Office टीम","welcome_p":"Marvis कार्यालय जैसी एक इंटेलिजेंट टीम, Manager द्वारा संचालित, विशेषज्ञ Agents के साथ मिलकर हर कार्य को कुशलतापूर्वक पूरा करती है।","status_online":"ऑनलाइन","thinking":"सोच रहा है...","rsp_mgr_1":"कार्य प्राप्त हुआ। विश्लेषण के बाद, इसमें कई क्षेत्र शामिल हैं। संबंधित Agents के साथ समन्वय किया। मुख्य निष्कर्ष:","rsp_mgr_2":"आपका अनुरोध समझ लिया। Manager ने कार्य विघटन और Agent शेड्यूलिंग पूरी कर ली। सारांश:","rsp_mgr_3":"कार्य प्राप्त और डिस्पैच किया गया। Agent प्रतिक्रिया के आधार पर, सारांश:","rsp_file_1":"फ़ाइल कार्य स्वीकार किया। सुझाया गया संचालन पथ, कृपया पुष्टि करें:","rsp_file_2":"फ़ाइल संचालन का विश्लेषण किया। उपलब्ध प्रसंस्करण विकल्प:","rsp_file_3":"फ़ाइल संरचना स्कैन की गई। प्रसंस्करण सुझाव:","rsp_srch_1":"खोज शुरू की। मल्टी-चैनल खोज परिणामों के आधार पर, मुख्य जानकारी:","rsp_srch_2":"मल्टी-सोर्स खोज पूरी। मुख्य निष्कर्षों का सारांश:","rsp_srch_3":"स्रोत एनोटेशन के साथ अनुसंधान परिणाम:","rsp_code_1":"कोड कार्य का विश्लेषण किया। कार्यान्वयन योजना:","rsp_code_2":"तकनीकी समाधान का मूल्यांकन किया। अनुशंसित कार्यान्वयन:","rsp_code_3":"कोड समीक्षा/जनरेशन परिणाम:","rsp_wrt_1":"लेखन कार्य प्राप्त हुआ। आपकी आवश्यकताओं के अनुसार, सामग्री:","rsp_wrt_2":"रचनात्मक दिशा समझी गई। परिणाम:","rsp_wrt_3":"सामग्री तैयार, कृपया समीक्षा करें:","rsp_gen_file_search":"निर्दिष्ट निर्देशिका में मेल खाने वाली फ़ाइलें खोज रहा है, परिणाम सूची लौटा रहा है।","rsp_gen_file_read":"लक्ष्य फ़ाइल स्थित, सामग्री निकाली जा रही है। कृपया पढ़ने के लिए सटीक फ़ाइल पथ निर्दिष्ट करें।","rsp_gen_file_default":"फ़ाइल संचालन स्वीकार किया, कृपया लक्ष्य पथ और संचालन प्रकार निर्दिष्ट करें।","rsp_gen_srch":"अनुसंधान परिणाम:","rsp_gen_code_gen":"// आवश्यकताओं के आधार पर उत्पन्न कोड फ्रेमवर्क","rsp_gen_code_bug":"बग विश्लेषण:","rsp_gen_code_default":"कोड आवश्यकताओं का विश्लेषण किया। तकनीकी समाधान:","rsp_gen_wrt_trans":"अनुवाद पूर्ण। स्रोत→लक्ष्य भाषा मैपिंग लागू। कृपया स्रोत पाठ और लक्ष्य भाषा प्रदान करें।","rsp_gen_wrt_default":"संबंधित सामग्री उत्पन्न:","table_dim":"आयाम","table_content":"सामग्री","table_topic":"विषय","table_source":"स्रोत","table_status":"स्थिति","table_multi_source":"मल्टी-चैनल खोज","table_ready":"डेटा उपलब्ध"},"th":{"f":"🇹🇭","n":"ไทย","auto_checked":"Auto ✓","page_title":"AI Office - ทีมอัจฉริยะ","header_title":"AI Office - ทีมอัจฉริยะ","sidebar_title":"สมาชิกทีม","mgr_name":"Manager","mgr_role":"การจัดตารางและมอบหมายงาน","mgr_skills":"วิเคราะห์ | มอบหมาย | สังเคราะห์ | เวิร์กโฟลว์","mgr_badge":"หัวหน้า","file_name":"File Agent","file_role":"การจัดการไฟล์และข้อมูล","file_skills":"ค้นหา | อ่าน/เขียน | แปลง | แบทช์","file_badge":"ไฟล์","srch_name":"Search Agent","srch_role":"การค้นหาข้อมูล","srch_skills":"ค้นหาเว็บ | วิจัย | เปรียบเทียบ | รายงาน","srch_badge":"ค้นหา","code_name":"Code Agent","code_role":"วิเคราะห์โค้ดและพัฒนา","code_skills":"สร้าง | แก้บั๊ก | ตรวจสอบ | สถาปัตยกรรม","code_badge":"Dev","wrt_name":"Writer","wrt_role":"การเขียนและเนื้อหา","wrt_skills":"เขียน | แปล | เอกสาร | ขัดเกลา","wrt_badge":"เขียน","auto":"อัตโนมัติ","send":"ส่ง","input_auto":"ป้อนงาน Manager จะมอบหมายให้ Agent ที่ดีที่สุด...","input_direct":"พูดคุยโดยตรงกับ {name}...","dispatch_flow":"การมอบหมายงาน","welcome_h2":"ทีม AI Office","welcome_p":"ทีมอัจฉริยะเหมือนสำนักงาน Marvis จัดการโดย Manager พร้อม Agents ผู้เชี่ยวชาญที่ทำงานร่วมกันเพื่อทำงานทุกอย่างให้สำเร็จอย่างมีประสิทธิภาพ","status_online":"ออนไลน์","thinking":"กำลังคิด...","rsp_mgr_1":"ได้รับงานแล้ว หลังจากวิเคราะห์พบว่าเกี่ยวข้องกับหลายโดเมน ประสานงานกับ Agents ที่เกี่ยวข้องแล้ว ข้อสรุปหลัก:","rsp_mgr_2":"เข้าใจคำขอของคุณ Manager ได้ทำการแยกงานและจัดตาราง Agent เสร็จแล้ว สรุป:","rsp_mgr_3":"ได้รับและมอบหมายงานแล้ว จากความคิดเห็นของ Agent สรุปดังนี้:","rsp_file_1":"รับงานไฟล์แล้ว เส้นทางการดำเนินการที่แนะนำ กรุณายืนยัน:","rsp_file_2":"วิเคราะห์การดำเนินการไฟล์แล้ว ตัวเลือกการประมวลผลที่มี:","rsp_file_3":"สแกนโครงสร้างไฟล์แล้ว ข้อเสนอแนะการประมวลผล:","rsp_srch_1":"เริ่มการค้นหาแล้ว จากผลการค้นหาหลายช่องทาง ข้อมูลสำคัญ:","rsp_srch_2":"ค้นหาหลายแหล่งเสร็จสิ้น สรุปการค้นพบหลัก:","rsp_srch_3":"ผลการวิจัยพร้อมระบุแหล่งที่มา:","rsp_code_1":"วิเคราะห์งานโค้ดแล้ว แผนการดำเนินการ:","rsp_code_2":"ประเมินโซลูชันทางเทคนิคแล้ว การดำเนินการที่แนะนำ:","rsp_code_3":"ผลการตรวจสอบ/สร้างโค้ด:","rsp_wrt_1":"ได้รับงานเขียนแล้ว ตามความต้องการของคุณ เนื้อหา:","rsp_wrt_2":"เข้าใจทิศทางสร้างสรรค์แล้ว ผลลัพธ์:","rsp_wrt_3":"สร้างเนื้อหาแล้ว กรุณาตรวจสอบ:","rsp_gen_file_search":"กำลังค้นหาไฟล์ที่ตรงกันในไดเรกทอรีที่ระบุ ส่งคืนรายการผลลัพธ์","rsp_gen_file_read":"พบไฟล์เป้าหมายแล้ว กำลังแยกเนื้อหา กรุณาระบุเส้นทางไฟล์ที่แน่นอนเพื่ออ่าน","rsp_gen_file_default":"รับการดำเนินการไฟล์แล้ว กรุณาระบุเส้นทางเป้าหมายและประเภทการดำเนินการ","rsp_gen_srch":"ผลการวิจัย:","rsp_gen_code_gen":"// โค้ดเฟรมเวิร์กที่สร้างตามความต้องการ","rsp_gen_code_bug":"การวิเคราะห์บั๊ก:","rsp_gen_code_default":"วิเคราะห์ความต้องการโค้ดแล้ว โซลูชันทางเทคนิค:","rsp_gen_wrt_trans":"การแปลเสร็จสมบูรณ์ ใช้การจับคู่ภาษาต้นทาง→ปลายทางแล้ว กรุณาระบุข้อความต้นฉบับและภาษาเป้าหมาย","rsp_gen_wrt_default":"สร้างเนื้อหาที่เกี่ยวข้องแล้ว:","table_dim":"มิติ","table_content":"เนื้อหา","table_topic":"หัวข้อ","table_source":"แหล่งที่มา","table_status":"สถานะ","table_multi_source":"ค้นหาหลายช่องทาง","table_ready":"ข้อมูลพร้อมใช้งาน"},"vi":{"f":"🇻🇳","n":"Tiếng Việt","auto_checked":"Auto ✓","page_title":"AI Office - Đội Ngũ Thông Minh","header_title":"AI Office - Đội Ngũ Thông Minh","sidebar_title":"Thành Viên","mgr_name":"Manager","mgr_role":"Lập Lịch và Phân Công Nhiệm Vụ","mgr_skills":"Phân Tích | Phân Công | Tổng Hợp | Quy Trình","mgr_badge":"Trưởng","file_name":"File Agent","file_role":"Quản Lý Tệp và Dữ Liệu","file_skills":"Tìm Kiếm | Đọc/Ghi | Chuyển Đổi | Hàng Loạt","file_badge":"Tệp","srch_name":"Search Agent","srch_role":"Truy Xuất Thông Tin","srch_skills":"Tìm Web | Nghiên Cứu | So Sánh | Báo Cáo","srch_badge":"Tìm Kiếm","code_name":"Code Agent","code_role":"Phân Tích Mã và Phát Triển","code_skills":"Tạo Mã | Sửa Lỗi | Đánh Giá | Kiến Trúc","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Viết Nội Dung","wrt_skills":"Viết | Dịch | Tài Liệu | Chỉnh Sửa","wrt_badge":"Viết","auto":"Tự Động","send":"Gửi","input_auto":"Nhập nhiệm vụ, Manager sẽ ủy quyền cho Agent tốt nhất...","input_direct":"Trò chuyện trực tiếp với {name}...","dispatch_flow":"Phân Công Nhiệm Vụ","welcome_h2":"Đội AI Office","welcome_p":"Một đội ngũ thông minh như văn phòng Marvis, được điều phối bởi Manager, với các Agent chuyên biệt hợp tác để hoàn thành mọi nhiệm vụ hiệu quả.","status_online":"Trực Tuyến","thinking":"Đang suy nghĩ...","rsp_mgr_1":"Đã nhận nhiệm vụ. Sau phân tích, liên quan đến nhiều lĩnh vực. Đã phối hợp với các Agent liên quan. Kết luận chính:","rsp_mgr_2":"Đã hiểu yêu cầu. Manager đã hoàn thành phân rã nhiệm vụ và lập lịch Agent. Tóm tắt:","rsp_mgr_3":"Đã nhận và phân công nhiệm vụ. Dựa trên phản hồi của Agent, tóm tắt:","rsp_file_1":"Đã nhận nhiệm vụ tệp. Đường dẫn thao tác đề xuất, vui lòng xác nhận:","rsp_file_2":"Đã phân tích thao tác tệp. Các tùy chọn xử lý có sẵn:","rsp_file_3":"Đã quét cấu trúc tệp. Đề xuất xử lý:","rsp_srch_1":"Đã bắt đầu tìm kiếm. Dựa trên kết quả tìm kiếm đa kênh, thông tin chính:","rsp_srch_2":"Đã hoàn thành tìm kiếm đa nguồn. Tóm tắt phát hiện chính:","rsp_srch_3":"Kết quả nghiên cứu với chú thích nguồn:","rsp_code_1":"Đã phân tích nhiệm vụ mã. Kế hoạch triển khai:","rsp_code_2":"Đã đánh giá giải pháp kỹ thuật. Triển khai đề xuất:","rsp_code_3":"Kết quả đánh giá/tạo mã:","rsp_wrt_1":"Đã nhận nhiệm vụ viết. Theo yêu cầu của bạn, nội dung:","rsp_wrt_2":"Đã hiểu hướng sáng tạo. Kết quả:","rsp_wrt_3":"Đã tạo nội dung, vui lòng xem xét:","rsp_gen_file_search":"Đang tìm kiếm tệp phù hợp trong thư mục chỉ định, trả về danh sách kết quả.","rsp_gen_file_read":"Đã xác định tệp mục tiêu, đang trích xuất nội dung. Vui lòng chỉ định đường dẫn tệp chính xác để đọc.","rsp_gen_file_default":"Đã nhận thao tác tệp, vui lòng chỉ định đường dẫn đích và loại thao tác.","rsp_gen_srch":"Kết quả nghiên cứu:","rsp_gen_code_gen":"// Khung mã được tạo dựa trên yêu cầu","rsp_gen_code_bug":"Phân tích lỗi:","rsp_gen_code_default":"Đã phân tích yêu cầu mã. Giải pháp kỹ thuật:","rsp_gen_wrt_trans":"Đã hoàn thành dịch. Đã áp dụng ánh xạ ngôn ngữ nguồn→đích. Vui lòng cung cấp văn bản nguồn và ngôn ngữ đích.","rsp_gen_wrt_default":"Đã tạo nội dung liên quan:","table_dim":"Chiều","table_content":"Nội Dung","table_topic":"Chủ Đề","table_source":"Nguồn","table_status":"Trạng Thái","table_multi_source":"Tìm kiếm đa kênh","table_ready":"Dữ liệu sẵn sàng"},"id":{"f":"🇮🇩","n":"Bahasa Indonesia","auto_checked":"Auto ✓","page_title":"AI Office - Tim Cerdas","header_title":"AI Office - Tim Cerdas","sidebar_title":"Anggota Tim","mgr_name":"Manager","mgr_role":"Penjadwalan dan Pengiriman Tugas","mgr_skills":"Analisis | Pengiriman | Sintesis | Alur Kerja","mgr_badge":"Pemimpin","file_name":"File Agent","file_role":"Manajemen File dan Data","file_skills":"Pencarian | Baca/Tulis | Konversi | Batch","file_badge":"File","srch_name":"Search Agent","srch_role":"Pencarian Informasi","srch_skills":"Pencarian Web | Riset | Perbandingan | Laporan","srch_badge":"Cari","code_name":"Code Agent","code_role":"Analisis Kode dan Pengembangan","code_skills":"Generasi | Debug | Review | Arsitektur","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Penulisan dan Konten","wrt_skills":"Menulis | Terjemahan | Dokumen | Poles","wrt_badge":"Tulis","auto":"Otomatis","send":"Kirim","input_auto":"Masukkan tugas, Manager akan mendelegasikan ke Agent terbaik...","input_direct":"Ngobrol langsung dengan {name}...","dispatch_flow":"Pengiriman Tugas","welcome_h2":"Tim AI Office","welcome_p":"Tim cerdas seperti kantor Marvis, diorkestrasi oleh Manager, dengan Agent spesialis yang berkolaborasi untuk menyelesaikan setiap tugas secara efisien.","status_online":"Online","thinking":"Berpikir...","rsp_mgr_1":"Tugas diterima. Setelah analisis, melibatkan beberapa domain. Dikoordinasikan dengan Agent terkait. Kesimpulan utama:","rsp_mgr_2":"Permintaan dipahami. Manager telah menyelesaikan penguraian tugas dan penjadwalan Agent. Ringkasan:","rsp_mgr_3":"Tugas diterima dan dikirim. Berdasarkan umpan balik Agent, ringkasan:","rsp_file_1":"Tugas file diterima. Jalur operasi yang disarankan, silakan konfirmasi:","rsp_file_2":"Operasi file dianalisis. Opsi pemrosesan yang tersedia:","rsp_file_3":"Struktur file dipindai. Saran pemrosesan:","rsp_srch_1":"Pencarian dimulai. Berdasarkan hasil pencarian multi-saluran, informasi kunci:","rsp_srch_2":"Pencarian multi-sumber selesai. Ringkasan temuan utama:","rsp_srch_3":"Hasil penelitian dengan anotasi sumber:","rsp_code_1":"Tugas kode dianalisis. Rencana implementasi:","rsp_code_2":"Solusi teknis dievaluasi. Implementasi yang direkomendasikan:","rsp_code_3":"Hasil review/generasi kode:","rsp_wrt_1":"Tugas penulisan diterima. Sesuai kebutuhan Anda, konten:","rsp_wrt_2":"Arah kreatif dipahami. Hasil:","rsp_wrt_3":"Konten dibuat, silakan tinjau:","rsp_gen_file_search":"Mencari file yang cocok di direktori yang ditentukan, mengembalikan daftar hasil.","rsp_gen_file_read":"File target ditemukan, mengekstrak konten. Silakan tentukan path file yang tepat untuk dibaca.","rsp_gen_file_default":"Operasi file diterima, silakan tentukan path target dan jenis operasi.","rsp_gen_srch":"Hasil penelitian:","rsp_gen_code_gen":"// Kerangka kode dibuat berdasarkan persyaratan","rsp_gen_code_bug":"Analisis bug:","rsp_gen_code_default":"Persyaratan kode dianalisis. Solusi teknis:","rsp_gen_wrt_trans":"Terjemahan selesai. Pemetaan bahasa sumber→target diterapkan. Silakan berikan teks sumber dan bahasa target.","rsp_gen_wrt_default":"Konten terkait dibuat:","table_dim":"Dimensi","table_content":"Konten","table_topic":"Topik","table_source":"Sumber","table_status":"Status","table_multi_source":"Pencarian multi-saluran","table_ready":"Data tersedia"},"it":{"f":"🇮🇹","n":"Italiano","auto_checked":"Auto ✓","page_title":"AI Office - Team Intelligente","header_title":"AI Office - Team Intelligente","sidebar_title":"Membri del Team","mgr_name":"Manager","mgr_role":"Pianificazione e Smistamento Compiti","mgr_skills":"Analisi | Smistamento | Sintesi | Flusso di Lavoro","mgr_badge":"Capo","file_name":"File Agent","file_role":"Gestione File e Dati","file_skills":"Ricerca | Lettura/Scrittura | Conversione | Batch","file_badge":"File","srch_name":"Search Agent","srch_role":"Recupero Informazioni","srch_skills":"Ricerca Web | Studio | Confronto | Rapporto","srch_badge":"Ricerca","code_name":"Code Agent","code_role":"Analisi Codice e Sviluppo","code_skills":"Generazione | Debug | Revisione | Architettura","code_badge":"Dev","wrt_name":"Writer","wrt_role":"Copywriting e Contenuti","wrt_skills":"Scrittura | Traduzione | Documenti | Rifinitura","wrt_badge":"Scrittura","auto":"Auto","send":"Invia","input_auto":"Inserisci compito, Manager delegherà al miglior Agent...","input_direct":"Chatta direttamente con {name}...","dispatch_flow":"Smistamento Compiti","welcome_h2":"Team AI Office","welcome_p":"Un team intelligente come l'ufficio Marvis, orchestrato dal Manager, con Agent specializzati che collaborano per completare ogni compito in modo efficiente.","status_online":"Online","thinking":"Pensando...","rsp_mgr_1":"Compito ricevuto. Dopo l'analisi, coinvolge più domini. Coordinato con gli Agent pertinenti. Conclusioni principali:","rsp_mgr_2":"Richiesta compresa. Il Manager ha completato la scomposizione dei compiti e la pianificazione degli Agent. Riepilogo:","rsp_mgr_3":"Compito ricevuto e smistato. In base al feedback degli Agent, riepilogo:","rsp_file_1":"Compito file accettato. Percorso operativo suggerito, confermare:","rsp_file_2":"Operazione file analizzata. Opzioni di elaborazione disponibili:","rsp_file_3":"Struttura file scansionata. Suggerimento di elaborazione:","rsp_srch_1":"Ricerca avviata. In base ai risultati della ricerca multicanale, informazioni chiave:","rsp_srch_2":"Ricerca multi-fonte completata. Riepilogo dei risultati:","rsp_srch_3":"Risultati della ricerca con annotazioni delle fonti:","rsp_code_1":"Compito codice analizzato. Piano di implementazione:","rsp_code_2":"Soluzione tecnica valutata. Implementazione consigliata:","rsp_code_3":"Risultati revisione/generazione codice:","rsp_wrt_1":"Compito di scrittura ricevuto. In base alle tue esigenze, contenuto:","rsp_wrt_2":"Direzione creativa compresa. Risultato:","rsp_wrt_3":"Contenuto generato, si prega di rivedere:","rsp_gen_file_search":"Ricerca file corrispondenti nella directory specificata, restituzione elenco risultati.","rsp_gen_file_read":"File di destinazione individuato, estrazione del contenuto. Specificare il percorso esatto del file da leggere.","rsp_gen_file_default":"Operazione file accettata, specificare il percorso di destinazione e il tipo di operazione.","rsp_gen_srch":"Risultati della ricerca:","rsp_gen_code_gen":"// Framework di codice generato in base ai requisiti","rsp_gen_code_bug":"Analisi bug:","rsp_gen_code_default":"Requisiti di codice analizzati. Soluzione tecnica:","rsp_gen_wrt_trans":"Traduzione completata. Mappatura lingua sorgente→destinazione applicata. Fornire il testo sorgente e la lingua di destinazione.","rsp_gen_wrt_default":"Contenuto correlato generato:","table_dim":"Dimensione","table_content":"Contenuto","table_topic":"Argomento","table_source":"Fonte","table_status":"Stato","table_multi_source":"Ricerca multicanale","table_ready":"Dati disponibili"}}</script>
+</body>
+</html>
