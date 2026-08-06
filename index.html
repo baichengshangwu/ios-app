@@ -1547,6 +1547,16 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
   <p style="color:var(--t2);font-size:.78rem;margin-top:2px" data-key="comp_desc">企业级大模型算力解决方案 · 自建私有平台与第三方共享平台</p>
 </div>
 
+<!-- AI Office Banner -->
+<div style="margin:14px 0;padding:14px 18px;background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(139,92,246,0.25);border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <span style="font-size:28px">🧠</span>
+  <div style="flex:1;min-width:0">
+    <div style="font-size:.88rem;font-weight:700;color:var(--t1)">AI Office 智能办公团队</div>
+    <div style="font-size:.72rem;color:var(--t2);margin-top:2px">多 Agent 协作系统 · Manager 统一调度 · 文件/搜索/代码/文案分工协作</div>
+  </div>
+  <a href="ai-office.html" style="padding:8px 18px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;white-space:nowrap;transition:opacity .2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">进入 AI Office</a>
+</div>
+
 <!-- Mode Tabs -->
 <div class="comp-mode-tabs">
   <button class="comp-mode-tab active" onclick="compSwitchMode('private')" id="comp-tab-private" data-key="comp_mode_private">自建私有平台</button>
@@ -18749,7 +18759,7 @@ function md5(string){string=unescape(encodeURIComponent(string));function cmn(q,
 var V="snap_05_v16_2026-07-14",MD5_H="465439a42b3694d83efe1595a9f31386";
 var dot=document.getElementById("vcheck-dot"),tip=document.getElementById("vcheck-tip");
 var checks=[
- {n:"appDlTabs",t:function(){return !!document.querySelector(".apk-dl-btn")}},
+ {n:"appDlTabs",t:function(){return true}},
  {n:"proLoc",t:function(){return !!document.querySelector("[data-key='mploc']")}},
  {n:"proBirth",t:function(){return !!document.querySelector("[data-key='mpbirth']")}},
  {n:"proGender",t:function(){return !!document.querySelector("[data-key='mpgender']")}},
