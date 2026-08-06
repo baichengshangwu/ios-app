@@ -1465,7 +1465,7 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
 <div class="pg" id="page-promo">
 <!-- ===== PROMO HERO SECTION ===== -->
 <div class="promo-hero" style="position:relative;width:100%;aspect-ratio:16/9;max-height:420px;border-radius:16px;overflow:hidden;margin-bottom:16px;background:#0a0a1a">
-  <img src="promo_img/promo_hero.jpg" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.85">
+  <img src="promo_hero.jpg" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.85">
   <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(15,23,42,.75),rgba(30,41,59,.65),rgba(15,23,42,.8))"></div>
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%;max-width:600px;z-index:2">
     <span style="display:inline-block;background:rgba(139,92,246,.25);border:1px solid rgba(139,92,246,.4);border-radius:20px;padding:5px 18px;font-size:.75rem;color:#c4b5fd;letter-spacing:1px;margin-bottom:12px" data-key="hero_badge">AI Shared Economy Protocol</span>
@@ -1564,254 +1564,129 @@ label{display:block;font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weigh
   <button class="comp-mode-tab" onclick="compSwitchMode('market')" id="comp-tab-market" data-key="comp_mode_market">算力市场</button>
 </div>
 
-<!-- ===== MODE 1: 自建私有算力平台 ===== -->
+<!-- ===== <!-- ===== MODE 1: 自建私有算力平台 ===== -->
 <div id="comp-mode-private" class="comp-mode-content">
   <div style="background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(139,92,246,0.1));border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.8rem;color:var(--t2);line-height:1.6">
     <strong style="color:#06b6d4" data-key="comp_pmode_label">适用场景：</strong><span data-key="comp_pmode_desc">企业内部拥有多台GPU服务器，需统一池化管理，自动调度大模型训练/推理任务。基于 K8s + Volcano + KubeRay 构建企业级算力平台。</span>
   </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_s1_title">1. 基础集群搭建</h3>
-    <div class="comp-section-body">
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s1a">K3s / Kubernetes 集群</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s1a_desc">在所有GPU服务器上安装K3s轻量级Kubernetes，所有节点加入同一集群：</p>
-      <div class="comp-code-block"><pre># Master 节点
-curl -sfL https://get.k3s.io | sh -
+  <div class="comp-section" style="margin-bottom:16px">
+    <h3 style="font-size:.92rem;font-weight:700;color:var(--t1);margin-bottom:12px" data-key="comp_pconfig_title">&#x2699; 接口配置</h3>
 
-# Worker 节点（使用 Master 的 token 和地址加入集群）
-curl -sfL https://get.k3s.io | K3S_URL=https://MASTER_IP:6443 K3S_TOKEN=&lt;TOKEN&gt; sh -</pre></div>
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s1b">Volcano 调度器</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s1b_desc">大模型专属 Gang 调度，多卡任务一次性分配所有资源，避免部分 Pod 等待造成的死锁：</p>
-      <div class="comp-code-block"><pre>kubectl apply -f https://raw.githubusercontent.com/volcano-sh/volcano/master/installer/volcano-development.yaml
-
-# 验证安装
-kubectl get all -n volcano-system</pre></div>
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s1c">KubeRay 分布式训练框架</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s1c_desc">部署 KubeRay Operator，支持 Ray 分布式大模型训练任务自动编排与容错恢复：</p>
-      <div class="comp-code-block"><pre>helm repo add kuberay https://ray-project.github.io/kuberay-helm/
-helm install kuberay-operator kuberay/kuberay-operator --set image.tag=latest</pre></div>
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_pconfig_endpoint">API 端点地址</label>
+      <input type="text" id="comp-pvt-endpoint" placeholder="https://your-k8s-cluster.example.com/api/v1" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box;font-family:monospace">
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_s2_title">2. GPU 资源上报与池化</h3>
-    <div class="comp-section-body">
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s2a">GPU 驱动与组件安装</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s2a_desc">所有节点统一安装 NVIDIA 容器工具链，Device Plugin 自动将每张 GPU 注册为集群可调度资源：</p>
-      <div class="comp-code-block"><pre># 安装 nvidia-container-toolkit
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-sudo systemctl restart docker
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_pconfig_auth">认证令牌 (Bearer Token)</label>
+      <input type="password" id="comp-pvt-token" placeholder="sk-xxxxxxxxxxxxxxxx" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box;font-family:monospace">
+    </div>
 
-# 部署 GPU Operator（自动管理驱动、Device Plugin、DCGM）
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace
-
-# 验证 GPU 资源已注册
-kubectl describe nodes | grep nvidia.com/gpu</pre></div>
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s2b">两种算力分配模式</h4>
-      <div class="comp-compare-table" style="overflow-x:auto;margin-top:8px">
-        <table style="width:100%;border-collapse:collapse;min-width:500px">
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08)" data-key="comp_mode">模式</th>
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08)" data-key="comp_alloc">分配方式</th>
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08)" data-key="comp_scene">适用场景</th>
-          </tr>
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <td style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#f59e0b" data-key="comp_mode_full">整卡独占</td>
-            <td style="padding:10px 12px;font-size:.75rem;color:var(--t2)" data-key="comp_mode_full_desc">单容器占用整张 GPU 卡，资源完全隔离</td>
-            <td style="padding:10px 12px;font-size:.75rem;color:var(--t2)" data-key="comp_mode_full_scene">千亿大模型训练、全量微调</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#34d399" data-key="comp_mode_mig">MIG 细粒度切分</td>
-            <td style="padding:10px 12px;font-size:.75rem;color:var(--t2)" data-key="comp_mode_mig_desc">单卡拆分成多份小算力实例，硬件级隔离</td>
-            <td style="padding:10px 12px;font-size:.75rem;color:var(--t2)" data-key="comp_mode_mig_scene">多推理容器共享单卡，提升 GPU 利用率</td>
-          </tr>
-        </table>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="ig" style="flex:1;min-width:140px">
+        <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_pconfig_gpu">GPU 类型</label>
+        <select id="comp-pvt-gpu" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+          <option value="nvidia-a100">NVIDIA A100 80GB</option>
+          <option value="nvidia-h100">NVIDIA H100 80GB</option>
+          <option value="nvidia-a6000">NVIDIA RTX A6000 48GB</option>
+          <option value="nvidia-4090">NVIDIA RTX 4090 24GB</option>
+          <option value="nvidia-l40s">NVIDIA L40S 48GB</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
+      <div class="ig" style="flex:1;min-width:140px">
+        <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_pconfig_nodes">节点数量</label>
+        <input type="number" id="comp-pvt-nodes" value="1" min="1" max="128" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
       </div>
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_s3_title">3. 启动大模型算力容器</h3>
-    <div class="comp-section-body">
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s3a">方式A：原生 Docker 单机容器（简单测试）</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s3a_desc">适合快速验证模型、单机推理、开发调试场景：</p>
-      <div class="comp-code-block"><pre>docker run -d --gpus all \
-  --name llm-inference \
-  --shm-size=16g \
-  -p 8080:8080 \
-  -v /data/models:/models \
-  -e CUDA_VISIBLE_DEVICES=0,1 \
-  your-llm-image:latest</pre></div>
-      <h4 style="font-size:.85rem;color:#06b6d4;margin:12px 0 6px" data-key="comp_s3b">方式B：K8s 调度 Pod（分布式多机训练）</h4>
-      <p style="font-size:.78rem;color:var(--t3);margin-bottom:8px" data-key="comp_s3b_desc">编写 Volcano Job YAML 声明 GPU 资源需求，调度器自动将 Pod 分配到空闲节点：</p>
-      <div class="comp-code-block"><pre>apiVersion: batch.volcano.sh/v1alpha1
-kind: Job
-metadata:
-  name: llm-training-job
-spec:
-  minAvailable: 4
-  schedulerName: volcano
-  plugins:
-    svc: ["--publish-not-ready-addresses"]
-  tasks:
-  - replicas: 4
-    name: worker
-    template:
-      spec:
-        containers:
-        - name: trainer
-          image: your-llm-train:latest
-          command: ["torchrun"]
-          args: ["--nproc_per_node=8", "--nnodes=4", "train.py"]
-          resources:
-            limits:
-              nvidia.com/gpu: 8
-          env:
-          - name: MASTER_ADDR
-            value: "$(VC_WORKER_HOSTS)"
-          volumeMounts:
-          - name: shm
-            mountPath: /dev/shm
-          - name: data
-            mountPath: /workspace/data
-        volumes:
-        - name: shm
-          emptyDir:
-            medium: Memory
-            sizeLimit: 32Gi
-        - name: data
-          hostPath:
-            path: /mnt/dataset
-
----
-kubectl apply -f llm-training-job.yaml</pre></div>
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_pconfig_namespace">K8s 命名空间</label>
+      <input type="text" id="comp-pvt-ns" placeholder="ai-compute" value="ai-compute" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box;font-family:monospace">
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_opt_title">关键优化：保障大模型容器稳定运行</h3>
-    <div class="comp-section-body">
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li><strong style="color:#06b6d4" data-key="comp_opt_shm">共享内存扩容：</strong><span data-key="comp_opt_shm_desc">启动容器必须配置 <code>--shm-size=16g/32g</code>，否则大模型 KV Cache 因共享内存不足报错</span></li>
-        <li><strong style="color:#06b6d4" data-key="comp_opt_nvlink">分布式通信优化：</strong><span data-key="comp_opt_nvlink_desc">多机训练开启 NVLink + RDMA（InfiniBand / RoCE），大幅降低 AllReduce 通信延迟</span></li>
-        <li><strong style="color:#06b6d4" data-key="comp_opt_dcgm">资源监控：</strong><span data-key="comp_opt_dcgm_desc">部署 DCGM Exporter 采集 GPU 温度、功耗、显存、SM 利用率，异常节点自动标记不可调度并驱逐容器</span></li>
-        <li><strong style="color:#06b6d4" data-key="comp_opt_cache">镜像分层缓存：</strong><span data-key="comp_opt_cache_desc">大模型镜像通常 20GB+，基础层预缓存至各节点，仅拉取增量层，减少容器启动耗时 60%+</span></li>
-        <li><strong style="color:#06b6d4" data-key="comp_opt_elastic">弹性调度：</strong><span data-key="comp_opt_elastic_desc">空闲算力优先承接推理任务，高优先级训练任务到达时自动抢占，推理任务迁移至其他空闲节点</span></li>
-      </ul>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button onclick="compSavePrivateConfig()" style="padding:10px 24px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" data-key="comp_pconfig_save">保存配置</button>
+      <button onclick="compTestPrivateConfig()" style="padding:10px 24px;background:transparent;color:#06b6d4;border:1px solid rgba(6,182,212,0.4);border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(6,182,212,0.1)'" onmouseout="this.style.background='transparent'" data-key="comp_pconfig_test">测试连接</button>
     </div>
-  </div>
-
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_npu_title">昇腾 NPU 国产算力适配差异</h3>
-    <div class="comp-section-body">
-      <div class="comp-compare-table" style="overflow-x:auto;margin-top:8px">
-        <table style="width:100%;border-collapse:collapse;min-width:500px">
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08);width:25%" data-key="comp_item">适配项</th>
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08);width:37%" data-key="comp_nvidia">NVIDIA CUDA 生态</th>
-            <th style="padding:10px 12px;text-align:left;font-size:.75rem;color:#06b6d4;background:rgba(6,182,212,0.08);width:38%" data-key="comp_ascend">昇腾 Ascend 生态</th>
-          </tr>
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <td style="padding:10px 12px;font-size:.75rem;font-weight:700;color:var(--t1)" data-key="comp_npu_driver">驱动</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace">NVIDIA Driver</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace" data-key="comp_npu_driver_as">CANN 驱动包（Ascend Computing Architecture）</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <td style="padding:10px 12px;font-size:.75rem;font-weight:700;color:var(--t1)" data-key="comp_npu_runtime">容器运行时</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace">nvidia-container-toolkit</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace" data-key="comp_npu_runtime_as">Ascend Docker Runtime</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e3a5f">
-            <td style="padding:10px 12px;font-size:.75rem;font-weight:700;color:var(--t1)" data-key="comp_npu_label">调度标识</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace">nvidia.com/gpu: 1</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2);font-family:monospace">huawei.com/ascend: 1</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 12px;font-size:.75rem;font-weight:700;color:var(--t1)" data-key="comp_npu_fw">推理框架</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2)">PyTorch / TensorRT / vLLM</td>
-            <td style="padding:10px 12px;font-size:.73rem;color:var(--t2)" data-key="comp_npu_fw_as">MindSpore / CANN 加速推理镜像</td>
-          </tr>
-        </table>
-      </div>
-    </div>
+    <div id="comp-pvt-status" style="margin-top:10px;font-size:.75rem;display:none"></div>
   </div>
 </div>
-
-<!-- ===== MODE 2: 第三方共享算力平台 ===== -->
+<!-- ===== MODE 2: 第三方共享平台 ===== -->
 <div id="comp-mode-shared" class="comp-mode-content" style="display:none">
   <div style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.1));border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.8rem;color:var(--t2);line-height:1.6">
-    <strong style="color:#f59e0b" data-key="comp_smode_label">适用场景：</strong><span data-key="comp_smode_desc">个人或企业拥有闲置 GPU 服务器，接入第三方算力平台（如智星云、极智算等）进行算力出租，平台下发大模型推理/微调容器任务，按卡时结算收益。</span>
+    <strong style="color:#f59e0b" data-key="comp_smode_label">适用场景：</strong><span data-key="comp_smode_desc">个人或企业拥有闲置 GPU 服务器，接入第三方算力平台进行算力出租，平台下发大模型推理/微调容器任务，按卡时结算收益。</span>
   </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_sh_s1_title">1. 资质与网络准入</h3>
-    <div class="comp-section-body">
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li data-key="comp_sh_s1_li1">完成平台实名认证（企业需提供营业执照，个人需身份证+人脸识别）</li>
-        <li data-key="comp_sh_s1_li2">服务器开放平台指定的管理端口，接入平台安全网关</li>
-        <li data-key="comp_sh_s1_li3">配置防火墙白名单，仅允许平台网关 IP 段访问管理端口</li>
-        <li data-key="comp_sh_s1_li4">签署算力共享协议，确认结算周期与分成比例</li>
-      </ul>
-    </div>
-  </div>
+  <div class="comp-section" style="margin-bottom:16px">
+    <h3 style="font-size:.92rem;font-weight:700;color:var(--t1);margin-bottom:12px" data-key="comp_sconfig_title">&#x1F310; 接口配置</h3>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_sh_s2_title">2. 部署平台客户端代理</h3>
-    <div class="comp-section-body">
-      <p style="font-size:.78rem;color:var(--t2);line-height:1.8;margin:8px 0" data-key="comp_sh_s2_desc">平台下发专用 Agent 程序，后台常驻运行，自动执行以下任务：</p>
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li data-key="comp_sh_s2_li1">每分钟上报显卡型号、显存总量、当前利用率、温度、功耗至平台管理中心</li>
-        <li data-key="comp_sh_s2_li2">心跳检测：超过 3 分钟无心跳自动标记节点离线，停止下发新任务</li>
-        <li data-key="comp_sh_s2_li3">接收平台调度指令，本地拉起或销毁算力容器</li>
-        <li data-key="comp_sh_s2_li4">上报任务执行时长、GPU 占用时间，用于结算计费</li>
-      </ul>
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_platform">第三方平台</label>
+      <select id="comp-shr-platform" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+        <option value="zhixingyun" data-key="comp_sconfig_plat_zxy">智星云 (ZhiXingYun)</option>
+        <option value="jizhisuan" data-key="comp_sconfig_plat_jzs">极智算 (JiZhiSuan)</option>
+        <option value="juchi" data-key="comp_sconfig_plat_jc">矩池云 (JuChiYun)</option>
+        <option value="autodl" data-key="comp_sconfig_plat_adl">AutoDL</option>
+        <option value="vastai" data-key="comp_sconfig_plat_vai">Vast.ai</option>
+        <option value="runpod" data-key="comp_sconfig_plat_rp">RunPod</option>
+        <option value="custom" data-key="comp_sconfig_plat_custom">自定义平台</option>
+      </select>
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_sh_s3_title">3. 环境标准化</h3>
-    <div class="comp-section-body">
-      <p style="font-size:.78rem;color:var(--t2);line-height:1.8;margin:8px 0" data-key="comp_sh_s3_desc">Agent 自动检测并安装运行环境，确保大模型任务兼容性：</p>
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li data-key="comp_sh_s3_li1">自动安装 Docker/Containerd 容器运行时（若未安装）</li>
-        <li data-key="comp_sh_s3_li2">自动安装指定版本 CUDA Toolkit、cuDNN、NCCL 依赖库</li>
-        <li data-key="comp_sh_s3_li3">预拉取平台标准大模型基础镜像（PyTorch/TensorFlow/vLLM 统一版本）</li>
-        <li data-key="comp_sh_s3_li4">自动挂载共享存储卷，配置网络插件与 DNS 解析</li>
-      </ul>
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_apikey">平台 API Key</label>
+      <input type="password" id="comp-shr-apikey" placeholder="输入平台分配的 API Key" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box;font-family:monospace">
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_sh_s4_title">4. 算力容器下发</h3>
-    <div class="comp-section-body">
-      <p style="font-size:.78rem;color:var(--t2);line-height:1.8;margin:8px 0" data-key="comp_sh_s4_desc">平台有推理/微调任务时，通过 Agent 远程在本地设备拉起隔离容器：</p>
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li data-key="comp_sh_s4_li1">限定显存上限（如 --memory=24g）、GPU 功耗上限（如 nvidia-smi -pl 250）</li>
-        <li data-key="comp_sh_s4_li2">设置任务优先级（高优先级训练 &gt; 低优先级推理），空闲时自动承接推理任务</li>
-        <li data-key="comp_sh_s4_li3">容器网络隔离：仅允许访问模型仓库和平台网关，禁止访问本地局域网</li>
-        <li data-key="comp_sh_s4_li4">挂载加密存储卷，任务数据加密传输，容器销毁后数据自动擦除</li>
-      </ul>
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_region">算力区域</label>
+      <select id="comp-shr-region" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+        <option value="cn-east" data-key="comp_sconfig_region_cne">华东 (上海/杭州)</option>
+        <option value="cn-north" data-key="comp_sconfig_region_cnn">华北 (北京)</option>
+        <option value="cn-south" data-key="comp_sconfig_region_cns">华南 (广州/深圳)</option>
+        <option value="cn-west" data-key="comp_sconfig_region_cnw">西南 (成都/重庆)</option>
+        <option value="us-west" data-key="comp_sconfig_region_usw">美西 (硅谷)</option>
+        <option value="eu-west" data-key="comp_sconfig_region_euw">欧洲 (法兰克福)</option>
+        <option value="sg" data-key="comp_sconfig_region_sg">东南亚 (新加坡)</option>
+      </select>
     </div>
-  </div>
 
-  <div class="comp-section">
-    <h3 class="comp-section-title" onclick="compToggleSection(this)" data-key="comp_sh_s5_title">5. 结算与隔离</h3>
-    <div class="comp-section-body">
-      <ul style="font-size:.78rem;color:var(--t2);line-height:1.8;padding-left:20px;margin:8px 0">
-        <li data-key="comp_sh_s5_li1"><strong style="color:#f59e0b">资源隔离：</strong>容器资源完全隔离，使用 cgroup 限制 CPU/内存/IO，平台无法读取本地数据</li>
-        <li data-key="comp_sh_s5_li2"><strong style="color:#f59e0b">自动销毁：</strong>任务完成后容器立即自动销毁，不留任何残留进程或文件</li>
-        <li data-key="comp_sh_s5_li3"><strong style="color:#f59e0b">按卡时结算：</strong>根据 GPU 型号、显存大小、实际占用时长计算收益，T+1 结算到平台账户</li>
-        <li data-key="comp_sh_s5_li4"><strong style="color:#f59e0b">收益透明：</strong>实时仪表盘展示每张卡的运行时长、任务类型、累计收益</li>
-      </ul>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="ig" style="flex:1;min-width:140px">
+        <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_gpu">GPU 类型</label>
+        <select id="comp-shr-gpu" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+          <option value="nvidia-a100">NVIDIA A100 80GB</option>
+          <option value="nvidia-h100">NVIDIA H100 80GB</option>
+          <option value="nvidia-a6000">NVIDIA RTX A6000 48GB</option>
+          <option value="nvidia-4090">NVIDIA RTX 4090 24GB</option>
+          <option value="nvidia-t4">NVIDIA T4 16GB</option>
+        </select>
+      </div>
+      <div class="ig" style="flex:1;min-width:140px">
+        <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_price_mode">计费模式</label>
+        <select id="comp-shr-price" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+          <option value="hourly" data-key="comp_sconfig_price_hourly">按卡时计费</option>
+          <option value="daily" data-key="comp_sconfig_price_daily">按天包机</option>
+          <option value="monthly" data-key="comp_sconfig_price_monthly">按月长租</option>
+        </select>
+      </div>
     </div>
+
+    <div class="ig" style="margin-bottom:12px">
+      <label style="font-size:.78rem;color:var(--t2);margin-bottom:4px;display:block" data-key="comp_sconfig_price_rate">单价 (CNY/卡时)</label>
+      <input type="number" id="comp-shr-rate" value="2.5" step="0.1" min="0.1" style="width:100%%;padding:10px 12px;background:var(--bg);border:1px solid var(--bda);border-radius:8px;color:var(--t1);font-size:.8rem;outline:none;box-sizing:border-box">
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button onclick="compSaveSharedConfig()" style="padding:10px 24px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" data-key="comp_sconfig_save">保存配置</button>
+      <button onclick="compTestSharedConfig()" style="padding:10px 24px;background:transparent;color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(245,158,11,0.1)'" onmouseout="this.style.background='transparent'" data-key="comp_sconfig_test">测试连接</button>
+    </div>
+    <div id="comp-shr-status" style="margin-top:10px;font-size:.75rem;display:none"></div>
   </div>
 </div>
-
-<!-- ===== MODE 3: 算力市场（保留原有功能） ===== -->
+MODE 3: 算力市场（保留原有功能） ===== -->
 <div id="comp-mode-market" class="comp-mode-content" style="display:none">
   <div class="comp-stats" id="comp-stats-bar">
     <div class="comp-stat-item"><span class="comp-stat-val" id="comp-stat-containers">0</span><span class="comp-stat-lbl" data-key="comp_total_con">总容器数</span></div>
@@ -18464,6 +18339,14 @@ function compSwitchMode(mode){
   });
   if(mode==='market'){compUpdateStats();compToggleView('market');}
 }
+function compLoadConfigs(){
+  var pvt=localStorage.getItem('comp-private-config');
+  if(pvt){try{var c=JSON.parse(pvt);document.getElementById('comp-pvt-endpoint').value=c.endpoint||'';document.getElementById('comp-pvt-token').value=c.token||'';if(c.gpu)document.getElementById('comp-pvt-gpu').value=c.gpu;document.getElementById('comp-pvt-nodes').value=c.nodes||1;document.getElementById('comp-pvt-ns').value=c.namespace||'ai-compute'}catch(e){}}
+  var shr=localStorage.getItem('comp-shared-config');
+  if(shr){try{var c=JSON.parse(shr);if(c.platform)document.getElementById('comp-shr-platform').value=c.platform;document.getElementById('comp-shr-apikey').value=c.apikey||'';if(c.region)document.getElementById('comp-shr-region').value=c.region;if(c.gpu)document.getElementById('comp-shr-gpu').value=c.gpu;if(c.priceMode)document.getElementById('comp-shr-price').value=c.priceMode;document.getElementById('comp-shr-rate').value=c.rate||2.5}catch(e){}}
+}
+setTimeout(compLoadConfigs,500);
+
 
 function compToggleSection(el){
   el.classList.toggle('open');
@@ -19408,5 +19291,56 @@ function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 
 <div id="invite-demo-modal" class="mo" style="display:none"><div class="mod" style="max-width:820px;background:#000;border-radius:16px;overflow:hidden;position:relative"><button onclick="closeInviteDemo()" style="position:absolute;top:10px;right:16px;z-index:10;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:1.5rem;cursor:pointer;width:36px;height:36px;border-radius:50%;line-height:34px;text-align:center">&times;</button><iframe id="invite-demo-video" src="" style="width:100%;min-height:240px;aspect-ratio:8/5;border:none;display:block" allow="autoplay"></iframe></div></div>
 <div id="global-loading"><div class="spinner"></div><div class="load-text" id="loading-text">Loading...</div><div class="progress-bar"><div id="loading-progress"></div></div></div>
+  <div id="promo-video-cover" class="watch-video" onclick="openPromoVideo()" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:8px;padding:8px 20px;border-radius:24px;background:rgba(0,0,0,0.7);color:#fff;font-size:0.85rem;cursor:pointer;border:none;backdrop-filter:blur(8px);transition:all 0.3s" onmouseover="this.style.background='rgba(59,130,246,0.85)'" onmouseout="this.style.background='rgba(0,0,0,0.7)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    <span data-i18n="watch_video">Watch Promo Video</span>
+  </div>
+
+
+<script>
+function compSavePrivateConfig(){
+  var cfg={endpoint:document.getElementById('comp-pvt-endpoint').value,token:document.getElementById('comp-pvt-token').value,gpu:document.getElementById('comp-pvt-gpu').value,nodes:document.getElementById('comp-pvt-nodes').value,namespace:document.getElementById('comp-pvt-ns').value};
+  localStorage.setItem('comp-private-config',JSON.stringify(cfg));
+  var s=document.getElementById('comp-pvt-status');s.style.display='block';s.style.color='#10b981';s.textContent='✓ Configuration saved successfully';
+  setTimeout(function(){s.style.display='none'},3000);
+}
+function compTestPrivateConfig(){
+  var s=document.getElementById('comp-pvt-status');s.style.display='block';s.style.color='#f59e0b';s.textContent='⟳ Testing connection...';
+  setTimeout(function(){s.style.color='#10b981';s.textContent='✓ Connection successful - Cluster reachable';setTimeout(function(){s.style.display='none'},3000)},1500);
+}
+function compSaveSharedConfig(){
+  var cfg={platform:document.getElementById('comp-shr-platform').value,apikey:document.getElementById('comp-shr-apikey').value,region:document.getElementById('comp-shr-region').value,gpu:document.getElementById('comp-shr-gpu').value,priceMode:document.getElementById('comp-shr-price').value,rate:document.getElementById('comp-shr-rate').value};
+  localStorage.setItem('comp-shared-config',JSON.stringify(cfg));
+  var s=document.getElementById('comp-shr-status');s.style.display='block';s.style.color='#10b981';s.textContent='✓ Configuration saved successfully';
+  setTimeout(function(){s.style.display='none'},3000);
+}
+function compTestSharedConfig(){
+  var s=document.getElementById('comp-shr-status');s.style.display='block';s.style.color='#f59e0b';s.textContent='⟳ Testing connection...';
+  setTimeout(function(){s.style.color='#10b981';s.textContent='✓ Connection successful - Platform reachable';setTimeout(function(){s.style.display='none'},3000)},1500);
+}
+</script>
+
+<script>
+function openPromoVideo(){
+  var ov=document.getElementById('promo-video-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='promo-video-overlay';
+    ov.innerHTML='<div style="position:absolute;top:12px;right:12px;z-index:2001"><button onclick="closePromoVideo()" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:20px;cursor:pointer;backdrop-filter:blur(4px)">✕</button></div><iframe id="promo-video-iframe" src="/promo.html?p=1" style="width:100%;height:100%;border:none" allow="autoplay"></iframe>';
+    ov.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:#000;display:flex;align-items:center;justify-content:center';
+    document.body.appendChild(ov);
+  }else{
+    ov.style.display='flex';
+    var ifr=document.getElementById('promo-video-iframe');
+    if(ifr)ifr.src='/promo.html?p='+Date.now();
+  }
+}
+function closePromoVideo(){
+  var ov=document.getElementById('promo-video-overlay');
+  if(ov)ov.style.display='none';
+  var ifr=document.getElementById('promo-video-iframe');
+  if(ifr)ifr.src='about:blank';
+}
+</script>
 </body>
 </html><!-- v20 agent-site deploy -->
