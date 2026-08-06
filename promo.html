@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Nexus — 全球首个去中心化 AI 访问市场</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#0a0a1a;color:#fff;overflow:hidden;height:100vh;width:100vw}
+#app{position:relative;width:100%;height:100%}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity 0.6s}
+.slide.active{display:flex;opacity:1}
+.slide img{max-width:92%;max-height:65%;border-radius:12px;box-shadow:0 0 80px rgba(0,150,255,0.25);object-fit:contain}
+.slide .title{font-size:2.4em;font-weight:700;margin:20px 0 10px;background:linear-gradient(135deg,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;padding:0 60px}
+.slide .desc{font-size:1.15em;color:#bbc;text-align:center;max-width:750px;line-height:1.7;padding:0 60px;margin-top:6px}
+.slide .cta{font-size:1.5em;margin-top:24px;padding:18px 56px;background:linear-gradient(135deg,#00b4ff,#7b2fff);border-radius:50px;cursor:pointer;font-weight:700;letter-spacing:2px;animation:pulse 2s infinite;text-decoration:none;color:#fff;display:inline-block}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,180,255,0.4)}50%{box-shadow:0 0 40px rgba(123,47,255,0.6)}}
+.subtitle-bar{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);padding:14px 36px;border-radius:14px;font-size:1.25em;text-align:center;max-width:85%;line-height:1.6;transition:opacity 0.4s;backdrop-filter:blur(10px)}
+.progress-bar{position:absolute;bottom:50px;left:10%;width:80%;height:5px;background:rgba(255,255,255,0.15);border-radius:3px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00b4ff,#7b2fff);border-radius:3px;transition:width 0.3s}
+.controls{position:absolute;bottom:12px;right:24px;display:flex;gap:10px;z-index:100}
+.controls button{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-size:0.95em;transition:all 0.25s}
+.controls button:hover{background:rgba(255,255,255,0.22)}
+.lang-select{position:absolute;top:16px;right:24px;z-index:100;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:10px 16px;border-radius:10px;font-size:0.95em;cursor:pointer;backdrop-filter:blur(8px)}
+.logo-bar{position:absolute;top:18px;left:24px;z-index:100;font-size:1.3em;font-weight:700;background:linear-gradient(135deg,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stats-overlay{display:flex;gap:24px;margin:16px 0;flex-wrap:wrap;justify-content:center}
+.stat-box{background:rgba(0,180,255,0.08);border:1px solid rgba(0,180,255,0.25);border-radius:12px;padding:18px 28px;text-align:center}
+.stat-box .num{font-size:2em;font-weight:700;color:#00b4ff}
+.stat-box .label{font-size:0.85em;color:#99a;margin-top:6px}
+.cascade-icons{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.cascade-icons span{background:rgba(255,255,255,0.07);padding:10px 20px;border-radius:10px;font-size:1.05em;border:1px solid rgba(255,255,255,0.1)}
+.slide-indicator{position:absolute;bottom:64px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:0.8em}
+.timer-display{position:absolute;top:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:0.85em}
+audio{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="logo-bar">AI NEXUS</div>
+<select class="lang-select" id="langSelect" onchange="switchLanguage()">
+<option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="th">ไทย</option><option value="vi">Tiếng Việt</option><option value="id">Bahasa Indonesia</option><option value="it">Italiano</option>
+</select>
+<div class="timer-display" id="timerDisplay">00:00 / 05:00</div>
+<div id="slidesContainer"></div>
+<div class="subtitle-bar" id="subtitleBar"></div>
+<div class="slide-indicator" id="slideIndicator">1 / 15</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="controls">
+<button onclick="togglePlay()" id="playBtn">⏸ 暂停</button>
+<button onclick="prevSlide()">⏮</button>
+<button onclick="nextSlide()">⏭</button>
+<button onclick="restart()">🔄 重播</button>
+</div>
+</div>
+<audio id="audioPlayer" preload="auto"></audio>
+
+<script>
+// ===== SUBTITLE DATA (16 languages) =====
+const subs = {
+  'zh-CN': [
+    '全球 AI 模型爆炸式增长——但每调用一次，你就被锁定在一个平台上',
+    '昂贵的 API 费用、复杂的密钥管理、永远不够的配额——这不是 AI 该有的样子',
+    'AI Nexus——一个 Token，打通所有 AI',
+    '48 个 AI 工具、超过 1,200 名持有者、日成交量突破 280 万美元',
+    '从 GPT 到 Claude，从绿电到 GPU——明码标价，即时交易',
+    '工具市场：全球顶级 AI 模型，按类别筛选，一键订阅',
+    'P2P 自由市场：从电力原料到 GPU 集群，全链路透明流转',
+    '专业交易大厅：K 线行情、限价市价、联盟币 AC 生态燃料',
+    '四维一体：行情·工具·P2P·交易——AI 通证经济闭环',
+    '16 种语言实时切换——AI Nexus 以你的母语与你对话',
+    '社交网络 + 论坛：图文·视频·音频·直播——多形态自由发布',
+    '全球 AI 活动一站聚合：旧金山·新加坡·柏林·迪拜',
+    '四级代理体系：国家 5% · 省级 10% · 市级 25% · 直推 50%',
+    '会员中心：多币种钱包 + 资金池 + 抵押仓单——资产持续增值',
+    '算力容器：闲置算力变资产——你的 GPU，你的定价',
+    'LingQu AI：即刻对话，实时响应——AI 就该这么简单',
+    'AI Nexus——拥有 Token，掌控 AI',
+    '立即访问 zhitongwang.cn · 新用户注册即送 1,000 AC'
+  ],
+  'en': [
+    'AI models are exploding—yet every API call locks you into one platform',
+    'Expensive fees, complex keys, never-enough quotas—this is not what AI should be',
+    'AI Nexus—One Token, All AI',
+    '48 AI tools, 1,200+ holders, $2.8M daily volume',
+    'From GPT to Claude, green energy to GPU—priced and traded instantly',
+    'Tool Market: global top AI models, filter by category, one-click subscribe',
+    'P2P Market: from energy to GPU clusters, full transparency',
+    'Trading floor: candlestick charts, limit market orders, AC ecosystem fuel',
+    'Four-in-one: Market·Tools·P2P·Trade—AI token economy closed loop',
+    '16 languages, real-time switch—AI Nexus speaks your language',
+    'Social + Forum: text·video·audio·livestream—multi-format publishing',
+    'Global AI events: San Francisco·Singapore·Berlin·Dubai',
+    '4-tier agency: National 5%·Provincial 10%·City 25%·Direct 50%',
+    'Member Center: multi-currency wallet + funding pool + collateral',
+    'Compute containers: idle compute to assets—your GPU, your price',
+    'LingQu AI: instant chat, real-time response—AI should be this simple',
+    'AI Nexus—Own the Token, Master the AI',
+    'Visit zhitongwang.cn · New users get 1,000 AC free'
+  ],
+  'ja': [
+    'AIモデルが爆発的に増加——しかしAPI呼び出しごとに1つのプラットフォームに固定',
+    '高額なAPI料金、複雑なキー管理、常に不足する割り当て——これがAIのあるべき姿か',
+    'AI Nexus——1つのトークン、すべてのAI',
+    '48のAIツール、1,200人以上の保有者、日間取引高280万ドル',
+    'GPTからClaude、グリーン電力からGPUまで——即時取引',
+    'ツール市場：世界トップAIモデル、カテゴリ別フィルター、ワンクリック購読',
+    'P2P市場：電力原料からGPUクラスターまで、完全透明',
+    '取引所：ローソク足チャート、指値成行注文、ACエコシステム燃料',
+    '4-in-1：マーケット·ツール·P2P·取引——AIトークン経済のクローズドループ',
+    '16言語、リアルタイム切替——AI Nexusはあなたの言語で話します',
+    'ソーシャル+フォーラム：テキスト·動画·音声·ライブ配信',
+    'グローバルAIイベント：サンフランシスコ·シンガポール·ベルリン·ドバイ',
+    '4層代理：国家5%·省級10%·市級25%·直接紹介50%',
+    '会員センター：マルチ通貨ウォレット+資金プール+担保',
+    '計算コンテナ：遊休計算力を資産に——あなたのGPU、あなたの価格',
+    'LingQu AI：即時チャット、リアルタイム応答——AIはこうあるべき',
+    'AI Nexus——トークンを所有し、AIを制御せよ',
+    'zhitongwang.cnにアクセス · 新規登録で1,000 ACプレゼント'
+  ],
+  'ko': [
+    'AI 모델이 폭발적으로 증가—그러나 API 호출마다 하나의 플랫폼에 고정',
+    '비싼 API 비용, 복잡한 키 관리, 항상 부족한 할당량—이것이 AI의 모습인가',
+    'AI Nexus—하나의 토큰, 모든 AI',
+    '48개의 AI 도구, 1,200명 이상 보유자, 일일 거래량 280만 달러',
+    'GPT부터 Claude까지, 그린 에너지부터 GPU까지—즉시 거래',
+    '도구 시장: 글로벌 최고 AI 모델, 카테고리별 필터, 원클릭 구독',
+    'P2P 시장: 전력 원료부터 GPU 클러스터까지, 완전 투명',
+    '거래소: 캔들 차트, 지정가 시장가, AC 생태계 연료',
+    '4-in-1: 마켓·도구·P2P·거래—AI 토큰 경제 폐쇄 루프',
+    '16개 언어, 실시간 전환—AI Nexus가 당신의 언어로 말합니다',
+    '소셜+포럼: 텍스트·비디오·오디오·라이브스트림',
+    '글로벌 AI 이벤트: 샌프란시스코·싱가포르·베를린·두바이',
+    '4단계 에이전시: 국가 5%·성 10%·시 25%·직접 추천 50%',
+    '회원 센터: 다중 통화 지갑+자금 풀+담보',
+    '컴퓨팅 컨테이너: 유휴 컴퓨팅을 자산으로—당신의 GPU, 당신의 가격',
+    'LingQu AI: 즉시 채팅, 실시간 응답—AI는 이렇게 간단해야 합니다',
+    'AI Nexus—토큰을 소유하고 AI를 지배하라',
+    'zhitongwang.cn 방문 · 신규 가입 시 1,000 AC 증정'
+  ]
+};
+
+// ===== SLIDES =====
+const slides = [
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a0a2e,#1a0a3e)'},
+  {type:'hero',t:12, bg:'linear-gradient(135deg,#1a0a2e,#0a0a3e)'},
+  {type:'hero',t:16, bg:'linear-gradient(135deg,#0a1a3e,#0a0a2e)'},
+  {type:'image',t:20, img:'promo_img/01_home_full.png', stats:[{n:'48',l:{'zh-CN':'AI 工具','en':'AI Tools'}},{n:'1,247',l:{'zh-CN':'持有者','en':'Holders'}},{n:'$2.8M',l:{'zh-CN':'24h 成交量','en':'24h Volume'}},{n:'$42.8M',l:{'zh-CN':'市值','en':'Market Cap'}}]},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a1a3e,#1a0a2e)', icons:['GPT-5.5','Claude 4.7','⚡ 绿电','💻 GPU']},
+  {type:'image',t:18, img:'promo_img/02_tools.png'},
+  {type:'image',t:18, img:'promo_img/03_p2p.png'},
+  {type:'image',t:20, img:'promo_img/04_events.png'},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a0a2e,#1a1a4e)', icons:['📊 行情','🔧 工具','🤝 P2P','💱 交易']},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a1a4e,#0a0a2e)'},
+  {type:'image',t:18, img:'promo_img/06_social.png'},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#1a0a3e,#0a2a3e)'},
+  {type:'image',t:20, img:'promo_img/05_agent.png'},
+  {type:'image',t:18, img:'promo_img/08_member.png'},
+  {type:'image',t:14, img:'promo_img/09_compute.png'},
+  {type:'image',t:18, img:'promo_img/11_promo.png'},
+  {type:'final',t:14, bg:'linear-gradient(135deg,#0a0a2e,#2a0a5e)', cta:{'zh-CN':'立即访问 zhitongwang.cn','en':'Visit zhitongwang.cn'}},
+  {type:'final',t:24, bg:'linear-gradient(135deg,#0a0a2e,#16083e)', cta:{'zh-CN':'AI Nexus — 拥有 Token，掌控 AI','en':'AI Nexus — Own the Token, Master the AI'}},
+];
+
+// Titles/descs per slide (index maps to subs array)
+const slideTitles = [
+  {descs:{'zh-CN':'AI Nexus — 全球首个去中心化 AI 访问市场','en':"AI Nexus — World's First Decentralized AI Access Market"}},
+  {descs:{'zh-CN':'痛点与突破','en':'The Pain & The Breakthrough'}},
+  {descs:{'zh-CN':'AI Nexus — 一个 Token，打通所有 AI','en':'AI Nexus — One Token, All AI'}},
+  {titles:{'zh-CN':'行情看板','en':'Market Dashboard'}, descs:{'zh-CN':'数据一目了然','en':'Data at a Glance'}},
+  {titles:{'zh-CN':'一切 AI 资源，Token 化交易','en':'All AI Resources, Tokenized'}, descs:{'zh-CN':'从 GPT 到 Claude，从绿电到 GPU——明码标价，即时交易','en':'From GPT to Claude, green energy to GPU—priced and traded instantly'}},
+  {titles:{'zh-CN':'工具市场','en':'Tool Market'}, descs:{'zh-CN':'全球顶级 AI 模型聚合，一键订阅','en':'Global Top AI Models, One-Click Subscribe'}},
+  {titles:{'zh-CN':'P2P 自由市场','en':'P2P Free Market'}, descs:{'zh-CN':'从电力原料到 GPU 集群，全链路透明流转','en':'From energy to GPU clusters, full transparency'}},
+  {titles:{'zh-CN':'交易大厅','en':'Trading Floor'}, descs:{'zh-CN':'K 线行情 · 限价市价 · 联盟币 AC——生态燃料','en':'Candlestick charts · limit/market orders · AC—ecosystem fuel'}},
+  {titles:{'zh-CN':'四维一体 · AI 通证经济闭环','en':'Four-in-One · AI Token Economy'}, descs:{'zh-CN':'行情 → 工具 → P2P → 交易','en':'Market → Tools → P2P → Trade'}},
+  {titles:{'zh-CN':'16 种语言实时切换','en':'16 Languages, Real-Time Switch'}, descs:{'zh-CN':'无论你来自哪里，AI Nexus 以你的母语与你对话','en':'Wherever you are from, AI Nexus speaks your language'}},
+  {titles:{'zh-CN':'社交网络 + 论坛','en':'Social Network + Forum'}, descs:{'zh-CN':'图文 · 视频 · 影视 · 音频 · 直播——多形态自由发布','en':'Text · Video · Film · Audio · Livestream—multi-format publishing'}},
+  {titles:{'zh-CN':'全球 AI 活动一站聚合','en':'Global AI Events, One Platform'}, descs:{'zh-CN':'旧金山 · 新加坡 · 柏林 · 迪拜——发现、报名、参与','en':'San Francisco · Singapore · Berlin · Dubai—discover, register, participate'}},
+  {titles:{'zh-CN':'四级代理体系','en':'4-Tier Agency System'}, descs:{'zh-CN':'国家 5% · 省级 10% · 市级 25% · 直推 50%——平台自动结算','en':'National 5% · Provincial 10% · City 25% · Direct 50%—auto-settlement'}},
+  {titles:{'zh-CN':'会员中心','en':'Member Center'}, descs:{'zh-CN':'多币种钱包 + 资金池 + 抵押仓单——资产持续增值','en':'Multi-currency wallet + funding pool + collateral—continuous growth'}},
+  {titles:{'zh-CN':'算力容器','en':'Compute Containers'}, descs:{'zh-CN':'闲置算力变资产——你的 GPU，你的定价','en':'Idle compute to assets—your GPU, your price'}},
+  {titles:{'zh-CN':'LingQu AI —— 即刻体验','en':'LingQu AI — Try It Now'}, descs:{'zh-CN':'直接对话，实时响应——AI 就该这么简单','en':'Instant chat, real-time response—AI should be this simple'}},
+  {titles:{'zh-CN':'AI Nexus','en':'AI Nexus'}, descs:{'zh-CN':'拥有 Token，掌控 AI','en':'Own the Token, Master the AI'}},
+  {titles:{'zh-CN':'加入 AI 共享经济','en':'Join the AI Sharing Economy'}, descs:{'zh-CN':'新用户注册即送 1,000 AC','en':'New users get 1,000 AC free'}},
+];
+
+let idx=0,playing=true,timer=null,lang='zh-CN',elapsed=0;
+const totalDuration = slides.reduce((s,sl) => s+sl.t, 0);
+
+function init(){
+  const c=document.getElementById('slidesContainer');
+  slides.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='slide'+(i===0?' active':'');
+    d.id='slide-'+i;
+    d.style.background=s.bg||'transparent';
+    const ti=slideTitles[i]||{};
+    let html='';
+    if(ti.titles) html+=`<div class="title">${ti.titles['zh-CN']}</div>`;
+    if(ti.descs) html+=`<div class="desc">${ti.descs['zh-CN']}</div>`;
+    if(s.icons) html+=`<div class="cascade-icons">${s.icons.map(ic=>`<span>${ic}</span>`).join('')}</div>`;
+    if(s.img) html+=`<img src="${s.img}" alt="" onerror="this.parentElement.querySelector('.title').textContent+=' [图片加载中]'">`;
+    if(s.stats) html+=`<div class="stats-overlay">${s.stats.map(st=>`<div class="stat-box"><div class="num">${st.n}</div><div class="label">${st.l['zh-CN']}</div></div>`).join('')}</div>`;
+    if(s.cta) html+=`<a href="https://zhitongwang.cn" target="_blank" style="text-decoration:none"><div class="cta">${s.cta['zh-CN']}</div></a>`;
+    d.innerHTML=html;
+    c.appendChild(d);
+  });
+  updateUI();
+  loadAudio();
+  startAuto();
+}
+
+function loadAudio(){
+  const a=document.getElementById('audioPlayer');
+  a.src=lang==='zh-CN'?'promo_audio_zh.mp3':'promo_audio_en.mp3';
+  a.load();
+}
+
+function startAuto(){
+  if(!playing)return;
+  if(timer)clearTimeout(timer);
+  const dur=slides[idx].t*1000;
+  animateProgress(dur);
+  const a=document.getElementById('audioPlayer');
+  if(a.paused) a.play().catch(()=>{});
+  timer=setTimeout(()=>{
+    if(idx<slides.length-1){idx++;showSlide();}else{stop();}
+  },dur);
+}
+
+function animateProgress(dur){
+  const bar=document.getElementById('progressFill'), start=Date.now();
+  function tick(){
+    const pct=Math.min((Date.now()-start)/dur*100,100);
+    bar.style.width=pct+'%';
+    if(pct<100&&playing)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function showSlide(){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('active',i===idx));
+  updateUI();
+  if(playing) startAuto();
+}
+
+function updateUI(){
+  document.getElementById('subtitleBar').textContent=(subs[lang]||subs['zh-CN'])[idx]||'';
+  document.getElementById('slideIndicator').textContent=(idx+1)+' / '+slides.length;
+  elapsed=slides.slice(0,idx).reduce((s,sl)=>s+sl.t,0);
+  const total=slides.reduce((s,sl)=>s+sl.t,0);
+  const m1=Math.floor(elapsed/60),s1=Math.floor(elapsed%60);
+  const m2=Math.floor(total/60),s2=Math.floor(total%60);
+  document.getElementById('timerDisplay').textContent=
+    String(m1).padStart(2,'0')+':'+String(s1).padStart(2,'0')+' / '+String(m2).padStart(2,'0')+':'+String(s2).padStart(2,'0');
+}
+
+function switchLanguage(){
+  lang=document.getElementById('langSelect').value;
+  // For non-zh/en, fallback to English subtitles/audio
+  const displayLang = (lang==='zh-CN'||lang==='en')?lang:'en';
+  document.querySelectorAll('.slide').forEach((el,i)=>{
+    const s=slideTitles[i]||{};
+    const t=el.querySelector('.title'), d=el.querySelector('.desc'), c=el.querySelector('.cta');
+    if(t&&s.titles) t.textContent=s.titles[displayLang]||s.titles['zh-CN']||'';
+    if(d&&s.descs) d.textContent=s.descs[displayLang]||s.descs['zh-CN']||'';
+    if(c&&slides[i].cta) c.textContent=slides[i].cta[displayLang]||slides[i].cta['zh-CN'];
+    const st=el.querySelectorAll('.stat-box .label');
+    if(st.length&&slides[i].stats){
+      st.forEach((lb,j)=>{if(slides[i].stats[j])lb.textContent=slides[i].stats[j].l[displayLang]||slides[i].stats[j].l['zh-CN'];});
+    }
+  });
+  loadAudio();
+  updateUI();
+}
+
+function nextSlide(){if(idx<slides.length-1){idx++;showSlide();}}
+function prevSlide(){if(idx>0){idx--;showSlide();}}
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
+  const a=document.getElementById('audioPlayer');
+  playing?a.play().catch(()=>{}):a.pause();
+  playing?startAuto():clearTimeout(timer);
+}
+function stop(){
+  playing=false;
+  document.getElementById('playBtn').textContent='🔄 重播';
+  clearTimeout(timer);
+  document.getElementById('progressFill').style.width='100%';
+  document.getElementById('audioPlayer').pause();
+}
+function restart(){idx=0;playing=true;document.getElementById('playBtn').textContent='⏸ 暂停';elapsed=0;showSlide();loadAudio();}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='p')togglePlay();
+});
+init();
+</script>
+</body>
+</html>
