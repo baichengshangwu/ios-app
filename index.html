@@ -2427,6 +2427,7 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 function playInviteDemoVideo(){var m=document.getElementById("invite-demo-modal");var v=document.getElementById("invite-demo-video");m.style.display="flex";m.classList.add("show");v.src="invite_video.html?v=&lang="+(typeof curLang!=='undefined'?curLang:'zh')+Date.now()}
 function closeInviteDemo(){var d=document.getElementById("invite-demo-modal");d.style.display="none";d.classList.remove("show");var v=document.getElementById("invite-demo-video");if(v){v.contentWindow&&v.contentWindow.postMessage('restart','*');v.src=''}}function restartInviteEmbed(){var e=document.getElementById("invite-demo-embed");var o=document.getElementById("invite-play-overlay");if(o)o.style.display="none";if(e){e.src="invite_video.html?v=&lang="+(typeof curLang!=='undefined'?curLang:'zh')+Date.now()}}
 function closeInviteEmbed(){var e=document.getElementById("invite-demo-embed");if(e){e.contentWindow&&e.contentWindow.postMessage('stop','*');e.src='';setTimeout(function(){e.src='invite_video.html?v=&lang='+(typeof curLang!=='undefined'?curLang:'zh');},100);}var o=document.getElementById('invite-play-overlay');if(o)o.style.display='';}function fullscreenInviteVideo(){var w=document.getElementById("invite-video-player-wrapper");if(!w)return;if(w.requestFullscreen){w.requestFullscreen()}else if(w.webkitRequestFullscreen){w.webkitRequestFullscreen()}else if(w.msRequestFullscreen){w.msRequestFullscreen()}}
+window.addEventListener('message',function(ev){try{if(ev.data==='close-invite'){closeInviteDemo();closeInviteEmbed();}}catch(e){console.error(e);}});
 function showLoading(t){t=t||"Loading...";var o=document.getElementById("global-loading");var l=document.getElementById("loading-text");var p=document.getElementById("loading-progress");if(o)o.classList.add("active");if(l)l.textContent=t;if(p)p.style.width="0%"}
 function hideLoading(){var o=document.getElementById("global-loading");if(o)o.classList.remove("active")}
 function setLoadingProgress(n){var p=document.getElementById("loading-progress");if(p)p.style.width=Math.min(100,Math.max(0,n))+"%"}
@@ -17480,6 +17481,12 @@ document.addEventListener('DOMContentLoaded',()=>{
         }
       }
     },800);
+  })();
+  // Handle hash-based navigation (e.g. #member-wallet)
+  (function(){
+    function handleHash(){var h=window.location.hash;if(!h)return;if(h==='#member-wallet'){if(typeof sp==='function')sp('wallet');}}
+    handleHash();
+    window.addEventListener('hashchange',handleHash);
   })();
   // Agent cert shown via updateAgentTerritoryBar() — no blocking overlay
 });
