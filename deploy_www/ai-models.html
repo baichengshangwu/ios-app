@@ -358,6 +358,130 @@
         .chat-modal-footer button { background:var(--primary); color:#fff; border:none; border-radius:10px; padding:0 18px; font-weight:600; cursor:pointer; font-size:0.85rem; white-space:nowrap; }
         .chat-modal-footer button:disabled { opacity:0.5; cursor:not-allowed; }
         .chat-typing { align-self:flex-start; font-size:0.78rem; color:var(--text-muted); padding:6px 0; }
+
+        /* Balance display in hero */
+        .hero-balance {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            padding: 6px 18px;
+            margin-top: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .hero-balance .bal-amount {
+            font-size: 1.05rem;
+        }
+        .hero-balance .bal-label {
+            opacity: 0.7;
+            font-weight: 400;
+            font-size: 0.78rem;
+        }
+        /* Test All button */
+        .btn-test-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .btn-test-all:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-test-all:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .test-progress {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .test-progress.show { display: flex; }
+        .test-progress-bar {
+            width: 120px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .test-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        /* Model play button */
+        .model-btn-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            flex-shrink: 0;
+        }
+        .model-btn-play:hover {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .model-btn-play.testing {
+            animation: pulse 1s infinite;
+            border-color: #f59e0b;
+            color: #f59e0b;
+            cursor: wait;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        /* Status dot */
+        .model-status-dot {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+            cursor: help;
+        }
+        .model-status-dot.green { background: #10b981; }
+        .model-status-dot.red { background: #ef4444; }
+        .model-status-dot .status-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #fff;
+            font-size: 0.72rem;
+            padding: 5px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .model-status-dot:hover .status-tooltip { display: block; }
+
     </style>
 </head>
 <body>
@@ -379,6 +503,11 @@
         <div class="container">
             <h1 data-i18n="title">AI联盟 - 大模型广场</h1>
             <p class="subtitle" data-i18n="hero_subtitle">35 个大模型 · 8 家顶级 AI 厂商 · OpenAI 兼容 API</p>
+        <div class="hero-balance" id="hero-balance">
+            <span class="bal-label">法币余额</span>
+            <span class="bal-amount" id="bal-amount">--</span>
+            <span>CNY</span>
+        </div>
             </div>
     </section>
     <main class="container">
@@ -396,6 +525,14 @@
                     <button class="group-tab" data-group="endpoint" data-i18n="tab_endpoint">按端点</button>
                 </div>
             </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+            <div class="test-progress" id="test-progress">
+                <span id="test-progress-text">0/35</span>
+                <div class="test-progress-bar"><div class="test-progress-fill" id="test-progress-fill" style="width:0%"></div></div>
+                <span id="test-progress-result"></span>
+            </div>
+            <button class="btn-test-all" id="btn-test-all" onclick="testAll()">&#9654; Test All 35</button>
+        </div>
         </div>
         <div class="stats-bar" id="stats-bar">
             共 <span class="count">35</span> 个模型
@@ -496,6 +633,7 @@
                     html += '<div class="model-desc">' + escapeHtml(m.description || '—') + '</div>';
                     html += '<div style="font-size:0.7rem;color:var(--text-muted);">' + t('endpoint_label') + ': ' + escapeHtml(endpoints) + '</div>';
                     html += '<div class="model-actions">';
+                    html += '<button class="model-btn-play" onclick="event.stopPropagation();testModel(\'' + escapeHtml(m.id) + '\')" title="\' + escapeHtml(t('start_chat')) + '\' + ">&#9654;</button>';
                     html += '<button class="model-btn-chat" onclick="startChat(\'' + escapeHtml(m.id) + '\')">';
                     html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
                     html += '<span>' + t('start_chat') + '</span></button>';
@@ -574,6 +712,137 @@
 
         applyI18n();
         renderModels();
+        fetchBalance();
+
+
+    /* ========== Model Testing & Balance ========== */
+    var modelStatus = {};
+
+    async function fetchBalance() {
+        try {
+            var u = JSON.parse(localStorage.getItem('nexus_user')||'{}');
+            if (!u.email || !u.pass) { updateBalanceDisplay(null); return; }
+            var resp = await fetch('/api/user/balance', {
+                headers: {'X-Auth-Email': u.email, 'X-Auth-Pass': u.pass}
+            });
+            if (!resp.ok) { updateBalanceDisplay(null); return; }
+            var data = await resp.json();
+            updateBalanceDisplay(data.balance !== undefined ? data.balance : data.cny_balance);
+        } catch(e) { updateBalanceDisplay(null); }
+    }
+
+    function updateBalanceDisplay(balance) {
+        var el = document.getElementById('bal-amount');
+        if (!el) return;
+        if (balance === null || balance === undefined) {
+            el.textContent = '--';
+        } else {
+            el.textContent = '¥' + Number(balance).toFixed(2);
+        }
+    }
+
+    function getAuthHeaders() {
+        try {
+            var u = JSON.parse(localStorage.getItem('nexus_user')||'{}');
+            if (u.email && u.pass) return {'X-Auth-Email': u.email, 'X-Auth-Pass': u.pass};
+        } catch(e) {}
+        return {};
+    }
+
+    async function doCall(modelId, prompt) {
+        var ctrl = new AbortController();
+        var tid = setTimeout(function(){ctrl.abort();}, 30000);
+        var headers = Object.assign({'Content-Type': 'application/json'}, getAuthHeaders());
+        var actualModelId = modelId.replace(/-td$/, '');
+        try {
+            var resp = await fetch('/api/chat', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    model: actualModelId,
+                    messages: [{role:'user', content: prompt}],
+                    provider: 'th'
+                }),
+                signal: ctrl.signal
+            });
+            clearTimeout(tid);
+            if (!resp.ok) {
+                var et = await resp.text();
+                var em = et;
+                try { var ej = JSON.parse(et); em = ej.error || et; } catch(e2) { em = 'HTTP ' + resp.status; }
+                return { success: false, error: em, latency: null };
+            }
+            var r = await resp.json();
+            if (r.error) return { success: false, error: r.error, latency: null };
+            var content = (r.choices?.[0]?.message?.content) || '(empty)';
+            var latency = r._ztw?.latency_ms || r.usage?.total_time || null;
+            if (r._ztw && r._ztw.cny_deducted > 0) {
+                var cur = parseFloat((document.getElementById('bal-amount')?.textContent||'').replace(/[^0-9.]/g,'')) || 0;
+                updateBalanceDisplay(Math.max(0, cur - r._ztw.cny_deducted));
+            }
+            return { success: true, content: content, latency: latency, data: r };
+        } catch(e) {
+            clearTimeout(tid);
+            return { success: false, error: e.name === 'AbortError' ? '请求超时' : e.message, latency: null };
+        }
+    }
+
+    async function testModel(modelId) {
+        var dot = document.getElementById('dot-' + modelId);
+        var btn = document.querySelector('.model-card[data-id="' + modelId + '"] .model-btn-play');
+        if (btn) { btn.classList.add('testing'); btn.disabled = true; }
+        if (dot) { dot.className = 'model-status-dot'; dot.querySelector('.status-tooltip').textContent = '测试中...'; }
+
+        var t0 = Date.now();
+        var result = await doCall(modelId, '1+1=?');
+        var latency = Date.now() - t0;
+
+        var status = { ok: result.success, latency: result.latency || latency, error: result.error || '' };
+        modelStatus[modelId] = status;
+        updateStatusDot(modelId, status);
+
+        if (btn) { btn.classList.remove('testing'); btn.disabled = false; }
+        return status;
+    }
+
+    function updateStatusDot(modelId, status) {
+        var dot = document.getElementById('dot-' + modelId);
+        if (!dot) return;
+        var cls = status.ok ? 'model-status-dot green' : 'model-status-dot red';
+        dot.className = cls;
+        var tip = status.ok
+            ? 'OK · ' + status.latency + 'ms'
+            : 'FAIL · ' + (status.error || '未知错误');
+        dot.querySelector('.status-tooltip').textContent = tip;
+    }
+
+    async function testAll() {
+        var btn = document.getElementById('btn-test-all');
+        var progress = document.getElementById('test-progress');
+        var progressText = document.getElementById('test-progress-text');
+        var progressFill = document.getElementById('test-progress-fill');
+        var progressResult = document.getElementById('test-progress-result');
+        if (!btn) return;
+
+        btn.disabled = true;
+        progress.classList.add('show');
+
+        var total = MODELS.length;
+        var ok = 0, fail = 0;
+
+        for (var i = 0; i < total; i++) {
+            var m = MODELS[i];
+            progressText.textContent = (i+1) + '/' + total;
+            progressFill.style.width = ((i+1)/total*100) + '%';
+
+            var status = await testModel(m.id);
+            if (status.ok) ok++; else fail++;
+            progressResult.textContent = 'OK: ' + ok + ' FAIL: ' + fail;
+        }
+
+        btn.disabled = false;
+        progressResult.textContent = '完成 · OK: ' + ok + ' FAIL: ' + fail;
+    }
 
     /* ========== Chat Modal ========== */
     var chatModelId = null;
