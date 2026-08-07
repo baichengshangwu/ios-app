@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Nexus 心理测评中心</title>
+<style>
+:root {
+  --bg: #0b0f1a;
+  --card: #111827;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --green: #22c55e;
+  --red: #ef4444;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.header h1 {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+.header p { color: var(--muted); font-size: 0.9rem; }
+.container {
+  width: 100%; max-width: 700px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+}
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: width 0.4s ease;
+  border-radius: 2px;
+}
+.step-title {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.question {
+  margin-bottom: 1.75rem;
+}
+.question h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #1a1f2e;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.option:hover { border-color: var(--accent); background: #1e2538; }
+.option.selected {
+  border-color: var(--accent);
+  background: rgba(59,130,246,0.12);
+}
+.option input { display: none; }
+.radio-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.option.selected .radio-dot {
+  border-color: var(--accent);
+}
+.option.selected .radio-dot::after {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.option-text { font-size: 0.95rem; }
+.btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+.btn {
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--muted); }
+
+.result-card {
+  text-align: center;
+  padding: 2rem 0;
+}
+.result-type {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+.result-label {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+.result-desc {
+  text-align: left;
+  line-height: 1.8;
+  color: #cbd5e1;
+  padding: 1rem;
+  background: #1a1f2e;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+.trait-bars { margin: 1.5rem 0; }
+.trait-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.trait-label {
+  width: 80px;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.trait-bar-outer {
+  flex: 1;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.trait-bar-inner {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 1s ease;
+}
+.trait-val { width: 40px; font-size: 0.85rem; color: var(--text); }
+.collection-form { margin-top: 1.5rem; }
+.collection-form h4 {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.form-row input, .form-row select {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  background: #1a1f2e;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+}
+.form-row input:focus { border-color: var(--accent); }
+.submit-area { text-align: center; margin-top: 1.5rem; }
+.success-msg {
+  text-align: center;
+  padding: 2rem;
+  color: var(--green);
+  font-size: 1.1rem;
+}
+.success-msg .icon { font-size: 3rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+@media (max-width: 600px) {
+  .container { padding: 1.25rem; }
+  .form-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>AI Nexus 心理测评中心</h1>
+  <p>基于 Big Five 大五人格模型的科学测评 · 共 20 题</p>
+</div>
+
+<div class="container">
+  <!-- Progress -->
+  <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="step-title" id="stepIndicator">第 1/20 题</div>
+
+  <!-- Quiz Area -->
+  <div id="quizArea"></div>
+
+  <!-- Buttons -->
+  <div class="btn-row" id="btnRow">
+    <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" disabled>上一题</button>
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">下一题</button>
+  </div>
+
+  <!-- Result Area -->
+  <div id="resultArea" class="hidden">
+    <div class="result-card" id="resultContent"></div>
+    <div class="collection-form">
+      <h4>提交结果以获取详细报告</h4>
+      <div class="form-row">
+        <input type="text" id="userName" placeholder="您的昵称">
+      </div>
+      <div class="form-row">
+        <select id="userGender">
+          <option value="">请选择性别</option>
+          <option value="male">男</option>
+          <option value="female">女</option>
+          <option value="other">其他</option>
+        </select>
+        <input type="text" id="userAge" placeholder="年龄" pattern="[0-9]*">
+      </div>
+      <div class="form-row">
+        <input type="email" id="userEmail" placeholder="邮箱（接收详细报告）">
+      </div>
+      <div class="submit-area">
+        <button class="btn btn-primary" onclick="submitResult()">提交结果</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div id="successArea" class="hidden">
+    <div class="success-msg">
+      <div class="icon">✅</div>
+      <p>测评结果已提交成功！</p>
+      <p style="color:var(--muted);margin-top:0.5rem;">详细报告将发送至您的邮箱</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Big Five 测试题 (每维度4题)
+const questions = [
+  // Openness (O) - 1~4
+  { text:"我经常对新奇的事物充满好奇", dim:"O", reverse:false },
+  { text:"我喜欢尝试不同的艺术形式（音乐、绘画、文学等）", dim:"O", reverse:false },
+  { text:"我倾向于用传统的方式解决问题", dim:"O", reverse:true },
+  { text:"我的想象力丰富，常有天马行空的想法", dim:"O", reverse:false },
+  // Conscientiousness (C) - 5~8
+  { text:"我总是按时完成承诺的事情", dim:"C", reverse:false },
+  { text:"我的房间或工作区域通常保持整洁有序", dim:"C", reverse:false },
+  { text:"我常常做事缺乏计划，想到哪做到哪", dim:"C", reverse:true },
+  { text:"面对任务我喜欢制定详细的执行步骤", dim:"C", reverse:false },
+  // Extraversion (E) - 9~12
+  { text:"在聚会中我是活跃气氛的那个人", dim:"E", reverse:false },
+  { text:"我喜欢独自一人胜过社交活动", dim:"E", reverse:true },
+  { text:"和陌生人交流对我来说是件轻松的事", dim:"E", reverse:false },
+  { text:"身处人群中让我感到精力充沛", dim:"E", reverse:false },
+  // Agreeableness (A) - 13~16
+  { text:"我容易对他人的处境产生同情", dim:"A", reverse:false },
+  { text:"我通常相信别人是善意的", dim:"A", reverse:false },
+  { text:"我会毫不犹豫地指出别人的错误", dim:"A", reverse:true },
+  { text:"团队合作中我倾向于避免冲突", dim:"A", reverse:false },
+  // Neuroticism (N) - 17~20
+  { text:"我经常为小事感到焦虑或紧张", dim:"N", reverse:false },
+  { text:"面对压力我通常能保持冷静", dim:"N", reverse:true },
+  { text:"我容易情绪波动，忽喜忽悲", dim:"N", reverse:false },
+  { text:"即使遇到挫折我也能很快调整心态", dim:"N", reverse:true },
+];
+
+const optionLabels = ['完全不符合', '不太符合', '中立', '比较符合', '完全符合'];
+
+let currentQ = 0;
+let answers = new Array(20).fill(-1);
+
+function renderQuestion() {
+  if (answers.every(a => a>=0) && currentQ>=20) {
+    showResult();
+    return;
+  }
+  const q = questions[currentQ];
+  document.getElementById('quizArea').innerHTML = `
+    <div class="question">
+      <h3>${currentQ+1}. ${q.text}</h3>
+      <div class="options">
+        ${optionLabels.map((label,i) => `
+          <label class="option ${answers[currentQ]===i?'selected':''}" onclick="selectAnswer(${i})">
+            <input type="radio" name="q${currentQ}" value="${i}" ${answers[currentQ]===i?'checked':''}>
+            <div class="radio-dot"></div>
+            <span class="option-text">${label}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('stepIndicator').textContent = `第 ${currentQ+1}/20 题`;
+  document.getElementById('progressFill').style.width = ((currentQ+1)/20*100)+'%';
+  document.getElementById('prevBtn').disabled = currentQ === 0;
+  const nextLabel = currentQ === 19 ? '查看结果' : '下一题';
+  document.getElementById('nextBtn').textContent = nextLabel;
+  document.getElementById('nextBtn').disabled = answers[currentQ] === -1;
+}
+
+function selectAnswer(val) {
+  answers[currentQ] = val;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === -1) return;
+  if (currentQ < 19) { currentQ++; renderQuestion(); }
+  else showResult();
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function calcScores() {
+  const dims = { O:[], C:[], E:[], A:[], N:[] };
+  questions.forEach((q,i) => {
+    let score = answers[i] >= 0 ? answers[i] : 2;
+    if (q.reverse) score = 4 - score;
+    dims[q.dim].push(score);
+  });
+  const scores = {};
+  for (let [k,v] of Object.entries(dims)) {
+    scores[k] = Math.round(v.reduce((a,b)=>a+b,0) / v.length * 25);
+  }
+  return scores;
+}
+
+function getTypeDesc(scores) {
+  const avg = Object.values(scores).reduce((a,b)=>a+b,0)/5;
+  const high = Object.entries(scores).filter(([_,v]) => v >= 60).map(([k])=>k);
+  const low = Object.entries(scores).filter(([_,v]) => v <= 40).map(([k])=>k);
+  const dimNames = { O:'开放型', C:'自律型', E:'外向型', A:'亲和型', N:'敏感型' };
+  const dimDescs = {
+    O: { high:'富有创造力和好奇心，喜欢探索新事物，思维灵活开放。适合创意、研发、艺术类工作。', low:'务实传统，偏好熟悉的环境和已验证的方法，做事稳健可靠。' },
+    C: { high:'高度自律且有条理，做事有规划、有始有终，是出色的执行者。适合管理、财务、运营岗位。', low:'随性灵活，不喜欢被规则束缚，能快速适应变化，但有时缺乏坚持。' },
+    E: { high:'精力充沛的社交达人，在人群中如鱼得水，善于建立人际关系。适合销售、公关、管理岗。', low:'沉静内敛，享受独处，做事专注深入，在安静环境中效率最高。' },
+    A: { high:'温暖友善，富有同理心，乐于助人，是天生的团队合作者。适合教育、医疗、客服领域。', low:'独立坚定，敢于表达不同意见，在需要竞争和决策的环境中表现出色。' },
+    N: { high:'情感细腻敏感，能体察细微变化，但也容易焦虑和情绪波动。适合艺术创作、心理咨询。', low:'情绪稳定坚韧，面对压力从容不迫，是天生的危机管理者。' },
+  };
+  const primaryDim = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+  let typeLabel = dimNames[primaryDim];
+  let desc = dimDescs[primaryDim][scores[primaryDim]>=50 ? 'high' : 'low'];
+  return { typeLabel, desc, primaryDim };
+}
+
+function showResult() {
+  const scores = calcScores();
+  const { typeLabel, desc, primaryDim } = getTypeDesc(scores);
+  const barColors = { O:'#8b5cf6', C:'#3b82f6', E:'#f59e0b', A:'#22c55e', N:'#ef4444' };
+  const dimNames = { O:'开放性', C:'尽责性', E:'外向性', A:'亲和性', N:'情绪稳定性' };
+
+  document.getElementById('quizArea').classList.add('hidden');
+  document.getElementById('btnRow').classList.add('hidden');
+  document.getElementById('resultArea').classList.remove('hidden');
+
+  document.getElementById('resultContent').innerHTML = `
+    <div class="result-type">${typeLabel}</div>
+    <div class="result-label">核心特质：${dimNames[primaryDim]}</div>
+    <div class="result-desc">${desc}</div>
+    <div class="trait-bars">
+      ${Object.entries(scores).map(([k,v]) => `
+        <div class="trait-row">
+          <span class="trait-label">${dimNames[k]}</span>
+          <div class="trait-bar-outer">
+            <div class="trait-bar-inner" style="width:${v}%;background:${barColors[k]}"></div>
+          </div>
+          <span class="trait-val">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function submitResult() {
+  const scores = calcScores();
+  const { typeLabel } = getTypeDesc(scores);
+  const name = document.getElementById('userName').value.trim() || '匿名用户';
+  const gender = document.getElementById('userGender').value;
+  const age = document.getElementById('userAge').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+
+  const record = {
+    timestamp: new Date().toISOString(),
+    name, gender, age, email,
+    type: typeLabel,
+    scores,
+    rawAnswers: answers,
+  };
+
+  // 保存到 localStorage 并上报
+  const existing = JSON.parse(localStorage.getItem('psychotest_records') || '[]');
+  existing.push(record);
+  localStorage.setItem('psychotest_records', JSON.stringify(existing));
+
+  // 尝试上报到后端
+  try {
+    fetch('/api/psychotest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record),
+    }).catch(() => {});
+  } catch(e) {}
+
+  document.getElementById('resultArea').classList.add('hidden');
+  document.getElementById('successArea').classList.remove('hidden');
+}
+
+// Init
+renderQuestion();
+</script>
+</body>
+</html>
