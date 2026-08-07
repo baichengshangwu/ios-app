@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Nexus — 全球首个去中心化 AI 访问市场</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#0a0a1a;color:#fff;overflow:hidden;height:100vh;width:100vw}
+#app{position:relative;width:100%;height:100%}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity 0.6s}
+.slide.active{display:flex;opacity:1}
+.slide img{max-width:92%;max-height:65%;border-radius:12px;box-shadow:0 0 80px rgba(0,150,255,0.25);object-fit:contain}
+.slide .title{font-size:2.4em;font-weight:700;margin:20px 0 10px;background:linear-gradient(135deg,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;padding:0 60px}
+.slide .desc{font-size:1.15em;color:#bbc;text-align:center;max-width:750px;line-height:1.7;padding:0 60px;margin-top:6px}
+.slide .cta{font-size:1.5em;margin-top:24px;padding:18px 56px;background:linear-gradient(135deg,#00b4ff,#7b2fff);border-radius:50px;cursor:pointer;font-weight:700;letter-spacing:2px;animation:pulse 2s infinite;text-decoration:none;color:#fff;display:inline-block}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,180,255,0.4)}50%{box-shadow:0 0 40px rgba(123,47,255,0.6)}}
+.subtitle-bar{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);padding:14px 36px;border-radius:14px;font-size:1.25em;text-align:center;max-width:85%;line-height:1.6;transition:opacity 0.4s;backdrop-filter:blur(10px)}
+.progress-bar{position:absolute;bottom:50px;left:10%;width:80%;height:5px;background:rgba(255,255,255,0.15);border-radius:3px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00b4ff,#7b2fff);border-radius:3px;transition:width 0.3s}
+.controls{position:absolute;bottom:12px;right:24px;display:flex;gap:10px;z-index:100}
+.controls button{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-size:0.95em;transition:all 0.25s}
+.controls button:hover{background:rgba(255,255,255,0.22)}
+.lang-select{position:absolute;top:16px;right:24px;z-index:100;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:10px 16px;border-radius:10px;font-size:0.95em;cursor:pointer;backdrop-filter:blur(8px)}
+.logo-bar{position:absolute;top:18px;left:24px;z-index:100;font-size:1.3em;font-weight:700;background:linear-gradient(135deg,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stats-overlay{display:flex;gap:24px;margin:16px 0;flex-wrap:wrap;justify-content:center}
+.stat-box{background:rgba(0,180,255,0.08);border:1px solid rgba(0,180,255,0.25);border-radius:12px;padding:18px 28px;text-align:center}
+.stat-box .num{font-size:2em;font-weight:700;color:#00b4ff}
+.stat-box .label{font-size:0.85em;color:#99a;margin-top:6px}
+.cascade-icons{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.cascade-icons span{background:rgba(255,255,255,0.07);padding:10px 20px;border-radius:10px;font-size:1.05em;border:1px solid rgba(255,255,255,0.1)}
+.slide-indicator{position:absolute;bottom:64px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:0.8em}
+.timer-display{position:absolute;top:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:0.85em}
+audio{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="logo-bar">AI NEXUS</div>
+<select class="lang-select" id="langSelect" onchange="switchLanguage()">
+<option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="th">ไทย</option><option value="vi">Tiếng Việt</option><option value="id">Bahasa Indonesia</option><option value="it">Italiano</option>
+</select>
+<div class="timer-display" id="timerDisplay">00:00 / 05:00</div>
+<div id="slidesContainer"></div>
+<div class="subtitle-bar" id="subtitleBar"></div>
+<div class="slide-indicator" id="slideIndicator">1 / 18</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="controls">
+<button onclick="togglePlay()" id="playBtn">⏸ 暂停</button>
+<button onclick="prevSlide()">⏮</button>
+<button onclick="nextSlide()">⏭</button>
+<button onclick="restart()">🔄 重播</button>
+</div>
+</div>
+<audio id="audioPlayer" preload="auto"></audio>
+
+<script>
+// ===== SUBTITLE DATA (16 languages) =====
+const subs = {
+  'zh-CN': [
+    '全球 AI 模型爆炸式增长——但每调用一次，你就被锁定在一个平台上',
+    '昂贵的 API 费用、复杂的密钥管理、永远不够的配额——这不是 AI 该有的样子',
+    'AI Nexus——一个 Token，打通所有 AI',
+    '48 个 AI 工具、超过 1,200 名持有者、日成交量突破 280 万美元',
+    '从 GPT 到 Claude，从绿电到 GPU——明码标价，即时交易',
+    '工具市场：全球顶级 AI 模型，按类别筛选，一键订阅',
+    'P2P 自由市场：从电力原料到 GPU 集群，全链路透明流转',
+    '专业交易大厅：K 线行情、限价市价、联盟币 AC 生态燃料',
+    '四维一体：行情·工具·P2P·交易——AI 通证经济闭环',
+    '16 种语言实时切换——AI Nexus 以你的母语与你对话',
+    '社交网络 + 论坛：图文·视频·音频·直播——多形态自由发布',
+    '全球 AI 活动一站聚合：旧金山·新加坡·柏林·迪拜',
+    '四级代理体系：国家 5% · 省级 10% · 市级 25% · 直推 50%',
+    '会员中心：多币种钱包 + 资金池 + 抵押仓单——资产持续增值',
+    '算力容器：闲置算力变资产——你的 GPU，你的定价',
+    'LingQu AI：即刻对话，实时响应——AI 就该这么简单',
+    'AI Nexus——拥有 Token，掌控 AI',
+    '立即访问 zhitongwang.cn · 新用户注册即送 1,000 AC'
+  ],
+  'zh-TW': [
+    '全球 AI 模型爆炸式增長——但每次調用，你就被鎖定在一個平台上',
+    '昂貴的 API 費用、複雜的密鑰管理、永遠不夠的配額——這不是 AI 該有的樣子',
+    'AI Nexus——一個 Token，打通所有 AI',
+    '48 個 AI 工具、超過 1,200 名持有者、日成交量突破 280 萬美元',
+    '從 GPT 到 Claude，從綠電到 GPU——明碼標價，即時交易',
+    '工具市場：全球頂級 AI 模型，按類別篩選，一鍵訂閱',
+    'P2P 自由市場：從電力原料到 GPU 集群，全鏈路透明流轉',
+    '專業交易大廳：K 線行情、限價市價、聯盟幣 AC 生態燃料',
+    '四維一體：行情·工具·P2P·交易——AI 通證經濟閉環',
+    '16 種語言實時切換——AI Nexus 以你的母語與你對話',
+    '社交網絡 + 論壇：圖文·視頻·音頻·直播——多形態自由發布',
+    '全球 AI 活動一站聚合：舊金山·新加坡·柏林·杜拜',
+    '四級代理體系：國家 5% · 省級 10% · 市級 25% · 直推 50%',
+    '會員中心：多幣種錢包 + 資金池 + 抵押倉單——資產持續增值',
+    '算力容器：閒置算力變資產——你的 GPU，你的定價',
+    'LingQu AI：即刻對話，實時響應——AI 就該這麼簡單',
+    'AI Nexus——擁有 Token，掌控 AI',
+    '立即訪問 zhitongwang.cn · 新用戶註冊即送 1,000 AC'
+  ],
+  'en': [
+    'AI models are exploding—yet every API call locks you into one platform',
+    'Expensive fees, complex keys, never-enough quotas—this is not what AI should be',
+    'AI Nexus—One Token, All AI',
+    '48 AI tools, 1,200+ holders, $2.8M daily volume',
+    'From GPT to Claude, green energy to GPU—priced and traded instantly',
+    'Tool Market: global top AI models, filter by category, one-click subscribe',
+    'P2P Market: from energy to GPU clusters, full transparency',
+    'Trading floor: candlestick charts, limit market orders, AC ecosystem fuel',
+    'Four-in-one: Market·Tools·P2P·Trade—AI token economy closed loop',
+    '16 languages, real-time switch—AI Nexus speaks your language',
+    'Social + Forum: text·video·audio·livestream—multi-format publishing',
+    'Global AI events: San Francisco·Singapore·Berlin·Dubai',
+    '4-tier agency: National 5%·Provincial 10%·City 25%·Direct 50%',
+    'Member Center: multi-currency wallet + funding pool + collateral',
+    'Compute containers: idle compute to assets—your GPU, your price',
+    'LingQu AI: instant chat, real-time response—AI should be this simple',
+    'AI Nexus—Own the Token, Master the AI',
+    'Visit zhitongwang.cn · New users get 1,000 AC free'
+  ],
+  'ja': [
+    'AIモデルが爆発的に増加——しかしAPI呼び出しごとに1つのプラットフォームに固定',
+    '高額なAPI料金、複雑なキー管理、常に不足する割り当て——これがAIのあるべき姿か',
+    'AI Nexus——1つのトークン、すべてのAI',
+    '48のAIツール、1,200人以上の保有者、日間取引高280万ドル',
+    'GPTからClaude、グリーン電力からGPUまで——即時取引',
+    'ツール市場：世界トップAIモデル、カテゴリ別フィルター、ワンクリック購読',
+    'P2P市場：電力原料からGPUクラスターまで、完全透明',
+    '取引所：ローソク足チャート、指値成行注文、ACエコシステム燃料',
+    '4-in-1：マーケット·ツール·P2P·取引——AIトークン経済のクローズドループ',
+    '16言語、リアルタイム切替——AI Nexusはあなたの言語で話します',
+    'ソーシャル+フォーラム：テキスト·動画·音声·ライブ配信',
+    'グローバルAIイベント：サンフランシスコ·シンガポール·ベルリン·ドバイ',
+    '4層代理：国家5%·省級10%·市級25%·直接紹介50%',
+    '会員センター：マルチ通貨ウォレット+資金プール+担保',
+    '計算コンテナ：遊休計算力を資産に——あなたのGPU、あなたの価格',
+    'LingQu AI：即時チャット、リアルタイム応答——AIはこうあるべき',
+    'AI Nexus——トークンを所有し、AIを制御せよ',
+    'zhitongwang.cnにアクセス · 新規登録で1,000 ACプレゼント'
+  ],
+  'ko': [
+    'AI 모델이 폭발적으로 증가—그러나 API 호출마다 하나의 플랫폼에 고정',
+    '비싼 API 비용, 복잡한 키 관리, 항상 부족한 할당량—이것이 AI의 모습인가',
+    'AI Nexus—하나의 토큰, 모든 AI',
+    '48개의 AI 도구, 1,200명 이상 보유자, 일일 거래량 280만 달러',
+    'GPT부터 Claude까지, 그린 에너지부터 GPU까지—즉시 거래',
+    '도구 시장: 글로벌 최고 AI 모델, 카테고리별 필터, 원클릭 구독',
+    'P2P 시장: 전력 원료부터 GPU 클러스터까지, 완전 투명',
+    '거래소: 캔들 차트, 지정가 시장가, AC 생태계 연료',
+    '4-in-1: 마켓·도구·P2P·거래—AI 토큰 경제 폐쇄 루프',
+    '16개 언어, 실시간 전환—AI Nexus가 당신의 언어로 말합니다',
+    '소셜+포럼: 텍스트·비디오·오디오·라이브스트림',
+    '글로벌 AI 이벤트: 샌프란시스코·싱가포르·베를린·두바이',
+    '4단계 에이전시: 국가 5%·성 10%·시 25%·직접 추천 50%',
+    '회원 센터: 다중 통화 지갑+자금 풀+담보',
+    '컴퓨팅 컨테이너: 유휴 컴퓨팅을 자산으로—당신의 GPU, 당신의 가격',
+    'LingQu AI: 즉시 채팅, 실시간 응답—AI는 이렇게 간단해야 합니다',
+    'AI Nexus—토큰을 소유하고 AI를 지배하라',
+    'zhitongwang.cn 방문 · 신규 가입 시 1,000 AC 증정'
+  ],
+  'es': [
+    'Los modelos de IA explotan—pero cada llamada API te bloquea en una plataforma',
+    'Tarifas caras, claves complejas, cuotas siempre insuficientes—la IA no debería ser así',
+    'AI Nexus—Un Token, Toda la IA',
+    '48 herramientas de IA, más de 1,200 titulares, volumen diario de $2.8M',
+    'De GPT a Claude, de energía verde a GPU—precio y comercio instantáneo',
+    'Mercado de herramientas: mejores modelos de IA globales, filtrar por categoría, suscribir con un clic',
+    'Mercado P2P: de materias primas energéticas a clústeres GPU, total transparencia',
+    'Sala de trading: gráficos de velas, órdenes límite y mercado, combustible ecológico AC',
+    'Cuatro en uno: Mercado·Herramientas·P2P·Trading—economía tokenizada de IA',
+    '16 idiomas, cambio en tiempo real—AI Nexus habla tu idioma',
+    'Social + Foro: texto·video·audio·streaming—publicación multi-formato',
+    'Eventos globales de IA: San Francisco·Singapur·Berlín·Dubái',
+    'Agencia de 4 niveles: Nacional 5%·Provincial 10%·Ciudad 25%·Directo 50%',
+    'Centro de miembros: billetera multi-moneda + fondo común + garantía',
+    'Contenedores de cómputo: computación ociosa a activos—tu GPU, tu precio',
+    'LingQu AI: chat instantáneo, respuesta en tiempo real—la IA debe ser así de simple',
+    'AI Nexus—Posee el Token, Domina la IA',
+    'Visita zhitongwang.cn · Nuevos usuarios reciben 1,000 AC gratis'
+  ],
+  'fr': [
+    'Les modèles IA explosent—mais chaque appel API vous enferme sur une seule plateforme',
+    "Frais élevés, clés complexes, quotas toujours insuffisants—l'IA ne devrait pas être ainsi",
+    "AI Nexus—Un Token, Toute l'IA",
+    '48 outils IA, 1 200+ détenteurs, volume quotidien de 2,8 M$',
+    "De GPT à Claude, de l'énergie verte au GPU—tarification et échange instantanés",
+    "Marché d'outils: meilleurs modèles IA mondiaux, filtre par catégorie, abonnement en un clic",
+    'Marché P2P: des matières premières aux clusters GPU, transparence totale',
+    'Salle de trading: graphiques en chandeliers, ordres limite et marché, carburant AC',
+    "Quatre en un: Marché·Outils·P2P·Trading—économie tokenisée de l'IA",
+    '16 langues, changement en temps réel—AI Nexus parle votre langue',
+    'Social + Forum: texte·vidéo·audio·streaming—publication multi-format',
+    'Événements IA mondiaux: San Francisco·Singapour·Berlin·Dubaï',
+    'Agence à 4 niveaux: National 5%·Provincial 10%·Ville 25%·Direct 50%',
+    'Centre membres: portefeuille multi-devises + pool de fonds + garantie',
+    'Conteneurs de calcul: calcul inactif en actifs—votre GPU, votre prix',
+    "LingQu AI: chat instantané, réponse en temps réel—l'IA doit être aussi simple",
+    "AI Nexus—Possédez le Token, Maîtrisez l'IA",
+    'Visitez zhitongwang.cn · Nouveaux utilisateurs: 1 000 AC offerts'
+  ],
+  'de': [
+    'KI-Modelle explodieren—doch jeder API-Aufruf sperrt dich auf eine Plattform',
+    'Teure Gebühren, komplexe Schlüssel, nie genug Kontingent—so sollte KI nicht sein',
+    'AI Nexus—Ein Token, alle KI',
+    '48 KI-Tools, über 1.200 Inhaber, tägliches Volumen von 2,8 Mio. $',
+    'Von GPT bis Claude, von Grünstrom bis GPU—Preis und Handel in Echtzeit',
+    'Tool-Markt: weltweit beste KI-Modelle, nach Kategorie filtern, mit einem Klick abonnieren',
+    'P2P-Markt: von Energierohstoffen bis GPU-Cluster, vollständige Transparenz',
+    'Handelsplatz: Candlestick-Charts, Limit- und Marktorders, AC-Ökosystem-Treibstoff',
+    'Vier in einem: Markt·Tools·P2P·Handel—KI-Token-Wirtschaftskreislauf',
+    '16 Sprachen, Echtzeit-Umschaltung—AI Nexus spricht deine Sprache',
+    'Sozial + Forum: Text·Video·Audio·Livestream—Multi-Format-Veröffentlichung',
+    'Globale KI-Events: San Francisco·Singapur·Berlin·Dubai',
+    '4-stufige Agentur: National 5%·Provinz 10%·Stadt 25%·Direkt 50%',
+    'Mitgliederbereich: Multi-Währungs-Wallet + Funding-Pool + Sicherheiten',
+    'Compute-Container: ungenutzte Rechenleistung zu Vermögenswerten—deine GPU, dein Preis',
+    'LingQu AI: Sofort-Chat, Echtzeit-Antwort—so einfach sollte KI sein',
+    'AI Nexus—Besitze den Token, beherrsche die KI',
+    'Besuche zhitongwang.cn · Neue Nutzer erhalten 1.000 AC gratis'
+  ],
+  'pt': [
+    'Modelos de IA explodem—mas cada chamada de API te prende a uma plataforma',
+    'Taxas caras, chaves complexas, cotas sempre insuficientes—a IA não deveria ser assim',
+    'AI Nexus—Um Token, Toda a IA',
+    '48 ferramentas de IA, mais de 1.200 titulares, volume diário de US$ 2,8M',
+    'Do GPT ao Claude, da energia verde à GPU—precificação e negociação instantânea',
+    'Mercado de ferramentas: melhores modelos globais de IA, filtrar por categoria, assinar com um clique',
+    'Mercado P2P: de matérias-primas energéticas a clusters GPU, total transparência',
+    'Pregão de trading: gráficos de velas, ordens limite e mercado, combustível ecológico AC',
+    'Quatro em um: Mercado·Ferramentas·P2P·Trading—economia tokenizada de IA',
+    '16 idiomas, troca em tempo real—AI Nexus fala sua língua',
+    'Social + Fórum: texto·vídeo·áudio·streaming—publicação multi-formato',
+    'Eventos globais de IA: São Francisco·Singapura·Berlim·Dubai',
+    'Agência de 4 níveis: Nacional 5%·Provincial 10%·Cidade 25%·Direto 50%',
+    'Central de membros: carteira multi-moedas + pool de fundos + garantia',
+    'Contêineres de computação: computação ociosa em ativos—sua GPU, seu preço',
+    'LingQu AI: chat instantâneo, resposta em tempo real—IA deve ser assim tão simples',
+    'AI Nexus—Tenha o Token, Domine a IA',
+    'Visite zhitongwang.cn · Novos usuários ganham 1.000 AC grátis'
+  ],
+  'ru': [
+    'ИИ-модели стремительно растут—но каждый вызов API привязывает вас к одной платформе',
+    'Дорогие тарифы, сложные ключи, вечно недостаточные квоты—ИИ не должен быть таким',
+    'AI Nexus—Один токен, весь ИИ',
+    '48 ИИ-инструментов, более 1 200 держателей, дневной объём $2,8 млн',
+    'От GPT до Claude, от зелёной энергии до GPU—мгновенные цены и сделки',
+    'Рынок инструментов: лучшие мировые ИИ-модели, фильтр по категориям, подписка в один клик',
+    'P2P-рынок: от энергосырья до GPU-кластеров, полная прозрачность',
+    'Торговая площадка: свечные графики, лимитные и рыночные ордера, топливо экосистемы AC',
+    'Четыре в одном: Рынок·Инструменты·P2P·Торговля—замкнутый цикл токен-экономики ИИ',
+    '16 языков, переключение в реальном времени—AI Nexus говорит на вашем языке',
+    'Соцсеть + Форум: текст·видео·аудио·стриминг—мультиформатная публикация',
+    'Глобальные ИИ-события: Сан-Франциско·Сингапур·Берлин·Дубай',
+    '4-уровневое агентство: Национальный 5%·Областной 10%·Городской 25%·Прямой 50%',
+    'Центр участников: мультивалютный кошелёк + пул средств + залог',
+    'Вычислительные контейнеры: простаивающие мощности в активы—ваш GPU, ваша цена',
+    'LingQu AI: мгновенный чат, ответ в реальном времени—ИИ должен быть таким простым',
+    'AI Nexus—Владейте токеном, управляйте ИИ',
+    'Посетите zhitongwang.cn · Новые пользователи получают 1 000 AC бесплатно'
+  ],
+  'ar': [
+    'نماذج الذكاء الاصطناعي تنفجر—لكن كل استدعاء API يحبسك على منصة واحدة',
+    'رسوم باهظة، مفاتيح معقدة، حصص غير كافية أبداً—هذا ليس ما يجب أن يكون عليه الذكاء الاصطناعي',
+    'AI Nexus—رمز واحد، كل الذكاء الاصطناعي',
+    '48 أداة ذكاء اصطناعي، أكثر من 1,200 حامل، حجم تداول يومي 2.8 مليون دولار',
+    'من GPT إلى Claude، من الطاقة الخضراء إلى GPU—تسعير وتداول فوري',
+    'سوق الأدوات: أفضل نماذج الذكاء الاصطناعي العالمية، تصفية حسب الفئة، اشتراك بنقرة واحدة',
+    'سوق P2P: من المواد الخام للطاقة إلى مجموعات GPU، شفافية كاملة',
+    'قاعة التداول: رسوم بيانية بالشموع، أوامر محددة وسوقية، وقود نظام AC البيئي',
+    'أربعة في واحد: السوق·الأدوات·P2P·التداول—اقتصاد رمزي مغلق للذكاء الاصطناعي',
+    '16 لغة، تبديل فوري—AI Nexus يتحدث لغتك',
+    'شبكة اجتماعية + منتدى: نص·فيديو·صوت·بث مباشر—نشر متعدد الأشكال',
+    'فعاليات الذكاء الاصطناعي العالمية: سان فرانسيسكو·سنغافورة·برلين·دبي',
+    'وكالة بأربع مستويات: وطني 5%·إقليمي 10%·مدينة 25%·مباشر 50%',
+    'مركز الأعضاء: محفظة متعددة العملات + مجمع تمويل + ضمانات',
+    'حاويات الحوسبة: القدرة الحاسوبية الخاملة إلى أصول—وحدة GPU الخاصة بك، سعرك',
+    'LingQu AI: محادثة فورية، استجابة في الوقت الحقيقي—هكذا يجب أن يكون الذكاء الاصطناعي بسيطاً',
+    'AI Nexus—امتلك الرمز، تحكم في الذكاء الاصطناعي',
+    'زر zhitongwang.cn · المستخدمون الجدد يحصلون على 1,000 AC مجاناً'
+  ],
+  'hi': [
+    'AI मॉडल विस्फोटक रूप से बढ़ रहे हैं—लेकिन हर API कॉल आपको एक प्लेटफॉर्म पर बांध देती है',
+    'महंगी फीस, जटिल कुंजियाँ, कभी पर्याप्त न होने वाला कोटा—AI ऐसा नहीं होना चाहिए',
+    'AI Nexus—एक टोकन, सारा AI',
+    '48 AI टूल, 1,200+ धारक, $2.8M दैनिक वॉल्यूम',
+    'GPT से Claude तक, हरित ऊर्जा से GPU तक—तत्काल मूल्य और व्यापार',
+    'टूल मार्केट: वैश्विक शीर्ष AI मॉडल, श्रेणी के अनुसार फ़िल्टर, एक क्लिक सदस्यता',
+    'P2P बाजार: ऊर्जा कच्चे माल से GPU क्लस्टर तक, पूर्ण पारदर्शिता',
+    'ट्रेडिंग फ्लोर: कैंडलस्टिक चार्ट, लिमिट और मार्केट ऑर्डर, AC इकोसिस्टम फ्यूल',
+    'चार में एक: बाजार·टूल·P2P·ट्रेड—AI टोकन अर्थव्यवस्था बंद लूप',
+    '16 भाषाएँ, रीयल-टाइम स्विच—AI Nexus आपकी भाषा में बोलता है',
+    'सोशल + फोरम: टेक्स्ट·वीडियो·ऑडियो·लाइवस्ट्रीम—मल्टी-फॉर्मेट प्रकाशन',
+    'वैश्विक AI इवेंट: सैन फ्रांसिस्को·सिंगापुर·बर्लिन·दुबई',
+    '4-स्तरीय एजेंसी: राष्ट्रीय 5%·प्रांतीय 10%·शहर 25%·प्रत्यक्ष 50%',
+    'सदस्य केंद्र: बहु-मुद्रा वॉलेट + फंडिंग पूल + संपार्श्विक',
+    'कंप्यूट कंटेनर: निष्क्रिय कंप्यूट को संपत्ति में—आपका GPU, आपकी कीमत',
+    'LingQu AI: तत्काल चैट, रीयल-टाइम प्रतिक्रिया—AI इतना सरल होना चाहिए',
+    'AI Nexus—टोकन के मालिक बनें, AI पर नियंत्रण करें',
+    'zhitongwang.cn पर जाएँ · नए उपयोगकर्ताओं को 1,000 AC मुफ्त'
+  ],
+  'th': [
+    'โมเดล AI กำลังเติบโตอย่างรวดเร็ว—แต่ทุกการเรียก API จะล็อคคุณไว้กับแพลตฟอร์มเดียว',
+    'ค่าธรรมเนียมแพง คีย์ซับซ้อน โควต้าไม่เคยพอ—นี่ไม่ใช่สิ่งที่ AI ควรจะเป็น',
+    'AI Nexus—หนึ่งโทเคน ทุก AI',
+    '48 เครื่องมือ AI ผู้ถือกว่า 1,200 ราย ปริมาณรายวัน 2.8 ล้านดอลลาร์',
+    'จาก GPT ถึง Claude จากพลังงานสีเขียวถึง GPU—กำหนดราคาและซื้อขายทันที',
+    'ตลาดเครื่องมือ: โมเดล AI ระดับโลก กรองตามหมวดหมู่ สมัครด้วยคลิกเดียว',
+    'ตลาด P2P: จากวัตถุดิบพลังงานถึงคลัสเตอร์ GPU โปร่งใสเต็มรูปแบบ',
+    'ห้องเทรด: แผนภูมิแท่งเทียน คำสั่งจำกัดและตลาด เชื้อเพลิงระบบนิเวศ AC',
+    'สี่ในหนึ่ง: ตลาด·เครื่องมือ·P2P·เทรด—เศรษฐกิจโทเคน AI วงจรปิด',
+    '16 ภาษา สลับทันที—AI Nexus พูดภาษาของคุณ',
+    'โซเชียล + ฟอรัม: ข้อความ·วิดีโอ·เสียง·สตรีม—เผยแพร่หลายรูปแบบ',
+    'กิจกรรม AI ระดับโลก: ซานฟรานซิสโก·สิงคโปร์·เบอร์ลิน·ดูไบ',
+    'ตัวแทน 4 ระดับ: ประเทศ 5%·จังหวัด 10%·เมือง 25%·ตรง 50%',
+    'ศูนย์สมาชิก: กระเป๋าหลายสกุลเงิน + พูลเงินทุน + หลักประกัน',
+    'คอนเทนเนอร์คอมพิวท์: พลังประมวลผลว่างเป็นสินทรัพย์—GPU ของคุณ ราคาของคุณ',
+    'LingQu AI: แชททันที ตอบสนองเรียลไทม์—AI ควรจะง่ายแบบนี้',
+    'AI Nexus—เป็นเจ้าของโทเคน ควบคุม AI',
+    'เยี่ยมชม zhitongwang.cn · ผู้ใช้ใหม่รับ 1,000 AC ฟรี'
+  ],
+  'vi': [
+    'Các mô hình AI bùng nổ—nhưng mỗi lần gọi API đều khóa bạn vào một nền tảng',
+    'Phí đắt đỏ, khóa phức tạp, hạn ngạch không bao giờ đủ—AI không nên như thế này',
+    'AI Nexus—Một Token, Tất cả AI',
+    '48 công cụ AI, hơn 1.200 người nắm giữ, khối lượng hàng ngày 2,8 triệu USD',
+    'Từ GPT đến Claude, từ năng lượng xanh đến GPU—định giá và giao dịch tức thì',
+    'Thị trường công cụ: mô hình AI hàng đầu toàn cầu, lọc theo danh mục, đăng ký một cú nhấp',
+    'Thị trường P2P: từ nguyên liệu năng lượng đến cụm GPU, minh bạch hoàn toàn',
+    'Sàn giao dịch: biểu đồ nến, lệnh giới hạn và thị trường, nhiên liệu hệ sinh thái AC',
+    'Bốn trong một: Thị trường·Công cụ·P2P·Giao dịch—kinh tế token AI khép kín',
+    '16 ngôn ngữ, chuyển đổi thời gian thực—AI Nexus nói ngôn ngữ của bạn',
+    'Mạng xã hội + Diễn đàn: văn bản·video·âm thanh·phát trực tiếp—xuất bản đa định dạng',
+    'Sự kiện AI toàn cầu: San Francisco·Singapore·Berlin·Dubai',
+    'Đại lý 4 cấp: Quốc gia 5%·Tỉnh 10%·Thành phố 25%·Trực tiếp 50%',
+    'Trung tâm thành viên: ví đa tiền tệ + quỹ chung + tài sản thế chấp',
+    'Container tính toán: sức mạnh tính toán nhàn rỗi thành tài sản—GPU của bạn, giá của bạn',
+    'LingQu AI: trò chuyện tức thì, phản hồi thời gian thực—AI nên đơn giản như vậy',
+    'AI Nexus—Sở hữu Token, Làm chủ AI',
+    'Truy cập zhitongwang.cn · Người dùng mới nhận 1.000 AC miễn phí'
+  ],
+  'id': [
+    'Model AI meledak—namun setiap panggilan API mengunci Anda pada satu platform',
+    'Biaya mahal, kunci rumit, kuota tak pernah cukup—AI seharusnya tidak seperti ini',
+    'AI Nexus—Satu Token, Semua AI',
+    '48 alat AI, lebih dari 1.200 pemegang, volume harian $2,8M',
+    'Dari GPT ke Claude, dari energi hijau ke GPU—harga dan perdagangan instan',
+    'Pasar Alat: model AI teratas global, filter berdasarkan kategori, berlangganan sekali klik',
+    'Pasar P2P: dari bahan baku energi ke kluster GPU, transparansi penuh',
+    'Lantai perdagangan: grafik lilin, order limit dan pasar, bahan bakar ekosistem AC',
+    'Empat dalam satu: Pasar·Alat·P2P·Perdagangan—ekonomi token AI loop tertutup',
+    '16 bahasa, peralihan waktu nyata—AI Nexus berbicara bahasa Anda',
+    'Sosial + Forum: teks·video·audio·siaran langsung—publikasi multi-format',
+    'Acara AI global: San Francisco·Singapura·Berlin·Dubai',
+    'Agensi 4 tingkat: Nasional 5%·Provinsi 10%·Kota 25%·Langsung 50%',
+    'Pusat Anggota: dompet multi-mata uang + pool dana + jaminan',
+    'Kontainer komputasi: daya komputasi menganggur menjadi aset—GPU Anda, harga Anda',
+    'LingQu AI: obrolan instan, respons waktu nyata—AI harus sesederhana ini',
+    'AI Nexus—Miliki Token, Kuasai AI',
+    'Kunjungi zhitongwang.cn · Pengguna baru dapat 1.000 AC gratis'
+  ],
+  'it': [
+    'I modelli IA esplodono—ma ogni chiamata API ti blocca su una piattaforma',
+    "Tariffe costose, chiavi complesse, quote mai sufficienti—l'IA non dovrebbe essere così",
+    "AI Nexus—Un Token, Tutta l'IA",
+    '48 strumenti IA, oltre 1.200 detentori, volume giornaliero di $2,8M',
+    "Da GPT a Claude, dall'energia verde alla GPU—prezzi e scambi istantanei",
+    'Mercato strumenti: migliori modelli IA globali, filtra per categoria, abbonati con un clic',
+    'Mercato P2P: dalle materie prime energetiche ai cluster GPU, totale trasparenza',
+    'Sala trading: grafici a candele, ordini limite e mercato, carburante ecosistema AC',
+    'Quattro in uno: Mercato·Strumenti·P2P·Trading—economia token IA a circuito chiuso',
+    '16 lingue, cambio in tempo reale—AI Nexus parla la tua lingua',
+    'Social + Forum: testo·video·audio·streaming—pubblicazione multi-formato',
+    'Eventi IA globali: San Francisco·Singapore·Berlino·Dubai',
+    'Agenzia a 4 livelli: Nazionale 5%·Provinciale 10%·Città 25%·Diretto 50%',
+    'Centro membri: portafoglio multi-valuta + pool di fondi + garanzia',
+    'Container di calcolo: calcolo inattivo in asset—la tua GPU, il tuo prezzo',
+    "LingQu AI: chat istantanea, risposta in tempo reale—l'IA dovrebbe essere così semplice",
+    "AI Nexus—Possiedi il Token, Domina l'IA",
+    'Visita zhitongwang.cn · Nuovi utenti ricevono 1.000 AC gratis'
+  ],
+};
+
+// ===== SLIDE TITLES / DESCS (16 languages) =====
+const L = {
+'zh-CN':{t0:'AI Nexus — 全球首个去中心化 AI 访问市场',t1:'痛点与突破',t2:'AI Nexus — 一个 Token，打通所有 AI',t3:'行情看板',d3:'数据一目了然',t4:'一切 AI 资源，Token 化交易',d4:'从 GPT 到 Claude，从绿电到 GPU——明码标价，即时交易',t5:'工具市场',d5:'全球顶级 AI 模型聚合，一键订阅',t6:'P2P 自由市场',d6:'从电力原料到 GPU 集群，全链路透明流转',t7:'交易大厅',d7:'K 线行情 · 限价市价 · 联盟币 AC——生态燃料',t8:'四维一体 · AI 通证经济闭环',d8:'行情 → 工具 → P2P → 交易',t9:'16 种语言实时切换',d9:'无论你来自哪里，AI Nexus 以你的母语与你对话',t10:'社交网络 + 论坛',d10:'图文 · 视频 · 影视 · 音频 · 直播——多形态自由发布',t11:'全球 AI 活动一站聚合',d11:'旧金山 · 新加坡 · 柏林 · 迪拜——发现、报名、参与',t12:'四级代理体系',d12:'国家 5% · 省级 10% · 市级 25% · 直推 50%——平台自动结算',t13:'会员中心',d13:'多币种钱包 + 资金池 + 抵押仓单——资产持续增值',t14:'算力容器',d14:'闲置算力变资产——你的 GPU，你的定价',t15:'LingQu AI —— 即刻体验',d15:'直接对话，实时响应——AI 就该这么简单',t16:'AI Nexus',d16:'拥有 Token，掌控 AI',t17:'加入 AI 共享经济',d17:'新用户注册即送 1,000 AC',cta1:'立即访问 zhitongwang.cn',cta2:'AI Nexus — 拥有 Token，掌控 AI',ai_tools:'AI 工具',holders:'持有者',vol:'24h 成交量',mcap:'市值'},
+'zh-TW':{t0:'AI Nexus — 全球首個去中心化 AI 訪問市場',t1:'痛點與突破',t2:'AI Nexus — 一個 Token，打通所有 AI',t3:'行情看板',d3:'數據一目了然',t4:'一切 AI 資源，Token 化交易',d4:'從 GPT 到 Claude，從綠電到 GPU——明碼標價，即時交易',t5:'工具市場',d5:'全球頂級 AI 模型聚合，一鍵訂閱',t6:'P2P 自由市場',d6:'從電力原料到 GPU 集群，全鏈路透明流轉',t7:'交易大廳',d7:'K 線行情 · 限價市價 · 聯盟幣 AC——生態燃料',t8:'四維一體 · AI 通證經濟閉環',d8:'行情 → 工具 → P2P → 交易',t9:'16 種語言實時切換',d9:'無論你來自哪裡，AI Nexus 以你的母語與你對話',t10:'社交網絡 + 論壇',d10:'圖文 · 視頻 · 影視 · 音頻 · 直播——多形態自由發布',t11:'全球 AI 活動一站聚合',d11:'舊金山 · 新加坡 · 柏林 · 杜拜——發現、報名、參與',t12:'四級代理體系',d12:'國家 5% · 省級 10% · 市級 25% · 直推 50%——平台自動結算',t13:'會員中心',d13:'多幣種錢包 + 資金池 + 抵押倉單——資產持續增值',t14:'算力容器',d14:'閒置算力變資產——你的 GPU，你的定價',t15:'LingQu AI —— 即刻體驗',d15:'直接對話，實時響應——AI 就該這麼簡單',t16:'AI Nexus',d16:'擁有 Token，掌控 AI',t17:'加入 AI 共享經濟',d17:'新用戶註冊即送 1,000 AC',cta1:'立即訪問 zhitongwang.cn',cta2:'AI Nexus — 擁有 Token，掌控 AI',ai_tools:'AI 工具',holders:'持有者',vol:'24h 成交量',mcap:'市值'},
+'en':{t0:"AI Nexus — World's First Decentralized AI Access Market",t1:'The Pain & The Breakthrough',t2:'AI Nexus — One Token, All AI',t3:'Market Dashboard',d3:'Data at a Glance',t4:'All AI Resources, Tokenized',d4:'From GPT to Claude, green energy to GPU—priced and traded instantly',t5:'Tool Market',d5:'Global Top AI Models, One-Click Subscribe',t6:'P2P Free Market',d6:'From energy to GPU clusters, full transparency',t7:'Trading Floor',d7:'Candlestick charts · limit/market orders · AC—ecosystem fuel',t8:'Four-in-One · AI Token Economy',d8:'Market → Tools → P2P → Trade',t9:'16 Languages, Real-Time Switch',d9:'Wherever you are from, AI Nexus speaks your language',t10:'Social Network + Forum',d10:'Text · Video · Film · Audio · Livestream—multi-format publishing',t11:'Global AI Events, One Platform',d11:'San Francisco · Singapore · Berlin · Dubai—discover, register, participate',t12:'4-Tier Agency System',d12:'National 5% · Provincial 10% · City 25% · Direct 50%—auto-settlement',t13:'Member Center',d13:'Multi-currency wallet + funding pool + collateral—continuous growth',t14:'Compute Containers',d14:'Idle compute to assets—your GPU, your price',t15:'LingQu AI — Try It Now',d15:'Instant chat, real-time response—AI should be this simple',t16:'AI Nexus',d16:'Own the Token, Master the AI',t17:'Join the AI Sharing Economy',d17:'New users get 1,000 AC free',cta1:'Visit zhitongwang.cn',cta2:'AI Nexus — Own the Token, Master the AI',ai_tools:'AI Tools',holders:'Holders',vol:'24h Volume',mcap:'Market Cap'},
+'ja':{t0:'AI Nexus — 世界初の分散型AIアクセス市場',t1:'課題と突破口',t2:'AI Nexus — 1つのトークン、すべてのAI',t3:'マーケットダッシュボード',d3:'データを一目で',t4:'すべてのAIリソース、トークン化',d4:'GPTからClaude、グリーン電力からGPUまで——即時取引',t5:'ツール市場',d5:'世界トップAIモデル、ワンクリック購読',t6:'P2P自由市場',d6:'電力原料からGPUクラスターまで、完全透明',t7:'取引所',d7:'ローソク足 · 指値/成行 · AC——エコシステム燃料',t8:'4-in-1 · AIトークン経済',d8:'マーケット → ツール → P2P → 取引',t9:'16言語リアルタイム切替',d9:'どこから来ても、AI Nexusはあなたの言語で話します',t10:'ソーシャルネットワーク + フォーラム',d10:'テキスト · 動画 · 映画 · 音声 · ライブ配信',t11:'グローバルAIイベント',d11:'サンフランシスコ · シンガポール · ベルリン · ドバイ',t12:'4層代理システム',d12:'国家5% · 省級10% · 市級25% · 直接50%——自動決済',t13:'会員センター',d13:'マルチ通貨ウォレット + 資金プール + 担保',t14:'計算コンテナ',d14:'遊休計算力を資産に——あなたのGPU、あなたの価格',t15:'LingQu AI — 今すぐ体験',d15:'即時チャット、リアルタイム応答——AIはこうあるべき',t16:'AI Nexus',d16:'トークンを所有し、AIを制御せよ',t17:'AI共有経済に参加',d17:'新規登録で1,000 ACプレゼント',cta1:'zhitongwang.cnにアクセス',cta2:'AI Nexus — トークンを所有し、AIを制御せよ',ai_tools:'AIツール',holders:'保有者',vol:'24h出来高',mcap:'時価総額'},
+'ko':{t0:'AI Nexus — 세계 최초 탈중앙화 AI 접근 시장',t1:'문제점과 돌파구',t2:'AI Nexus — 하나의 토큰, 모든 AI',t3:'시장 대시보드',d3:'데이터 한눈에',t4:'모든 AI 리소스, 토큰화',d4:'GPT부터 Claude까지, 그린 에너지부터 GPU까지——즉시 거래',t5:'도구 시장',d5:'글로벌 최고 AI 모델, 원클릭 구독',t6:'P2P 자유 시장',d6:'전력 원료부터 GPU 클러스터까지, 완전 투명',t7:'거래소',d7:'캔들 차트 · 지정가/시장가 · AC——생태계 연료',t8:'4-in-1 · AI 토큰 경제',d8:'시장 → 도구 → P2P → 거래',t9:'16개 언어 실시간 전환',d9:'어디서 왔든, AI Nexus가 당신의 언어로 말합니다',t10:'소셜 네트워크 + 포럼',d10:'텍스트 · 비디오 · 영화 · 오디오 · 라이브스트림',t11:'글로벌 AI 이벤트',d11:'샌프란시스코 · 싱가포르 · 베를린 · 두바이',t12:'4단계 에이전시 시스템',d12:'국가 5% · 성 10% · 시 25% · 직접 50%——자동 정산',t13:'회원 센터',d13:'다중 통화 지갑 + 자금 풀 + 담보',t14:'컴퓨팅 컨테이너',d14:'유휴 컴퓨팅을 자산으로——당신의 GPU, 당신의 가격',t15:'LingQu AI — 지금 체험',d15:'즉시 채팅, 실시간 응답——AI는 이렇게 간단해야 합니다',t16:'AI Nexus',d16:'토큰을 소유하고 AI를 지배하라',t17:'AI 공유 경제에 참여',d17:'신규 가입 시 1,000 AC 증정',cta1:'zhitongwang.cn 방문',cta2:'AI Nexus — 토큰을 소유하고 AI를 지배하라',ai_tools:'AI 도구',holders:'보유자',vol:'24시간 거래량',mcap:'시가총액'},
+'es':{t0:'AI Nexus — Primer Mercado Descentralizado de Acceso a IA',t1:'El Dolor y la Solución',t2:'AI Nexus — Un Token, Toda la IA',t3:'Panel de Mercado',d3:'Datos de un Vistazo',t4:'Todos los Recursos IA, Tokenizados',d4:'De GPT a Claude, energía verde a GPU—precio y comercio instantáneo',t5:'Mercado de Herramientas',d5:'Mejores modelos IA globales, suscribir con un clic',t6:'Mercado Libre P2P',d6:'De materias primas a clústeres GPU, total transparencia',t7:'Sala de Trading',d7:'Velas · límite/mercado · AC—combustible del ecosistema',t8:'Cuatro en Uno · Economía Token IA',d8:'Mercado → Herramientas → P2P → Trading',t9:'16 Idiomas, Cambio en Tiempo Real',d9:'Vengas de donde vengas, AI Nexus habla tu idioma',t10:'Red Social + Foro',d10:'Texto · Video · Cine · Audio · Streaming',t11:'Eventos IA Globales',d11:'San Francisco · Singapur · Berlín · Dubái',t12:'Sistema de Agencia de 4 Niveles',d12:'Nacional 5% · Provincial 10% · Ciudad 25% · Directo 50%',t13:'Centro de Miembros',d13:'Billetera multi-moneda + fondo común + garantía',t14:'Contenedores de Cómputo',d14:'Cómputo inactivo a activos—tu GPU, tu precio',t15:'LingQu AI — Pruébalo Ahora',d15:'Chat instantáneo, respuesta en tiempo real—así de simple debe ser la IA',t16:'AI Nexus',d16:'Posee el Token, Domina la IA',t17:'Únete a la Economía Compartida IA',d17:'Nuevos usuarios reciben 1,000 AC gratis',cta1:'Visita zhitongwang.cn',cta2:'AI Nexus — Posee el Token, Domina la IA',ai_tools:'Herramientas IA',holders:'Titulares',vol:'Vol. 24h',mcap:'Cap. Mercado'},
+'fr':{t0:"AI Nexus — Premier Marché Décentralisé d'Accès à l'IA",t1:'La Difficulté et la Percée',t2:"AI Nexus — Un Token, Toute l'IA",t3:'Tableau de Bord',d3:"Données en un Coup d'Œil",t4:'Toutes les Ressources IA, Tokenisées',d4:"De GPT à Claude, énergie verte au GPU—tarification et échange instantanés",t5:"Marché d'Outils",d5:"Meilleurs modèles IA mondiaux, abonnement en un clic",t6:'Marché Libre P2P',d6:'Des matières premières aux clusters GPU, transparence totale',t7:'Salle de Trading',d7:"Chandeliers · limite/marché · AC—carburant de l'écosystème",t8:"Quatre en Un · Économie Token IA",d8:'Marché → Outils → P2P → Trading',t9:'16 Langues, Changement en Temps Réel',d9:"D'où que vous veniez, AI Nexus parle votre langue",t10:'Réseau Social + Forum',d10:'Texte · Vidéo · Cinéma · Audio · Streaming',t11:"Événements IA Mondiaux",d11:'San Francisco · Singapour · Berlin · Dubaï',t12:'Système à 4 Niveaux',d12:"National 5% · Provincial 10% · Ville 25% · Direct 50%—règlement automatique",t13:'Espace Membres',d13:'Portefeuille multi-devises + pool de fonds + garantie',t14:'Conteneurs de Calcul',d14:'Calcul inactif en actifs—votre GPU, votre prix',t15:'LingQu AI — Essayez',d15:"Chat instantané, réponse en temps réel—l'IA doit être aussi simple",t16:'AI Nexus',d16:"Possédez le Token, Maîtrisez l'IA",t17:"Rejoignez l'Économie IA",d17:'Nouveaux utilisateurs: 1 000 AC offerts',cta1:'Visitez zhitongwang.cn',cta2:"AI Nexus — Possédez le Token, Maîtrisez l'IA",ai_tools:'Outils IA',holders:'Détenteurs',vol:'Vol. 24h',mcap:'Cap. Boursière'},
+'de':{t0:'AI Nexus — Der erste dezentrale KI-Zugangsmarkt',t1:'Das Problem und der Durchbruch',t2:'AI Nexus — Ein Token, alle KI',t3:'Markt-Dashboard',d3:'Daten auf einen Blick',t4:'Alle KI-Ressourcen, tokenisiert',d4:'Von GPT bis Claude, Grünstrom bis GPU—Preis und Handel in Echtzeit',t5:'Tool-Markt',d5:'Weltbeste KI-Modelle, mit einem Klick abonnieren',t6:'P2P-Freier Markt',d6:'Von Energierohstoffen bis GPU-Cluster, volle Transparenz',t7:'Handelsplatz',d7:'Candlesticks · Limit/Markt · AC—Ökosystem-Treibstoff',t8:'Vier in Einem · KI-Token-Wirtschaft',d8:'Markt → Tools → P2P → Handel',t9:'16 Sprachen, Echtzeit-Umschaltung',d9:'Woher du auch kommst, AI Nexus spricht deine Sprache',t10:'Soziales Netzwerk + Forum',d10:'Text · Video · Film · Audio · Livestream',t11:'Globale KI-Events',d11:'San Francisco · Singapur · Berlin · Dubai',t12:'4-stufiges Agentursystem',d12:'National 5% · Provinz 10% · Stadt 25% · Direkt 50%—automatische Abrechnung',t13:'Mitgliederbereich',d13:'Multi-Währungs-Wallet + Funding-Pool + Sicherheiten',t14:'Compute-Container',d14:'Ungenutzte Rechenleistung zu Vermögenswerten—deine GPU, dein Preis',t15:'LingQu AI — Jetzt testen',d15:'Sofort-Chat, Echtzeit-Antwort—so einfach sollte KI sein',t16:'AI Nexus',d16:'Besitze den Token, beherrsche die KI',t17:'Tritt der KI-Sharing-Economy bei',d17:'Neue Nutzer erhalten 1.000 AC gratis',cta1:'Besuche zhitongwang.cn',cta2:'AI Nexus — Besitze den Token, beherrsche die KI',ai_tools:'KI-Tools',holders:'Inhaber',vol:'24h Vol.',mcap:'Marktkap.'},
+'pt':{t0:'AI Nexus — Primeiro Mercado Descentralizado de Acesso à IA',t1:'A Dor e a Solução',t2:'AI Nexus — Um Token, Toda a IA',t3:'Painel de Mercado',d3:'Dados em um Relance',t4:'Todos os Recursos IA, Tokenizados',d4:'Do GPT ao Claude, energia verde à GPU—precificação e negociação instantânea',t5:'Mercado de Ferramentas',d5:'Melhores modelos IA globais, assinar com um clique',t6:'Mercado Livre P2P',d6:'De matérias-primas a clusters GPU, total transparência',t7:'Pregão de Trading',d7:'Velas · limite/mercado · AC—combustível do ecossistema',t8:'Quatro em Um · Economia Token IA',d8:'Mercado → Ferramentas → P2P → Trading',t9:'16 Idiomas, Troca em Tempo Real',d9:'De onde você vier, AI Nexus fala sua língua',t10:'Rede Social + Fórum',d10:'Texto · Vídeo · Cinema · Áudio · Streaming',t11:'Eventos IA Globais',d11:'São Francisco · Singapura · Berlim · Dubai',t12:'Sistema de Agência de 4 Níveis',d12:'Nacional 5% · Provincial 10% · Cidade 25% · Direto 50%',t13:'Central de Membros',d13:'Carteira multi-moedas + pool de fundos + garantia',t14:'Contêineres de Computação',d14:'Computação ociosa em ativos—sua GPU, seu preço',t15:'LingQu AI — Experimente',d15:'Chat instantâneo, resposta em tempo real—IA deve ser assim tão simples',t16:'AI Nexus',d16:'Tenha o Token, Domine a IA',t17:'Junte-se à Economia Compartilhada IA',d17:'Novos usuários ganham 1.000 AC grátis',cta1:'Visite zhitongwang.cn',cta2:'AI Nexus — Tenha o Token, Domine a IA',ai_tools:'Ferramentas IA',holders:'Titulares',vol:'Vol. 24h',mcap:'Cap. Mercado'},
+'ru':{t0:'AI Nexus — Первый децентрализованный рынок доступа к ИИ',t1:'Проблема и Прорыв',t2:'AI Nexus — Один токен, весь ИИ',t3:'Панель рынка',d3:'Данные с первого взгляда',t4:'Все ресурсы ИИ, токенизированы',d4:'От GPT до Claude, от зелёной энергии до GPU—мгновенные цены и сделки',t5:'Рынок инструментов',d5:'Лучшие мировые ИИ-модели, подписка в один клик',t6:'P2P-рынок',d6:'От энергосырья до GPU-кластеров, полная прозрачность',t7:'Торговая площадка',d7:'Свечи · лимит/рынок · AC—топливо экосистемы',t8:'Четыре в одном · Экономика токенов ИИ',d8:'Рынок → Инструменты → P2P → Торговля',t9:'16 языков, переключение в реальном времени',d9:'Откуда бы вы ни были, AI Nexus говорит на вашем языке',t10:'Соцсеть + Форум',d10:'Текст · Видео · Кино · Аудио · Стриминг',t11:'Глобальные ИИ-события',d11:'Сан-Франциско · Сингапур · Берлин · Дубай',t12:'4-уровневое агентство',d12:'Национальный 5% · Областной 10% · Городской 25% · Прямой 50%',t13:'Центр участников',d13:'Мультивалютный кошелёк + пул средств + залог',t14:'Вычислительные контейнеры',d14:'Простаивающие мощности в активы—ваш GPU, ваша цена',t15:'LingQu AI — Попробуйте',d15:'Мгновенный чат, ответ в реальном времени—ИИ должен быть таким простым',t16:'AI Nexus',d16:'Владейте токеном, управляйте ИИ',t17:'Присоединяйтесь к экономике ИИ',d17:'Новые пользователи получают 1 000 AC бесплатно',cta1:'Посетите zhitongwang.cn',cta2:'AI Nexus — Владейте токеном, управляйте ИИ',ai_tools:'ИИ-инструменты',holders:'Держатели',vol:'Объём 24ч',mcap:'Рын. кап.'},
+'ar':{t0:'AI Nexus — أول سوق لامركزي للوصول إلى الذكاء الاصطناعي',t1:'المشكلة والاختراق',t2:'AI Nexus — رمز واحد، كل الذكاء الاصطناعي',t3:'لوحة السوق',d3:'البيانات في لمحة',t4:'جميع موارد الذكاء الاصطناعي، مرمزة',d4:'من GPT إلى Claude، من الطاقة الخضراء إلى GPU—تسعير وتداول فوري',t5:'سوق الأدوات',d5:'أفضل نماذج الذكاء الاصطناعي العالمية، اشتراك بنقرة واحدة',t6:'سوق P2P الحر',d6:'من المواد الخام للطاقة إلى مجموعات GPU، شفافية كاملة',t7:'قاعة التداول',d7:'شموع · أوامر محددة/سوقية · AC—وقود النظام البيئي',t8:'أربعة في واحد · اقتصاد رمز الذكاء الاصطناعي',d8:'السوق → الأدوات → P2P → التداول',t9:'16 لغة، تبديل فوري',d9:'أينما كنت، AI Nexus يتحدث لغتك',t10:'شبكة اجتماعية + منتدى',d10:'نص · فيديو · سينما · صوت · بث مباشر',t11:'فعاليات الذكاء الاصطناعي العالمية',d11:'سان فرانسيسكو · سنغافورة · برلين · دبي',t12:'نظام وكالة بأربع مستويات',d12:'وطني 5% · إقليمي 10% · مدينة 25% · مباشر 50%',t13:'مركز الأعضاء',d13:'محفظة متعددة العملات + مجمع تمويل + ضمانات',t14:'حاويات الحوسبة',d14:'القدرة الحاسوبية الخاملة إلى أصول—وحدة GPU الخاصة بك، سعرك',t15:'LingQu AI — جربه الآن',d15:'محادثة فورية، استجابة في الوقت الحقيقي—هكذا يجب أن يكون الذكاء الاصطناعي بسيطاً',t16:'AI Nexus',d16:'امتلك الرمز، تحكم في الذكاء الاصطناعي',t17:'انضم إلى اقتصاد الذكاء الاصطناعي',d17:'المستخدمون الجدد يحصلون على 1,000 AC مجاناً',cta1:'زر zhitongwang.cn',cta2:'AI Nexus — امتلك الرمز، تحكم في الذكاء الاصطناعي',ai_tools:'أدوات الذكاء',holders:'حاملون',vol:'حجم 24س',mcap:'القيمة السوقية'},
+'hi':{t0:'AI Nexus — दुनिया का पहला विकेंद्रीकृत AI एक्सेस मार्केट',t1:'समस्या और समाधान',t2:'AI Nexus — एक टोकन, सारा AI',t3:'मार्केट डैशबोर्ड',d3:'एक नज़र में डेटा',t4:'सभी AI संसाधन, टोकनाइज़्ड',d4:'GPT से Claude तक, हरित ऊर्जा से GPU तक—तत्काल मूल्य और व्यापार',t5:'टूल मार्केट',d5:'वैश्विक शीर्ष AI मॉडल, एक क्लिक सदस्यता',t6:'P2P मुक्त बाजार',d6:'ऊर्जा कच्चे माल से GPU क्लस्टर तक, पूर्ण पारदर्शिता',t7:'ट्रेडिंग फ्लोर',d7:'कैंडलस्टिक · लिमिट/मार्केट · AC—इकोसिस्टम फ्यूल',t8:'चार में एक · AI टोकन अर्थव्यवस्था',d8:'बाजार → टूल → P2P → ट्रेड',t9:'16 भाषाएँ, रीयल-टाइम स्विच',d9:'आप जहाँ से भी हों, AI Nexus आपकी भाषा में बोलता है',t10:'सोशल नेटवर्क + फोरम',d10:'टेक्स्ट · वीडियो · फिल्म · ऑडियो · लाइवस्ट्रीम',t11:'वैश्विक AI इवेंट',d11:'सैन फ्रांसिस्को · सिंगापुर · बर्लिन · दुबई',t12:'4-स्तरीय एजेंसी प्रणाली',d12:'राष्ट्रीय 5% · प्रांतीय 10% · शहर 25% · प्रत्यक्ष 50%',t13:'सदस्य केंद्र',d13:'बहु-मुद्रा वॉलेट + फंडिंग पूल + संपार्श्विक',t14:'कंप्यूट कंटेनर',d14:'निष्क्रिय कंप्यूट को संपत्ति में—आपका GPU, आपकी कीमत',t15:'LingQu AI — अभी आज़माएँ',d15:'तत्काल चैट, रीयल-टाइम प्रतिक्रिया—AI इतना सरल होना चाहिए',t16:'AI Nexus',d16:'टोकन के मालिक बनें, AI पर नियंत्रण करें',t17:'AI शेयरिंग इकोनॉमी से जुड़ें',d17:'नए उपयोगकर्ताओं को 1,000 AC मुफ्त',cta1:'zhitongwang.cn पर जाएँ',cta2:'AI Nexus — टोकन के मालिक बनें, AI पर नियंत्रण करें',ai_tools:'AI टूल',holders:'धारक',vol:'24घंटे वॉल्यूम',mcap:'बाजार पूंजी'},
+'th':{t0:'AI Nexus — ตลาดการเข้าถึง AI แบบกระจายศูนย์แห่งแรกของโลก',t1:'ปัญหาและการ突破',t2:'AI Nexus — หนึ่งโทเคน ทุก AI',t3:'แดชบอร์ดตลาด',d3:'ข้อมูลโดยสรุป',t4:'ทรัพยากร AI ทั้งหมด, โทเคนไนซ์',d4:'จาก GPT ถึง Claude, พลังงานสีเขียวถึง GPU—กำหนดราคาและซื้อขายทันที',t5:'ตลาดเครื่องมือ',d5:'โมเดล AI ระดับโลก, สมัครด้วยคลิกเดียว',t6:'ตลาดเสรี P2P',d6:'จากวัตถุดิบพลังงานถึงคลัสเตอร์ GPU, โปร่งใสเต็มรูปแบบ',t7:'ห้องเทรด',d7:'แผนภูมิแท่งเทียน · ลิมิต/มาร์เก็ต · AC—เชื้อเพลิงระบบนิเวศ',t8:'สี่ในหนึ่ง · เศรษฐกิจโทเคน AI',d8:'ตลาด → เครื่องมือ → P2P → เทรด',t9:'16 ภาษา, สลับทันที',d9:'ไม่ว่าคุณจะมาจากไหน, AI Nexus พูดภาษาของคุณ',t10:'โซเชียล + ฟอรัม',d10:'ข้อความ · วิดีโอ · ภาพยนตร์ · เสียง · สตรีม',t11:'กิจกรรม AI ระดับโลก',d11:'ซานฟรานซิสโก · สิงคโปร์ · เบอร์ลิน · ดูไบ',t12:'ระบบตัวแทน 4 ระดับ',d12:'ประเทศ 5% · จังหวัด 10% · เมือง 25% · ตรง 50%',t13:'ศูนย์สมาชิก',d13:'กระเป๋าหลายสกุลเงิน + พูลเงินทุน + หลักประกัน',t14:'คอนเทนเนอร์คอมพิวท์',d14:'พลังประมวลผลว่างเป็นสินทรัพย์—GPU ของคุณ, ราคาของคุณ',t15:'LingQu AI — ลองเลย',d15:'แชททันที, ตอบสนองเรียลไทม์—AI ควรจะง่ายแบบนี้',t16:'AI Nexus',d16:'เป็นเจ้าของโทเคน, ควบคุม AI',t17:'เข้าร่วมเศรษฐกิจแบ่งปัน AI',d17:'ผู้ใช้ใหม่รับ 1,000 AC ฟรี',cta1:'เยี่ยมชม zhitongwang.cn',cta2:'AI Nexus — เป็นเจ้าของโทเคน, ควบคุม AI',ai_tools:'เครื่องมือ AI',holders:'ผู้ถือ',vol:'วอลุ่ม 24ชม.',mcap:'มูลค่าตลาด'},
+'vi':{t0:'AI Nexus — Thị Trường Truy Cập AI Phi Tập Trung Đầu Tiên',t1:'Nỗi Đau và Đột Phá',t2:'AI Nexus — Một Token, Tất Cả AI',t3:'Bảng Điều Khiển Thị Trường',d3:'Dữ Liệu Tổng Quan',t4:'Tất Cả Tài Nguyên AI, Token Hóa',d4:'Từ GPT đến Claude, năng lượng xanh đến GPU—định giá và giao dịch tức thì',t5:'Thị Trường Công Cụ',d5:'Mô hình AI hàng đầu toàn cầu, đăng ký một cú nhấp',t6:'Thị Trường Tự Do P2P',d6:'Từ nguyên liệu năng lượng đến cụm GPU, minh bạch hoàn toàn',t7:'Sàn Giao Dịch',d7:'Biểu đồ nến · lệnh giới hạn/thị trường · AC—nhiên liệu hệ sinh thái',t8:'Bốn Trong Một · Kinh Tế Token AI',d8:'Thị trường → Công cụ → P2P → Giao dịch',t9:'16 Ngôn Ngữ, Chuyển Đổi Thời Gian Thực',d9:'Dù bạn đến từ đâu, AI Nexus nói ngôn ngữ của bạn',t10:'Mạng Xã Hội + Diễn Đàn',d10:'Văn bản · Video · Phim · Âm thanh · Phát trực tiếp',t11:'Sự Kiện AI Toàn Cầu',d11:'San Francisco · Singapore · Berlin · Dubai',t12:'Hệ Thống Đại Lý 4 Cấp',d12:'Quốc gia 5% · Tỉnh 10% · Thành phố 25% · Trực tiếp 50%',t13:'Trung Tâm Thành Viên',d13:'Ví đa tiền tệ + quỹ chung + tài sản thế chấp',t14:'Container Tính Toán',d14:'Sức mạnh tính toán nhàn rỗi thành tài sản—GPU của bạn, giá của bạn',t15:'LingQu AI — Dùng Thử Ngay',d15:'Trò chuyện tức thì, phản hồi thời gian thực—AI nên đơn giản như vậy',t16:'AI Nexus',d16:'Sở hữu Token, Làm Chủ AI',t17:'Tham Gia Kinh Tế Chia Sẻ AI',d17:'Người dùng mới nhận 1.000 AC miễn phí',cta1:'Truy cập zhitongwang.cn',cta2:'AI Nexus — Sở hữu Token, Làm Chủ AI',ai_tools:'Công cụ AI',holders:'Người nắm giữ',vol:'KL 24h',mcap:'Vốn hóa'},
+'id':{t0:'AI Nexus — Pasar Akses AI Terdesentralisasi Pertama di Dunia',t1:'Masalah dan Terobosan',t2:'AI Nexus — Satu Token, Semua AI',t3:'Dasbor Pasar',d3:'Data Sekilas',t4:'Semua Sumber Daya AI, Ditokenisasi',d4:'Dari GPT ke Claude, energi hijau ke GPU—harga dan perdagangan instan',t5:'Pasar Alat',d5:'Model AI teratas global, berlangganan sekali klik',t6:'Pasar Bebas P2P',d6:'Dari bahan baku energi ke kluster GPU, transparansi penuh',t7:'Lantai Perdagangan',d7:'Grafik lilin · limit/market · AC—bahan bakar ekosistem',t8:'Empat dalam Satu · Ekonomi Token AI',d8:'Pasar → Alat → P2P → Perdagangan',t9:'16 Bahasa, Peralihan Waktu Nyata',d9:'Dari mana pun Anda berasal, AI Nexus berbicara bahasa Anda',t10:'Sosial + Forum',d10:'Teks · Video · Film · Audio · Siaran Langsung',t11:'Acara AI Global',d11:'San Francisco · Singapura · Berlin · Dubai',t12:'Sistem Agensi 4 Tingkat',d12:'Nasional 5% · Provinsi 10% · Kota 25% · Langsung 50%',t13:'Pusat Anggota',d13:'Dompet multi-mata uang + pool dana + jaminan',t14:'Kontainer Komputasi',d14:'Daya komputasi menganggur menjadi aset—GPU Anda, harga Anda',t15:'LingQu AI — Coba Sekarang',d15:'Obrolan instan, respons waktu nyata—AI harus sesederhana ini',t16:'AI Nexus',d16:'Miliki Token, Kuasai AI',t17:'Bergabung dengan Ekonomi Berbagi AI',d17:'Pengguna baru dapat 1.000 AC gratis',cta1:'Kunjungi zhitongwang.cn',cta2:'AI Nexus — Miliki Token, Kuasai AI',ai_tools:'Alat AI',holders:'Pemegang',vol:'Vol. 24j',mcap:'Kap. Pasar'},
+'it':{t0:"AI Nexus — Primo Mercato Decentralizzato di Accesso all'IA",t1:'Il Problema e la Svolta',t2:"AI Nexus — Un Token, Tutta l'IA",t3:'Cruscotto di Mercato',d3:"Dati a Colpo d'Occhio",t4:"Tutte le Risorse IA, Tokenizzate",d4:"Da GPT a Claude, dall'energia verde alla GPU—prezzi e scambi istantanei",t5:'Mercato Strumenti',d5:'Migliori modelli IA globali, abbonati con un clic',t6:'Mercato Libero P2P',d6:'Dalle materie prime energetiche ai cluster GPU, totale trasparenza',t7:'Sala Trading',d7:"Candele · limite/mercato · AC—carburante dell'ecosistema",t8:"Quattro in Uno · Economia Token IA",d8:'Mercato → Strumenti → P2P → Trading',t9:'16 Lingue, Cambio in Tempo Reale',d9:'Da qualunque parte tu venga, AI Nexus parla la tua lingua',t10:'Social + Forum',d10:'Testo · Video · Cinema · Audio · Streaming',t11:'Eventi IA Globali',d11:'San Francisco · Singapore · Berlino · Dubai',t12:'Sistema di Agenzia a 4 Livelli',d12:'Nazionale 5% · Provinciale 10% · Città 25% · Diretto 50%',t13:'Centro Membri',d13:'Portafoglio multi-valuta + pool di fondi + garanzia',t14:'Container di Calcolo',d14:'Calcolo inattivo in asset—la tua GPU, il tuo prezzo',t15:"LingQu AI — Provalo Subito",d15:"Chat istantanea, risposta in tempo reale—l'IA dovrebbe essere così semplice",t16:'AI Nexus',d16:"Possiedi il Token, Domina l'IA",t17:"Unisciti all'Economia Condivisa IA",d17:'Nuovi utenti ricevono 1.000 AC gratis',cta1:'Visita zhitongwang.cn',cta2:"AI Nexus — Possiedi il Token, Domina l'IA",ai_tools:'Strumenti IA',holders:'Detentori',vol:'Vol. 24h',mcap:'Cap. Mercato'}
+};
+
+// Slides configuration
+const slides = [
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a0a2e,#1a0a3e)'},
+  {type:'hero',t:12, bg:'linear-gradient(135deg,#1a0a2e,#0a0a3e)'},
+  {type:'hero',t:16, bg:'linear-gradient(135deg,#0a1a3e,#0a0a2e)'},
+  {type:'image',t:20, img:'promo_img/01_home_full.png', stats:[{n:'48'},{n:'1,247'},{n:'$2.8M'},{n:'$42.8M'}]},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a1a3e,#1a0a2e)', icons:['GPT-5.5','Claude 4.7','⚡ 绿电','💻 GPU']},
+  {type:'image',t:18, img:'promo_img/02_tools.png'},
+  {type:'image',t:18, img:'promo_img/03_p2p.png'},
+  {type:'image',t:20, img:'promo_img/04_events.png'},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a0a2e,#1a1a4e)', icons:['📊 行情','🔧 工具','🤝 P2P','💱 交易']},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#0a1a4e,#0a0a2e)'},
+  {type:'image',t:18, img:'promo_img/06_social.png'},
+  {type:'hero',t:14, bg:'linear-gradient(135deg,#1a0a3e,#0a2a3e)'},
+  {type:'image',t:20, img:'promo_img/05_agent.png'},
+  {type:'image',t:18, img:'promo_img/08_member.png'},
+  {type:'image',t:14, img:'promo_img/09_compute.png'},
+  {type:'image',t:18, img:'promo_img/11_promo.png'},
+  {type:'final',t:14, bg:'linear-gradient(135deg,#0a0a2e,#2a0a5e)', cta:true},
+  {type:'final',t:24, bg:'linear-gradient(135deg,#0a0a2e,#16083e)', cta2:true},
+];
+
+// Stat labels lookup
+const statLabels = ['ai_tools','holders','vol','mcap'];
+
+let idx=0,playing=true,timer=null,lang='zh-CN',elapsed=0;
+const totalDuration = slides.reduce((s,sl) => s+sl.t, 0);
+
+// Auto-detect language from URL param or parent window
+function detectLang(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlLang = urlParams.get('lang');
+  if(urlLang && L[urlLang]) return urlLang;
+  // Check if embedded and parent has language info
+  try {
+    if(window.parent && window.parent !== window){
+      const parentLang = window.parent.document.documentElement.lang;
+      if(parentLang && L[parentLang]) return parentLang;
+    }
+  } catch(e) {}
+  // Try browser language
+  const navLang = navigator.language || navigator.userLanguage;
+  if(navLang){
+    if(navLang.startsWith('zh')){
+      if(navLang.includes('TW')||navLang.includes('HK')) return 'zh-TW';
+      return 'zh-CN';
+    }
+    if(L[navLang]) return navLang;
+    const base = navLang.split('-')[0];
+    if(L[base]) return base;
+  }
+  return 'zh-CN';
+}
+
+function init(){
+  lang = detectLang();
+  document.getElementById('langSelect').value = lang;
+  const c=document.getElementById('slidesContainer');
+  const ldata = L[lang] || L['zh-CN'];
+  
+  slides.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='slide'+(i===0?' active':'');
+    d.id='slide-'+i;
+    d.style.background=s.bg||'transparent';
+    let html='';
+    if(ldata['t'+i]) html+='<div class="title">'+ldata['t'+i]+'</div>';
+    if(ldata['d'+i]) html+='<div class="desc">'+ldata['d'+i]+'</div>';
+    if(s.icons){
+      const iconMap = {'zh-CN':['📊 行情','🔧 工具','🤝 P2P','💱 交易'],'zh-TW':['📊 行情','🔧 工具','🤝 P2P','💱 交易'],'en':['📊 Market','🔧 Tools','🤝 P2P','💱 Trade'],'ja':['📊 マーケット','🔧 ツール','🤝 P2P','💱 取引'],'ko':['📊 마켓','🔧 도구','🤝 P2P','💱 거래'],'es':['📊 Mercado','🔧 Herramientas','🤝 P2P','💱 Trading'],'fr':['📊 Marché','🔧 Outils','🤝 P2P','💱 Trading'],'de':['📊 Markt','🔧 Tools','🤝 P2P','💱 Handel'],'pt':['📊 Mercado','🔧 Ferramentas','🤝 P2P','💱 Trading'],'ru':['📊 Рынок','🔧 Инструменты','🤝 P2P','💱 Торговля'],'ar':['📊 السوق','🔧 أدوات','🤝 P2P','💱 تداول'],'hi':['📊 बाजार','🔧 टूल','🤝 P2P','💱 ट्रेड'],'th':['📊 ตลาด','🔧 เครื่องมือ','🤝 P2P','💱 เทรด'],'vi':['📊 Thị trường','🔧 Công cụ','🤝 P2P','💱 Giao dịch'],'id':['📊 Pasar','🔧 Alat','🤝 P2P','💱 Perdagangan'],'it':['📊 Mercato','🔧 Strumenti','🤝 P2P','💱 Trading']};
+      const icons = iconMap[lang] || iconMap['en'] || s.icons;
+      html+='<div class="cascade-icons">'+icons.map(ic=>'<span>'+ic+'</span>').join('')+'</div>';
+    }
+    if(s.img) html+='<img src="'+s.img+'" alt="" onerror="this.parentElement.querySelector(\'.title\').textContent+=\' [图片加载中]\'">';
+    if(s.stats){
+      html+='<div class="stats-overlay">'+s.stats.map((st,j)=>{
+        const labelKey = statLabels[j]||'';
+        const label = (L[lang]&&L[lang][labelKey])||(L['zh-CN']&&L['zh-CN'][labelKey])||labelKey;
+        return '<div class="stat-box"><div class="num">'+st.n+'</div><div class="label">'+label+'</div></div>';
+      }).join('')+'</div>';
+    }
+    if(s.cta) html+='<a href="https://zhitongwang.cn" target="_blank" style="text-decoration:none"><div class="cta">'+ldata.cta1+'</div></a>';
+    if(s.cta2) html+='<a href="https://zhitongwang.cn" target="_blank" style="text-decoration:none"><div class="cta">'+ldata.cta2+'</div></a>';
+    d.innerHTML=html;
+    c.appendChild(d);
+  });
+  updateUI();
+  loadAudio();
+  startAuto();
+}
+
+function loadAudio(){
+  const a=document.getElementById('audioPlayer');
+  // Audio mapping: zh-CN/zh-TW use Chinese, en uses English, others use closest
+  if(lang==='zh-CN'||lang==='zh-TW'){
+    a.src='promo_audio_zh.mp3';
+  } else {
+    a.src='promo_audio_en.mp3';
+  }
+  a.load();
+}
+
+function startAuto(){
+  if(!playing)return;
+  if(timer)clearTimeout(timer);
+  const dur=slides[idx].t*1000;
+  animateProgress(dur);
+  const a=document.getElementById('audioPlayer');
+  if(a.paused) a.play().catch(()=>{});
+  timer=setTimeout(()=>{
+    if(idx<slides.length-1){idx++;showSlide();}else{stop();}
+  },dur);
+}
+
+function animateProgress(dur){
+  const bar=document.getElementById('progressFill'), start=Date.now();
+  function tick(){
+    const pct=Math.min((Date.now()-start)/dur*100,100);
+    bar.style.width=pct+'%';
+    if(pct<100&&playing)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function showSlide(){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('active',i===idx));
+  updateUI();
+  if(playing) startAuto();
+}
+
+function updateUI(){
+  const subtitleData = subs[lang] || subs['zh-CN'];
+  document.getElementById('subtitleBar').textContent = subtitleData[idx]||'';
+  document.getElementById('slideIndicator').textContent = (idx+1)+' / '+slides.length;
+  elapsed=slides.slice(0,idx).reduce((s,sl)=>s+sl.t,0);
+  const total=slides.reduce((s,sl)=>s+sl.t,0);
+  const m1=Math.floor(elapsed/60),s1=Math.floor(elapsed%60);
+  const m2=Math.floor(total/60),s2=Math.floor(total%60);
+  document.getElementById('timerDisplay').textContent=
+    String(m1).padStart(2,'0')+':'+String(s1).padStart(2,'0')+' / '+String(m2).padStart(2,'0')+':'+String(s2).padStart(2,'0');
+}
+
+function switchLanguage(){
+  lang=document.getElementById('langSelect').value;
+  const ldata = L[lang]||L['zh-CN'];
+  document.querySelectorAll('.slide').forEach((el,i)=>{
+    const t=el.querySelector('.title'), d=el.querySelector('.desc'), c=el.querySelector('.cta');
+    if(t) t.textContent = ldata['t'+i]||'';
+    if(d) d.textContent = ldata['d'+i]||'';
+    if(c) c.textContent = i===16 ? ldata.cta1 : (i===17 ? ldata.cta2 : c.textContent);
+    // Update stat labels
+    const labels = el.querySelectorAll('.stat-box .label');
+    if(labels.length){
+      labels.forEach((lb,j)=>{
+        const key = statLabels[j];
+        if(key && ldata[key]) lb.textContent = ldata[key];
+      });
+    }
+    // Update icons
+    if(i===8){
+      const icons = el.querySelectorAll('.cascade-icons span');
+      if(icons.length>=4){
+        const iconMap = {'zh-CN':['📊 行情','🔧 工具','🤝 P2P','💱 交易'],'zh-TW':['📊 行情','🔧 工具','🤝 P2P','💱 交易'],'en':['📊 Market','🔧 Tools','🤝 P2P','💱 Trade'],'ja':['📊 マーケット','🔧 ツール','🤝 P2P','💱 取引'],'ko':['📊 마켓','🔧 도구','🤝 P2P','💱 거래'],'es':['📊 Mercado','🔧 Herramientas','🤝 P2P','💱 Trading'],'fr':['📊 Marché','🔧 Outils','🤝 P2P','💱 Trading'],'de':['📊 Markt','🔧 Tools','🤝 P2P','💱 Handel'],'pt':['📊 Mercado','🔧 Ferramentas','🤝 P2P','💱 Trading'],'ru':['📊 Рынок','🔧 Инструменты','🤝 P2P','💱 Торговля'],'ar':['📊 السوق','🔧 أدوات','🤝 P2P','💱 تداول'],'hi':['📊 बाजार','🔧 टूल','🤝 P2P','💱 ट्रेड'],'th':['📊 ตลาด','🔧 เครื่องมือ','🤝 P2P','💱 เทรด'],'vi':['📊 Thị trường','🔧 Công cụ','🤝 P2P','💱 Giao dịch'],'id':['📊 Pasar','🔧 Alat','🤝 P2P','💱 Perdagangan'],'it':['📊 Mercato','🔧 Strumenti','🤝 P2P','💱 Trading']};
+        const map = iconMap[lang]||iconMap['en'];
+        if(map) map.forEach((txt,j)=>icons[j].textContent=txt);
+      }
+    }
+  });
+  loadAudio();
+  updateUI();
+}
+
+function nextSlide(){if(idx<slides.length-1){idx++;showSlide();}}
+function prevSlide(){if(idx>0){idx--;showSlide();}}
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
+  const a=document.getElementById('audioPlayer');
+  playing?a.play().catch(()=>{}):a.pause();
+  playing?startAuto():clearTimeout(timer);
+}
+function stop(){
+  playing=false;
+  document.getElementById('playBtn').textContent='🔄 重播';
+  clearTimeout(timer);
+  document.getElementById('progressFill').style.width='100%';
+  document.getElementById('audioPlayer').pause();
+}
+function restart(){idx=0;playing=true;document.getElementById('playBtn').textContent='⏸ 暂停';elapsed=0;showSlide();loadAudio();}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='p')togglePlay();
+});
+init();
+</script>
+</body>
+</html>
