@@ -1,954 +1,508 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="title">AI联盟 - 大模型广场</title>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/header.css">
-    <link rel="stylesheet" href="../css/footer.css">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #e0e7ff;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px rgba(0,0,0,0.06);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-hover: 0 8px 24px rgba(99,102,241,0.12);
-            --radius: 12px;
-            --radius-sm: 8px;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        /* Hero */
-        .hero {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
-            color: white;
-            padding: 50px 0 32px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.08) 0%, transparent 60%);
-        }
-        .hero .container { position: relative; z-index: 1; }
-        .hero h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .hero .subtitle {
-            font-size: 0.95rem;
-            opacity: 0.8;
-            margin-top: 6px;
-        }
-        .hero .pricing-banner {
-            display: inline-block;
-            background: rgba(255,255,255,0.12);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 5px 20px;
-            margin-top: 14px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .hero .endpoint-bar {
-            display: inline-block;
-            background: rgba(0,0,0,0.15);
-            border-radius: 6px;
-            padding: 4px 16px;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            font-family: 'SF Mono','Fira Code',monospace;
-            opacity: 0.75;
-        }
-        /* Container */
-        .container {
-            max-width: 1260px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-            margin: 24px 0 16px;
-        }
-        .toolbar-left {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .search-box {
-            position: relative;
-            min-width: 220px;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 9px 14px 9px 36px;
-            border: 1.5px solid var(--border);
-            border-radius: 20px;
-            font-size: 0.9rem;
-            background: white;
-            transition: all 0.2s;
-            outline: none;
-        }
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-        .search-box .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-        /* Group tabs */
-        .group-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 3px;
-        }
-        .group-tab {
-            padding: 7px 16px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .group-tab:hover {
-            color: var(--text);
-            background: var(--bg);
-        }
-        .group-tab.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 1px 3px rgba(99,102,241,0.3);
-        }
-        /* Stats */
-        .stats-bar {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .stats-bar .count {
-            font-weight: 600;
-            color: var(--primary);
-        }
-        /* Group section */
-        .group-section {
-            margin-bottom: 36px;
-        }
-        .group-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-        .group-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .group-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .group-count {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            background: var(--bg);
-            padding: 2px 10px;
-            border-radius: 10px;
-        }
-        .model-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 14px;
-        }
-        .model-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            background: white;
-            color: var(--text);
-            font-size: 0.78rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .model-btn:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        
-        .model-btn-chat {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            flex: 1;
-            justify-content: center;
-        }
-        .model-btn-chat:hover {
-            background: var(--primary-dark);
-            color: white;
-            transform: translateY(-1px);
-        }
-        .model-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .model-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px;
-            transition: all 0.2s;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            cursor: default;
-        }
-        .model-card:hover {
-            box-shadow: var(--shadow-hover);
-            border-color: #c7d2fe;
-            transform: translateY(-1px);
-        }
-        .model-card.hidden {
-            display: none;
-        }
-        .model-top {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .model-icon {
-            font-size: 1.4rem;
-            line-height: 1;
-            flex-shrink: 0;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--primary-light);
-            border-radius: var(--radius-sm);
-        }
-        .model-name-row {
-            flex: 1;
-            min-width: 0;
-        }
-        .model-name {
-            font-size: 0.92rem;
-            font-weight: 600;
-            color: var(--text);
-            word-break: break-all;
-            line-height: 1.3;
-        }
-        .model-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 5px;
-        }
-        .model-badge {
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 8px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .badge-type { background: #ede9fe; color: #7c3aed; }
-        .badge-provider { background: #fef3c7; color: #d97706; }
-        .badge-ac { background: #fce7f3; color: #db2777; }
-        .badge-endpoint { background: #d1fae5; color: #059669; font-family: monospace; font-size: 0.65rem; }
-        .model-desc {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            border-top: 1px solid var(--border);
-            margin-top: 40px;
-        }
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 1.4rem; }
-            .model-grid { grid-template-columns: 1fr; }
-            .toolbar { flex-direction: column; align-items: stretch; }
-            .group-tabs { overflow-x: auto; }
-        }
-        /* Chat Modal */
-        .chat-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); }
-        .chat-overlay.show { display:flex; align-items:center; justify-content:center; }
-        .chat-modal { background:var(--card-bg); border-radius:14px; width:min(680px,95vw); max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
-        .chat-modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
-        .chat-modal-title { font-weight:600; font-size:0.95rem; color:var(--text); }
-        .chat-modal-close { background:none; border:none; font-size:1.3rem; color:var(--text-muted); cursor:pointer; padding:0 4px; line-height:1; }
-        .chat-modal-body { flex:1; overflow-y:auto; padding:14px 18px; display:flex; flex-direction:column; gap:10px; min-height:200px; max-height:55vh; }
-        .chat-msg { max-width:80%; padding:8px 12px; border-radius:10px; font-size:0.85rem; line-height:1.55; word-break:break-word; }
-        .chat-msg.user { align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:3px; }
-        .chat-msg.assistant { align-self:flex-start; background:var(--bg); color:var(--text); border-bottom-left-radius:3px; }
-        .chat-msg .msg-meta { font-size:0.65rem; color:var(--text-muted); margin-top:4px; }
-        .chat-msg.user .msg-meta { color:rgba(255,255,255,0.7); }
-        .chat-modal-footer { display:flex; gap:8px; padding:12px 18px; border-top:1px solid var(--border); }
-        .chat-modal-footer textarea { flex:1; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:0.85rem; resize:none; font-family:inherit; outline:none; min-height:44px; max-height:100px; }
-        .chat-modal-footer textarea:focus { border-color:var(--primary); }
-        .chat-modal-footer button { background:var(--primary); color:#fff; border:none; border-radius:10px; padding:0 18px; font-weight:600; cursor:pointer; font-size:0.85rem; white-space:nowrap; }
-        .chat-modal-footer button:disabled { opacity:0.5; cursor:not-allowed; }
-        .chat-typing { align-self:flex-start; font-size:0.78rem; color:var(--text-muted); padding:6px 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title data-i18n="page_title">AI Nexus - 大模型广场</title>
+<style>
+:root{--bg:#0a0a0f;--bg2:#111118;--bgc:#161622;--bgch:#1c1c2e;--bd:#1e1e35;--bda:#333366;--t1:#e8e8f0;--t2:#a0a0b8;--t3:#6a6a82;--ap:#8b5cf6;--ab:#3b82f6;--ac:#06b6d4;--apk:#ec4899;--ag:#10b981;--ao:#f59e0b;--ar:#ef4444;--g1:linear-gradient(135deg,#8b5cf6,#3b82f6);--r:12px;--rl:16px;--tt:0.25s cubic-bezier(0.4,0,0.2,1);--fm:"SF Mono","Fira Code",monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}
 
-        /* Balance display in hero */
-        .hero-balance {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255,255,255,0.18);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 24px;
-            padding: 6px 18px;
-            margin-top: 10px;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-        .hero-balance .bal-amount {
-            font-size: 1.05rem;
-        }
-        .hero-balance .bal-label {
-            opacity: 0.7;
-            font-weight: 400;
-            font-size: 0.78rem;
-        }
-        /* Test All button */
-        .btn-test-all {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 18px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            font-family: inherit;
-        }
-        .btn-test-all:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-test-all:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .test-progress {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        .test-progress.show { display: flex; }
-        .test-progress-bar {
-            width: 120px;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .test-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-        /* Model play button */
-        .model-btn-play {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 34px;
-            height: 34px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            background: white;
-            color: var(--text);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            flex-shrink: 0;
-        }
-        .model-btn-play:hover {
-            background: #ecfdf5;
-            border-color: #10b981;
-            color: #10b981;
-        }
-        .model-btn-play.testing {
-            animation: pulse 1s infinite;
-            border-color: #f59e0b;
-            color: #f59e0b;
-            cursor: wait;
-        }
-        @keyframes pulse {
-            0%,100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        /* Status dot */
-        .model-status-dot {
-            position: relative;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border);
-            flex-shrink: 0;
-            cursor: help;
-        }
-        .model-status-dot.green { background: #10b981; }
-        .model-status-dot.red { background: #ef4444; }
-        .model-status-dot .status-tooltip {
-            display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: #fff;
-            font-size: 0.72rem;
-            padding: 5px 10px;
-            border-radius: 6px;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 100;
-        }
-        .model-status-dot:hover .status-tooltip { display: block; }
+/* Header */
+.nb{position:sticky;top:0;z-index:1000;background:rgba(10,10,18,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--bd)}
+.ni{max-width:1500px;margin:0 auto;padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:58px;gap:4px}
+.nl{cursor:pointer;font-weight:800;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;gap:7px;text-decoration:none}
+.nl .li{width:32px;height:32px;border-radius:9px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff}
+.nl span{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nls{display:flex;align-items:center;gap:1px;list-style:none;flex:1;justify-content:center;overflow-x:auto;scrollbar-width:none}
+.nls::-webkit-scrollbar{display:none}
+.nls a{text-decoration:none;color:var(--t2);padding:6px 9px;border-radius:16px;font-size:.73rem;font-weight:500;transition:var(--tt);cursor:pointer;white-space:nowrap}
+.nls a:hover,.nls a.active{color:#fff;background:rgba(255,255,255,.05)}
+.nls a.active{color:var(--ap);font-weight:700}
+.na{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.lb{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:18px;background:transparent;border:1px solid var(--bd);color:#fff;font-size:.85rem;cursor:pointer;transition:var(--tt)}
+.lb:hover{border-color:var(--bda);color:#fff;background:rgba(255,255,255,.04)}
+.clang-text{background:linear-gradient(135deg,#06b6d4,#10b981,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700}
+.lm{display:none;position:absolute;top:115%;right:0;background:var(--bgc);border:1px solid var(--bda);border-radius:14px;padding:6px;min-width:210px;max-height:380px;overflow-y:auto;z-index:100;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+.lm.show{display:block}
+.lmi{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:10px;font-size:.85rem;cursor:pointer;color:var(--t2);transition:var(--tt)}
+.lmi:hover,.lmi.ac{background:rgba(139,92,246,.18);color:#fff}
+.lmi-f{font-size:1.3rem;line-height:1;flex-shrink:0}
+.ld{position:relative}
 
-    </style>
+/* Hero */
+.hero{background:linear-gradient(160deg,#0a0a1a,#1a0a2e 30%,#0a1a2e 60%,#0a0a1a);border-radius:20px;padding:32px 24px;margin:18px 18px;border:1px solid var(--bd);text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(139,92,246,.08),transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(6,182,212,.06),transparent 60%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:2rem;font-weight:900;letter-spacing:-1px;line-height:1.15;margin-bottom:6px;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .sub{font-size:.95rem;color:var(--t2);margin-bottom:10px}
+.hero .price{display:inline-block;padding:4px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:16px;font-size:.78rem;color:var(--ap);font-weight:600}
+.hero .endpoint{display:inline-block;margin-top:8px;font-size:.75rem;color:var(--t3);font-family:var(--fm)}
+
+/* Container */
+.container{max-width:1500px;margin:0 auto;padding:0 18px 36px}
+
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.search-box{position:relative;min-width:220px}
+.search-box input{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--bd);border-radius:20px;font-size:.85rem;background:var(--bgc);color:var(--t1);transition:all .2s;outline:none}
+.search-box input:focus{border-color:var(--ap)}
+.search-box .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:.9rem}
+.group-tabs{display:flex;gap:4px;background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:3px}
+.group-tab{padding:7px 16px;border:none;border-radius:8px;background:transparent;color:var(--t2);cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;white-space:nowrap;font-family:inherit}
+.group-tab:hover{color:var(--t1);background:var(--bg2)}
+.group-tab.active{background:var(--ap);color:#fff}
+.stats-bar{color:var(--t2);font-size:.85rem;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.stats-bar .count{font-weight:600;color:var(--ap)}
+.group-section{margin-bottom:28px}
+.group-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.group-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.group-title{font-size:1.05rem;font-weight:600;color:var(--t1)}
+.group-count{font-size:.78rem;color:var(--t3);background:var(--bg2);padding:2px 10px;border-radius:10px}
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+
+/* Model Card */
+.mcard{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--rl);padding:16px;transition:var(--tt);display:flex;flex-direction:column;gap:10px}
+.mcard:hover{border-color:var(--bda);box-shadow:0 4px 20px rgba(139,92,246,.1)}
+.mcard.hidden{display:none}
+.mtop{display:flex;align-items:flex-start;gap:10px}
+.micon{font-size:1.3rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,.12);border-radius:var(--r);flex-shrink:0}
+.mname-row{flex:1;min-width:0}
+.mname{font-size:.88rem;font-weight:600;color:var(--t1);word-break:break-all;line-height:1.3}
+.mmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.mbadge{font-size:.68rem;padding:2px 8px;border-radius:8px;font-weight:500;white-space:nowrap}
+.badge-type{background:rgba(139,92,246,.15);color:var(--ap)}
+.badge-provider{background:rgba(245,158,11,.12);color:var(--ao)}
+.badge-ac{background:rgba(236,72,153,.12);color:var(--apk)}
+.badge-endpoint{background:rgba(16,185,129,.12);color:var(--ag);font-family:var(--fm);font-size:.62rem}
+.mdesc{font-size:.78rem;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mfooter{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mprice{font-size:.8rem;font-weight:600;color:var(--ag);font-family:var(--fm)}
+.btn{padding:7px 14px;border-radius:18px;font-weight:600;font-size:.73rem;cursor:pointer;border:none;transition:var(--tt);font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.bg{background:var(--g1);color:#fff;box-shadow:0 4px 14px rgba(139,92,246,.3)}
+.bg:hover{box-shadow:0 6px 22px rgba(139,92,246,.45);transform:translateY(-1px)}
+.bd2{background:rgba(239,68,68,.15);color:var(--ar);border:1px solid rgba(239,68,68,.3)}
+.no-results{text-align:center;padding:60px;color:var(--t3);font-size:1rem}
+
+/* Modal */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center}
+.mo.show{display:flex}
+.mod{background:var(--bgc);border:1px solid var(--bda);border-radius:var(--rl);padding:24px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mod h3{font-size:1.1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.mod p{font-size:.82rem;color:var(--t2);margin-bottom:14px;line-height:1.6}
+.mod .amount-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.mod .amount-row input{flex:1;padding:10px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;color:var(--t1);font-size:.9rem;font-family:var(--fm);outline:none}
+.mod .amount-row input:focus{border-color:var(--ap)}
+.mod .amount-row span{color:var(--t2);font-size:.85rem;font-family:var(--fm)}
+.mod .ig{margin-bottom:14px}
+.ms-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;flex-shrink:0}
+.ms-ok{background:#22c55e;box-shadow:0 0 4px #22c55e}
+.ms-fail{background:#ef4444;box-shadow:0 0 4px #ef4444}
+.btn.sm{padding:6px 10px;font-size:.73rem;min-width:unset}
+.tst-icon{font-size:.75rem}
+.mod .btns{display:flex;gap:8px;justify-content:flex-end}
+.mod .btns button{padding:8px 18px;border-radius:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;font-size:.82rem}
+.mod .btn-confirm{background:var(--g1);color:#fff}
+.mod .btn-cancel{background:rgba(255,255,255,.05);color:var(--t2);border:1px solid var(--bd)}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--ag);color:#fff;padding:10px 20px;border-radius:20px;font-weight:600;font-size:.85rem;z-index:3000;box-shadow:0 8px 30px rgba(16,185,129,.3);display:none}
+.toast.show{display:block;animation:toastIn .3s ease}
+.toast.error{background:var(--ar);box-shadow:0 8px 30px rgba(239,68,68,.3)}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+footer{text-align:center;padding:30px;color:var(--t3);font-size:.78rem;border-top:1px solid var(--bd);margin-top:30px}
+
+@media(max-width:768px){
+.hero h1{font-size:1.3rem}
+.model-grid{grid-template-columns:1fr}
+.toolbar{flex-direction:column;align-items:stretch}
+.group-tabs{overflow-x:auto}
+.nls{display:none}
+}
+</style>
 </head>
 <body>
-    <header id="header-placeholder"></header>
-    <div class="chat-overlay" id="chat-overlay">
-        <div class="chat-modal">
-            <div class="chat-modal-header">
-                <span class="chat-modal-title" id="chat-modal-title">Chat</span>
-                <button class="chat-modal-close" onclick="closeChat()">&times;</button>
-            </div>
-            <div class="chat-modal-body" id="chat-modal-body"></div>
-            <div class="chat-modal-footer">
-                <textarea id="chat-modal-input" rows="1" placeholder="输入消息..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
-                <button id="chat-modal-send" onclick="sendChatMsg()">发送</button>
-            </div>
-        </div>
-    </div>
-    <section class="hero">
-        <div class="container">
-            <h1 data-i18n="title">AI联盟 - 大模型广场</h1>
-            <p class="subtitle" data-i18n="hero_subtitle">35 个大模型 · 8 家顶级 AI 厂商 · OpenAI 兼容 API</p>
-        <div class="hero-balance" id="hero-balance">
-            <span class="bal-label">法币余额</span>
-            <span class="bal-amount" id="bal-amount">--</span>
-            <span>CNY</span>
-        </div>
-            </div>
-    </section>
-    <main class="container">
-        <div class="toolbar">
-            <div class="toolbar-left">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" placeholder="搜索模型名称..." data-i18n-search="search_placeholder">
-                </div>
-                <div class="group-tabs" id="group-tabs">
-                    <button class="group-tab active" data-group="provider" data-i18n="tab_provider">按提供商</button>
-                    <button class="group-tab" data-group="type" data-i18n="tab_type">按类型</button>
-                    <button class="group-tab" data-group="series" data-i18n="tab_series">按系列</button>
-                    <button class="group-tab" data-group="owned_by" data-i18n="tab_owned_by">按归属</button>
-                    <button class="group-tab" data-group="endpoint" data-i18n="tab_endpoint">按端点</button>
-                </div>
-            </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
-            <div class="test-progress" id="test-progress">
-                <span id="test-progress-text">0/35</span>
-                <div class="test-progress-bar"><div class="test-progress-fill" id="test-progress-fill" style="width:0%"></div></div>
-                <span id="test-progress-result"></span>
-            </div>
-            <button class="btn-test-all" id="btn-test-all" onclick="testAll()">&#9654; Test All 35</button>
-        </div>
-        </div>
-        <div class="stats-bar" id="stats-bar">
-            共 <span class="count">35</span> 个模型
-        </div>
-        <div id="models-container"></div>
-    </main>
-    <footer>
-        <p data-i18n="footer_text">&copy; 2026 THHT Cloud</p>
-    </footer>
-    <script>
-        var LANG = {"zh": {"title": "AI联盟 - 大模型广场", "hero_subtitle": "35 个大模型 · 8 家顶级 AI 厂商 · OpenAI 兼容 API", "start_chat":"开始对话","chat_thinking":"思考中...","chat_error":"错误","chat_timeout":"请求超时", "model_count": "共 {0} 个大模型", "group_by": "分组方式", "tab_provider": "按提供商", "tab_type": "按类型", "tab_series": "按系列", "tab_owned_by": "按归属", "tab_endpoint": "按端点", "search_placeholder": "搜索模型名称...", "provider": "提供商", "endpoint": "端点", "all": "全部", "chat": "对话", "code": "代码", "image/video": "图像/视频", "embedding": "嵌入","endpoint_label":"端点","no_results":"未找到匹配的模型","footer_text":"© 2026 AI联盟 THHT Cloud · 8 提供商 · 35 个模型 · OpenAI 兼容","model_count_full":"{count} 个模型","chat_label":"对话模型","code_label":"代码模型","image_video_label":"图像/视频生成","embedding_label":"嵌入模型","openai_standard":"Open AI 标准模型","advanced_custom":"Advanced Custom 模型","openai_endpoint_l":"OpenAI 兼容端点 (/v1)","openai_response_l":"OpenAI Response 端点","provider_label":"按提供商","type_label":"按类型","series_label":"按系列","owned_by_label":"按归属","endpoint_label_tab":"按端点"}, "en": {"title": "THHT Cloud - AI Model Hub", "hero_subtitle": "35 Models · 8 Top AI Providers · OpenAI Compatible API", "start_chat":"Start Chat","chat_thinking":"Thinking...","chat_error":"Error","chat_timeout":"Request timeout", "model_count": "{0} models", "group_by": "Group by", "tab_provider": "Provider", "tab_type": "Type", "tab_series": "Series", "tab_owned_by": "Owner", "tab_endpoint": "Endpoint", "search_placeholder": "Search model name...", "provider": "Provider", "endpoint": "Endpoint", "all": "All", "chat": "Chat", "code": "Code", "image/video": "Image/Video", "embedding": "Embedding","endpoint_label":"Endpoint","no_results":"No matching models found","footer_text":"© 2026 THHT Cloud · 8 Providers · 35 Models · OpenAI Compatible","model_count_full":"{count} models","chat_label":"Chat","code_label":"Code","image_video_label":"Image/Video","embedding_label":"Embedding","openai_standard":"Open AI Standard","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Compatible (/v1)","openai_response_l":"OpenAI Response","provider_label":"Provider","type_label":"Type","series_label":"Series","owned_by_label":"Owner","endpoint_label_tab":"Endpoint"}, "zh-TW": { "start_chat":"開始對話","chat_thinking":"思考中...","chat_error":"錯誤","chat_timeout":"請求逾時", "title": "天鴻智算 - 大模型廣場", "hero_subtitle": "35 個大模型 · 8 家頂級 AI 廠商 · OpenAI 相容 API", "model_count": "共 {0} 個大模型", "group_by": "分組方式", "tab_provider": "按提供商", "tab_type": "按類型", "tab_series": "按系列", "tab_owned_by": "按歸屬", "tab_endpoint": "按端點", "search_placeholder": "搜尋模型名稱...", "provider": "提供商", "endpoint": "端點", "all": "全部", "chat": "對話", "code": "程式碼", "image/video": "圖像/影片", "embedding": "嵌入","endpoint_label":"端點","no_results":"未找到匹配的模型","footer_text":"© 2026 天鴻智算 THHT Cloud · 8 提供商 · 35 個模型 · OpenAI 相容","model_count_full":"{count} 個模型","chat_label":"對話模型","code_label":"程式碼模型","image_video_label":"圖像/影片生成","embedding_label":"嵌入模型","openai_standard":"Open AI 標準模型","advanced_custom":"Advanced Custom 模型","openai_endpoint_l":"OpenAI 相容端點 (/v1)","openai_response_l":"OpenAI Response 端點","provider_label":"按提供商","type_label":"按類型","series_label":"按系列","owned_by_label":"按歸屬","endpoint_label_tab":"按端點"}, "ja": { "start_chat":"会話開始","chat_thinking":"考え中...","chat_error":"エラー","chat_timeout":"リクエストタイムアウト", "title": "THHT Cloud - AIモデルハブ", "hero_subtitle": "35モデル · 8社のトップAIプロバイダ · OpenAI互換API", "model_count": "{0}モデル", "group_by": "グループ分け", "tab_provider": "プロバイダ別", "tab_type": "タイプ別", "tab_series": "シリーズ別", "tab_owned_by": "所有者別", "tab_endpoint": "エンドポイント別", "search_placeholder": "モデル名を検索...", "provider": "プロバイダ", "endpoint": "エンドポイント", "all": "全て", "chat": "チャット", "code": "コード", "image/video": "画像/動画", "embedding": "埋め込み","endpoint_label":"エンドポイント","no_results":"一致するモデルが見つかりません","footer_text":"© 2026 THHT Cloud · 8プロバイダ · 35モデル · OpenAI互換","model_count_full":"{count}モデル","chat_label":"チャット","code_label":"コード","image_video_label":"画像/動画","embedding_label":"埋め込み","openai_standard":"Open AI標準","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI互換 (/v1)","openai_response_l":"OpenAI Response","provider_label":"プロバイダ","type_label":"タイプ","series_label":"シリーズ","owned_by_label":"所有者","endpoint_label_tab":"エンドポイント"}, "ko": { "start_chat":"대화 시작","chat_thinking":"생각 중...","chat_error":"오류","chat_timeout":"요청 시간 초과", "title": "THHT Cloud - AI 모델 허브", "hero_subtitle": "35개 모델 · 8개 최고 AI 제공업체 · OpenAI 호환 API", "model_count": "{0}개 모델", "group_by": "그룹화", "tab_provider": "제공자별", "tab_type": "유형별", "tab_series": "시리즈별", "tab_owned_by": "소유자별", "tab_endpoint": "엔드포인트별", "search_placeholder": "모델명 검색...", "provider": "제공자", "endpoint": "엔드포인트", "all": "전체", "chat": "채팅", "code": "코드", "image/video": "이미지/비디오", "embedding": "임베딩","endpoint_label":"엔드포인트","no_results":"일치하는 모델이 없습니다","footer_text":"© 2026 THHT Cloud · 8 제공자 · 35 모델 · OpenAI 호환","model_count_full":"{count}개 모델","chat_label":"채팅","code_label":"코드","image_video_label":"이미지/비디오","embedding_label":"임베딩","openai_standard":"Open AI 표준","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI 호환 (/v1)","openai_response_l":"OpenAI Response","provider_label":"제공자","type_label":"유형","series_label":"시리즈","owned_by_label":"소유자","endpoint_label_tab":"엔드포인트"}, "fr": { "start_chat":"Démarrer Chat","chat_thinking":"Réflexion...","chat_error":"Erreur","chat_timeout":"Délai dépassé", "title": "THHT Cloud - Hub Modèles IA", "hero_subtitle": "35 modèles · 8 fournisseurs IA de premier plan · API compatible OpenAI", "model_count": "{0} modèles", "group_by": "Grouper par", "tab_provider": "Fournisseur", "tab_type": "Type", "tab_series": "Série", "tab_owned_by": "Propriétaire", "tab_endpoint": "Endpoint", "search_placeholder": "Rechercher un modèle...", "provider": "Fournisseur", "endpoint": "Endpoint", "all": "Tout", "chat": "Chat", "code": "Code", "image/video": "Image/Vidéo", "embedding": "Embedding","endpoint_label":"Endpoint","no_results":"Aucun modèle trouvé","footer_text":"© 2026 THHT Cloud · 8 fournisseurs · 35 modèles · Compatible OpenAI","model_count_full":"{count} modèles","chat_label":"Chat","code_label":"Code","image_video_label":"Image/Vidéo","embedding_label":"Embedding","openai_standard":"Open AI Standard","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Compatible (/v1)","openai_response_l":"OpenAI Response","provider_label":"Fournisseur","type_label":"Type","series_label":"Série","owned_by_label":"Propriétaire","endpoint_label_tab":"Endpoint"}, "de": { "start_chat":"Chat starten","chat_thinking":"Denkt nach...","chat_error":"Fehler","chat_timeout":"Zeitüberschreitung", "title": "THHT Cloud - KI-Modell-Hub", "hero_subtitle": "35 Modelle · 8 führende KI-Anbieter · OpenAI-kompatible API", "model_count": "{0} Modelle", "group_by": "Gruppieren", "tab_provider": "Anbieter", "tab_type": "Typ", "tab_series": "Serie", "tab_owned_by": "Besitzer", "tab_endpoint": "Endpunkt", "search_placeholder": "Modell suchen...", "provider": "Anbieter", "endpoint": "Endpunkt", "all": "Alle", "chat": "Chat", "code": "Code", "image/video": "Bild/Video", "embedding": "Embedding","endpoint_label":"Endpunkt","no_results":"Keine passenden Modelle","footer_text":"© 2026 THHT Cloud · 8 Anbieter · 35 Modelle · OpenAI-kompatibel","model_count_full":"{count} Modelle","chat_label":"Chat","code_label":"Code","image_video_label":"Bild/Video","embedding_label":"Embedding","openai_standard":"Open AI Standard","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI-kompatibel (/v1)","openai_response_l":"OpenAI Response","provider_label":"Anbieter","type_label":"Typ","series_label":"Serie","owned_by_label":"Besitzer","endpoint_label_tab":"Endpunkt"}, "es": { "start_chat":"Iniciar Chat","chat_thinking":"Pensando...","chat_error":"Error","chat_timeout":"Tiempo agotado", "title": "THHT Cloud - Hub Modelos IA", "hero_subtitle": "35 modelos · 8 proveedores IA líderes · API compatible OpenAI", "model_count": "{0} modelos", "group_by": "Agrupar por", "tab_provider": "Proveedor", "tab_type": "Tipo", "tab_series": "Serie", "tab_owned_by": "Propietario", "tab_endpoint": "Endpoint", "search_placeholder": "Buscar modelo...", "provider": "Proveedor", "endpoint": "Endpoint", "all": "Todo", "chat": "Chat", "code": "Código", "image/video": "Imagen/Video", "embedding": "Embedding","endpoint_label":"Endpoint","no_results":"No se encontraron modelos","footer_text":"© 2026 THHT Cloud · 8 proveedores · 35 modelos · Compatible OpenAI","model_count_full":"{count} modelos","chat_label":"Chat","code_label":"Código","image_video_label":"Imagen/Video","embedding_label":"Embedding","openai_standard":"Open AI Estándar","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Compatible (/v1)","openai_response_l":"OpenAI Response","provider_label":"Proveedor","type_label":"Tipo","series_label":"Serie","owned_by_label":"Propietario","endpoint_label_tab":"Endpoint"}, "pt": { "start_chat":"Iniciar Chat","chat_thinking":"Pensando...","chat_error":"Erro","chat_timeout":"Tempo esgotado", "title": "THHT Cloud - Hub Modelos IA", "hero_subtitle": "35 modelos · 8 provedores IA líderes · API compatível OpenAI", "model_count": "{0} modelos", "group_by": "Agrupar por", "tab_provider": "Provedor", "tab_type": "Tipo", "tab_series": "Série", "tab_owned_by": "Proprietário", "tab_endpoint": "Endpoint", "search_placeholder": "Buscar modelo...", "provider": "Provedor", "endpoint": "Endpoint", "all": "Todos", "chat": "Chat", "code": "Código", "image/video": "Imagem/Vídeo", "embedding": "Embedding","endpoint_label":"Endpoint","no_results":"Nenhum modelo encontrado","footer_text":"© 2026 THHT Cloud · 8 provedores · 35 modelos · Compatível OpenAI","model_count_full":"{count} modelos","chat_label":"Chat","code_label":"Código","image_video_label":"Imagem/Vídeo","embedding_label":"Embedding","openai_standard":"Open AI Padrão","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Compatível (/v1)","openai_response_l":"OpenAI Response","provider_label":"Provedor","type_label":"Tipo","series_label":"Série","owned_by_label":"Proprietário","endpoint_label_tab":"Endpoint"}, "ru": { "start_chat":"Начать диалог","chat_thinking":"Думаю...","chat_error":"Ошибка","chat_timeout":"Тайм-аут", "title": "THHT Cloud - Хаб ИИ-моделей", "hero_subtitle": "35 моделей · 8 ведущих ИИ-провайдеров · API, совместимый с OpenAI", "model_count": "{0} моделей", "group_by": "Группировка", "tab_provider": "Провайдер", "tab_type": "Тип", "tab_series": "Серия", "tab_owned_by": "Владелец", "tab_endpoint": "Эндпоинт", "search_placeholder": "Поиск модели...", "provider": "Провайдер", "endpoint": "Эндпоинт", "all": "Все", "chat": "Чат", "code": "Код", "image/video": "Изобр./Видео", "embedding": "Эмбеддинг","endpoint_label":"Эндпоинт","no_results":"Модели не найдены","footer_text":"© 2026 THHT Cloud · 8 провайдеров · 35 моделей · Совместимость OpenAI","model_count_full":"{count} моделей","chat_label":"Чат","code_label":"Код","image_video_label":"Изобр./Видео","embedding_label":"Эмбеддинг","openai_standard":"Open AI Стандарт","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Совместимый (/v1)","openai_response_l":"OpenAI Response","provider_label":"Провайдер","type_label":"Тип","series_label":"Серия","owned_by_label":"Владелец","endpoint_label_tab":"Эндпоинт"}, "ar": { "start_chat":"بدء المحادثة","chat_thinking":"يفكر...","chat_error":"خطأ","chat_timeout":"انتهت المهلة", "title": "THHT Cloud - منصة النماذج", "hero_subtitle": "35 نموذجًا · 8 من أفضل مزودي الذكاء الاصطناعي · API متوافق مع OpenAI", "model_count": "{0} نموذج", "group_by": "تجميع حسب", "tab_provider": "المزود", "tab_type": "النوع", "tab_series": "السلسلة", "tab_owned_by": "المالك", "tab_endpoint": "نقطة النهاية", "search_placeholder": "بحث عن نموذج...", "provider": "المزود", "endpoint": "نقطة النهاية", "all": "الكل", "chat": "محادثة", "code": "كود", "image/video": "صورة/فيديو", "embedding": "تضمين","endpoint_label":"نقطة النهاية","no_results":"لم يتم العثور على نماذج","footer_text":"© 2026 THHT Cloud · 8 مزودين · 35 نموذج · متوافق OpenAI","model_count_full":"{count} نموذج","chat_label":"محادثة","code_label":"كود","image_video_label":"صورة/فيديو","embedding_label":"تضمين","openai_standard":"Open AI قياسي","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI متوافق (/v1)","openai_response_l":"OpenAI Response","provider_label":"المزود","type_label":"النوع","series_label":"السلسلة","owned_by_label":"المالك","endpoint_label_tab":"نقطة النهاية"}, "hi": { "start_chat":"चैट शुरू करें","chat_thinking":"सोच रहा है...","chat_error":"त्रुटि","chat_timeout":"अनुरोध का समय समाप्त", "title": "THHT Cloud - AI मॉडल हब", "hero_subtitle": "35 मॉडल · 8 शीर्ष AI प्रदाता · OpenAI संगत API", "model_count": "{0} मॉडल", "group_by": "समूहीकरण", "tab_provider": "प्रदाता", "tab_type": "प्रकार", "tab_series": "श्रृंखला", "tab_owned_by": "स्वामी", "tab_endpoint": "एंडपॉइंट", "search_placeholder": "मॉडल खोजें...", "provider": "प्रदाता", "endpoint": "एंडपॉइंट", "all": "सभी", "chat": "चैट", "code": "कोड", "image/video": "छवि/वीडियो", "embedding": "एम्बेडिंग","endpoint_label":"एंडपॉइंट","no_results":"कोई मॉडल नहीं मिला","footer_text":"© 2026 THHT Cloud · 8 प्रदाता · 35 मॉडल · OpenAI संगत","model_count_full":"{count} मॉडल","chat_label":"चैट","code_label":"कोड","image_video_label":"छवि/वीडियो","embedding_label":"एम्बेडिंग","openai_standard":"Open AI मानक","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI संगत (/v1)","openai_response_l":"OpenAI Response","provider_label":"प्रदाता","type_label":"प्रकार","series_label":"श्रृंखला","owned_by_label":"स्वामी","endpoint_label_tab":"एंडपॉइंट"}, "th": { "start_chat":"เริ่มแชท","chat_thinking":"กำลังคิด...","chat_error":"ข้อผิดพลาด","chat_timeout":"หมดเวลาคำขอ", "title": "THHT Cloud - ศูนย์รวมโมเดล AI", "hero_subtitle": "35 โมเดล · 8 ผู้ให้บริการ AI ชั้นนำ · API ที่เข้ากันได้กับ OpenAI", "model_count": "{0} โมเดล", "group_by": "จัดกลุ่มตาม", "tab_provider": "ผู้ให้บริการ", "tab_type": "ประเภท", "tab_series": "ซีรีส์", "tab_owned_by": "เจ้าของ", "tab_endpoint": "ปลายทาง", "search_placeholder": "ค้นหาชื่อโมเดล...", "provider": "ผู้ให้บริการ", "endpoint": "ปลายทาง", "all": "ทั้งหมด", "chat": "แชท", "code": "โค้ด", "image/video": "รูป/วิดีโอ", "embedding": "ฝังตัว","endpoint_label":"ปลายทาง","no_results":"ไม่พบโมเดลที่ตรงกัน","footer_text":"© 2026 THHT Cloud · 8 ผู้ให้บริการ · 35 โมเดล · เข้ากันได้ OpenAI","model_count_full":"{count} โมเดล","chat_label":"แชท","code_label":"โค้ด","image_video_label":"รูป/วิดีโอ","embedding_label":"ฝังตัว","openai_standard":"Open AI มาตรฐาน","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI เข้ากันได้ (/v1)","openai_response_l":"OpenAI Response","provider_label":"ผู้ให้บริการ","type_label":"ประเภท","series_label":"ซีรีส์","owned_by_label":"เจ้าของ","endpoint_label_tab":"ปลายทาง"}, "vi": { "start_chat":"Bắt đầu trò chuyện","chat_thinking":"Đang suy nghĩ...","chat_error":"Lỗi","chat_timeout":"Hết thời gian", "title": "THHT Cloud - Trung Tâm Mô Hình AI", "hero_subtitle": "35 mô hình · 8 nhà cung cấp AI hàng đầu · API tương thích OpenAI", "model_count": "{0} mô hình", "group_by": "Nhóm theo", "tab_provider": "Nhà cung cấp", "tab_type": "Loại", "tab_series": "Dòng", "tab_owned_by": "Chủ sở hữu", "tab_endpoint": "Điểm cuối", "search_placeholder": "Tìm kiếm mô hình...", "provider": "Nhà cung cấp", "endpoint": "Điểm cuối", "all": "Tất cả", "chat": "Trò chuyện", "code": "Mã", "image/video": "Ảnh/Video", "embedding": "Nhúng","endpoint_label":"Điểm cuối","no_results":"Không tìm thấy mô hình","footer_text":"© 2026 THHT Cloud · 8 nhà cung cấp · 35 mô hình · Tương thích OpenAI","model_count_full":"{count} mô hình","chat_label":"Trò chuyện","code_label":"Mã","image_video_label":"Ảnh/Video","embedding_label":"Nhúng","openai_standard":"Open AI Tiêu chuẩn","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Tương thích (/v1)","openai_response_l":"OpenAI Response","provider_label":"Nhà cung cấp","type_label":"Loại","series_label":"Dòng","owned_by_label":"Chủ sở hữu","endpoint_label_tab":"Điểm cuối"}, "it": { "start_chat":"Inizia Chat","chat_thinking":"Pensando...","chat_error":"Errore","chat_timeout":"Timeout richiesta", "title": "THHT Cloud - Hub Modelli IA", "hero_subtitle": "35 modelli · 8 fornitori IA di primo piano · API compatibile OpenAI", "model_count": "{0} modelli", "group_by": "Raggruppa per", "tab_provider": "Fornitore", "tab_type": "Tipo", "tab_series": "Serie", "tab_owned_by": "Proprietario", "tab_endpoint": "Endpoint", "search_placeholder": "Cerca modello...", "provider": "Fornitore", "endpoint": "Endpoint", "all": "Tutti", "chat": "Chat", "code": "Codice", "image/video": "Imm./Video", "embedding": "Embedding","endpoint_label":"Endpoint","no_results":"Nessun modello trovato","footer_text":"© 2026 THHT Cloud · 8 fornitori · 35 modelli · Compatibile OpenAI","model_count_full":"{count} modelli","chat_label":"Chat","code_label":"Codice","image_video_label":"Imm./Video","embedding_label":"Embedding","openai_standard":"Open AI Standard","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Compatibile (/v1)","openai_response_l":"OpenAI Response","provider_label":"Fornitore","type_label":"Tipo","series_label":"Serie","owned_by_label":"Proprietario","endpoint_label_tab":"Endpoint"}, "tr": { "start_chat":"Start Chat","chat_thinking":"Düşünüyor...","chat_error":"Hata","chat_timeout":"İstek zaman aşımı", "title": "THHT Cloud - Yapay Zeka Model Merkezi", "model_count": "{0} model", "group_by": "Gruplandır", "tab_provider": "Sağlayıcı", "tab_type": "Tür", "tab_series": "Seri", "tab_owned_by": "Sahip", "tab_endpoint": "Uç Nokta", "search_placeholder": "Model ara...", "provider": "Sağlayıcı", "endpoint": "Uç Nokta", "all": "Tümü", "chat": "Sohbet", "code": "Kod", "image/video": "Görsel/Video", "embedding": "Gömme","endpoint_label":"Uç Nokta","no_results":"Eşleşen model bulunamadı","footer_text":"© 2026 THHT Cloud · 8 sağlayıcı · 35 model · OpenAI Uyumlu","model_count_full":"{count} model","chat_label":"Sohbet","code_label":"Kod","image_video_label":"Görsel/Video","embedding_label":"Gömme","openai_standard":"Open AI Standart","advanced_custom":"Advanced Custom","openai_endpoint_l":"OpenAI Uyumlu (/v1)","openai_response_l":"OpenAI Response","provider_label":"Sağlayıcı","type_label":"Tür","series_label":"Seri","owned_by_label":"Sahip","endpoint_label_tab":"Uç Nokta"}};
-        var GROUPINGS = {"provider": {"label": "按提供商", "groups": {"Anthropic": {"label": "Anthropic", "count": 4, "models": ["claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-sonnet-4-6"]}, "DeepSeek": {"label": "DeepSeek", "count": 2, "models": ["deepseek-v4-flash", "deepseek-v4-pro"]}, "ByteDance(豆包)": {"label": "ByteDance(豆包)", "count": 7, "models": ["doubao-1-5-pro-32k-character-250715", "doubao-seed-2-0-code-preview-260215", "doubao-seed-2-0-lite-260215", "doubao-seedance-1-5-pro-251215", "doubao-seedance-2-0-260128", "doubao-seedream-4.5", "doubao-seedream-5-0-260128"]}, "Google": {"label": "Google", "count": 5, "models": ["gemini-2.5-pro", "gemini-3-pro-image", "gemini-3.1-flash-image", "gemini-3.1-flash-image-preview", "gemini-3.1-pro-preview"]}, "ZhipuAI(智谱)": {"label": "ZhipuAI(智谱)", "count": 2, "models": ["glm-5.1", "glm-5.2"]}, "OpenAI": {"label": "OpenAI", "count": 12, "models": ["gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.3-codex", "gpt-5.4", "gpt-5.4-nano", "gpt-5.5", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-image-2", "text-embedding-3-large", "text-embedding-ada-002"]}, "Kuaishou(快手)": {"label": "Kuaishou(快手)", "count": 1, "models": ["kling-v3-omni"]}, "Alibaba(阿里)": {"label": "Alibaba(阿里)", "count": 2, "models": ["qwen3.5-plus", "qwen3.6-plus"]}}}, "type": {"label": "按类型", "groups": {"chat": {"label": "对话模型", "count": 22, "models": ["claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-sonnet-4-6", "deepseek-v4-flash", "deepseek-v4-pro", "doubao-1-5-pro-32k-character-250715", "doubao-seed-2-0-lite-260215", "gemini-2.5-pro", "gemini-3.1-pro-preview", "glm-5.1", "glm-5.2", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.4", "gpt-5.4-nano", "gpt-5.5", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "qwen3.5-plus", "qwen3.6-plus"]}, "code": {"label": "代码模型", "count": 2, "models": ["doubao-seed-2-0-code-preview-260215", "gpt-5.3-codex"]}, "image/video": {"label": "图像/视频生成", "count": 9, "models": ["doubao-seedance-1-5-pro-251215", "doubao-seedance-2-0-260128", "doubao-seedream-4.5", "doubao-seedream-5-0-260128", "gemini-3-pro-image", "gemini-3.1-flash-image", "gemini-3.1-flash-image-preview", "gpt-image-2", "kling-v3-omni"]}, "embedding": {"label": "嵌入模型", "count": 2, "models": ["text-embedding-3-large", "text-embedding-ada-002"]}}}, "series": {"label": "按系列", "groups": {"claude-opus": {"label": "claude-opus", "count": 3, "models": ["claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8"]}, "claude-sonnet": {"label": "claude-sonnet", "count": 1, "models": ["claude-sonnet-4-6"]}, "deepseek-v4": {"label": "deepseek-v4", "count": 2, "models": ["deepseek-v4-flash", "deepseek-v4-pro"]}, "doubao-1.5": {"label": "doubao-1.5", "count": 1, "models": ["doubao-1-5-pro-32k-character-250715"]}, "doubao-seed-code": {"label": "doubao-seed-code", "count": 1, "models": ["doubao-seed-2-0-code-preview-260215"]}, "doubao-seed": {"label": "doubao-seed", "count": 1, "models": ["doubao-seed-2-0-lite-260215"]}, "doubao-seedance": {"label": "doubao-seedance", "count": 2, "models": ["doubao-seedance-1-5-pro-251215", "doubao-seedance-2-0-260128"]}, "doubao-seedream-4.5": {"label": "doubao-seedream-4.5", "count": 1, "models": ["doubao-seedream-4.5"]}, "doubao-seedream": {"label": "doubao-seedream", "count": 1, "models": ["doubao-seedream-5-0-260128"]}, "gemini-2.5": {"label": "gemini-2.5", "count": 1, "models": ["gemini-2.5-pro"]}, "gemini-3": {"label": "gemini-3", "count": 1, "models": ["gemini-3-pro-image"]}, "gemini-3.1": {"label": "gemini-3.1", "count": 3, "models": ["gemini-3.1-flash-image", "gemini-3.1-flash-image-preview", "gemini-3.1-pro-preview"]}, "glm-5.1": {"label": "glm-5.1", "count": 1, "models": ["glm-5.1"]}, "glm-5.2": {"label": "glm-5.2", "count": 1, "models": ["glm-5.2"]}, "gpt-4.1": {"label": "gpt-4.1", "count": 2, "models": ["gpt-4.1-mini", "gpt-4.1-nano"]}, "gpt-5.3": {"label": "gpt-5.3", "count": 1, "models": ["gpt-5.3-codex"]}, "gpt-5.4": {"label": "gpt-5.4", "count": 2, "models": ["gpt-5.4", "gpt-5.4-nano"]}, "gpt-5.5": {"label": "gpt-5.5", "count": 1, "models": ["gpt-5.5"]}, "gpt-5.6": {"label": "gpt-5.6", "count": 3, "models": ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]}, "gpt": {"label": "gpt", "count": 1, "models": ["gpt-image-2"]}, "kling-v3": {"label": "kling-v3", "count": 1, "models": ["kling-v3-omni"]}, "qwen3.5": {"label": "qwen3.5", "count": 1, "models": ["qwen3.5-plus"]}, "qwen3.6": {"label": "qwen3.6", "count": 1, "models": ["qwen3.6-plus"]}, "text-embedding": {"label": "text-embedding", "count": 1, "models": ["text-embedding-3-large"]}, "text-embedding-ada": {"label": "text-embedding-ada", "count": 1, "models": ["text-embedding-ada-002"]}}}, "owned_by": {"label": "按归属", "groups": {"openai": {"label": "Open AI 标准模型", "count": 32, "models": ["claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-sonnet-4-6", "deepseek-v4-flash", "deepseek-v4-pro", "doubao-1-5-pro-32k-character-250715", "doubao-seed-2-0-code-preview-260215", "doubao-seed-2-0-lite-260215", "doubao-seedance-1-5-pro-251215", "doubao-seedance-2-0-260128", "doubao-seedream-4.5", "doubao-seedream-5-0-260128", "gemini-2.5-pro", "gemini-3-pro-image", "gemini-3.1-flash-image", "gemini-3.1-flash-image-preview", "gemini-3.1-pro-preview", "glm-5.1", "glm-5.2", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.3-codex", "gpt-5.4", "gpt-5.4-nano", "gpt-5.5", "gpt-image-2", "kling-v3-omni", "qwen3.5-plus", "qwen3.6-plus", "text-embedding-3-large", "text-embedding-ada-002"]}, "advanced_custom": {"label": "Advanced Custom 模型", "count": 3, "models": ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]}}}, "endpoint": {"label": "按端点", "groups": {"openai": {"label": "OpenAI 兼容端点 (/v1)", "count": 35, "models": ["claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-sonnet-4-6", "deepseek-v4-flash", "deepseek-v4-pro", "doubao-1-5-pro-32k-character-250715", "doubao-seed-2-0-code-preview-260215", "doubao-seed-2-0-lite-260215", "doubao-seedance-1-5-pro-251215", "doubao-seedance-2-0-260128", "doubao-seedream-4.5", "doubao-seedream-5-0-260128", "gemini-2.5-pro", "gemini-3-pro-image", "gemini-3.1-flash-image", "gemini-3.1-flash-image-preview", "gemini-3.1-pro-preview", "glm-5.1", "glm-5.2", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.3-codex", "gpt-5.4", "gpt-5.4-nano", "gpt-5.5", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-image-2", "kling-v3-omni", "qwen3.5-plus", "qwen3.6-plus", "text-embedding-3-large", "text-embedding-ada-002"]}, "openai-response": {"label": "OpenAI Response 端点", "count": 3, "models": ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]}}}};
-        var MODELS = [{"id": "claude-opus-4-6", "object": "model", "owned_by": "openai", "provider": "Anthropic", "series": "claude-opus", "type": "chat", "description": "Anthropic Claude Opus 4.6 旗舰模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "claude-opus-4-7", "object": "model", "owned_by": "openai", "provider": "Anthropic", "series": "claude-opus", "type": "chat", "description": "Anthropic Claude Opus 4.7 旗舰模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "claude-opus-4-8", "object": "model", "owned_by": "openai", "provider": "Anthropic", "series": "claude-opus", "type": "chat", "description": "Anthropic Claude Opus 4.8 最新旗舰模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "claude-sonnet-4-6", "object": "model", "owned_by": "openai", "provider": "Anthropic", "series": "claude-sonnet", "type": "chat", "description": "Anthropic Claude Sonnet 4.6 轻量模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "deepseek-v4-flash", "object": "model", "owned_by": "openai", "provider": "DeepSeek", "series": "deepseek-v4", "type": "chat", "description": "DeepSeek V4 Flash 快速推理模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "deepseek-v4-pro", "object": "model", "owned_by": "openai", "provider": "DeepSeek", "series": "deepseek-v4", "type": "chat", "description": "DeepSeek V4 Pro 专业推理模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-1-5-pro-32k-character-250715", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-1.5", "type": "chat", "description": "豆包 1.5 Pro 32K 角色模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seed-2-0-code-preview-260215", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seed-code", "type": "code", "description": "豆包 Seed 2.0 代码预览版", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seed-2-0-lite-260215", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seed", "type": "chat", "description": "豆包 Seed 2.0 Lite 轻量版", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seedance-1-5-pro-251215", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seedance", "type": "image/video", "description": "豆包 Seedance 1.5 Pro 视频生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seedance-2-0-260128", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seedance", "type": "image/video", "description": "豆包 Seedance 2.0 视频生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seedream-4.5", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seedream-4.5", "type": "image/video", "description": "豆包 Seedream 4.5 图像生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "doubao-seedream-5-0-260128", "object": "model", "owned_by": "openai", "provider": "ByteDance(豆包)", "series": "doubao-seedream", "type": "image/video", "description": "豆包 Seedream 5.0 图像生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "gemini-2.5-pro", "object": "model", "owned_by": "openai", "provider": "Google", "series": "gemini-2.5", "type": "chat", "description": "Google Gemini 2.5 Pro", "endpoint": ["openai"], "created": 1626777600}, {"id": "gemini-3-pro-image", "object": "model", "owned_by": "openai", "provider": "Google", "series": "gemini-3", "type": "image/video", "description": "Google Gemini 3 Pro 图像生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "gemini-3.1-flash-image", "object": "model", "owned_by": "openai", "provider": "Google", "series": "gemini-3.1", "type": "image/video", "description": "Google Gemini 3.1 Flash 图像", "endpoint": ["openai"], "created": 1626777600}, {"id": "gemini-3.1-flash-image-preview", "object": "model", "owned_by": "openai", "provider": "Google", "series": "gemini-3.1", "type": "image/video", "description": "Google Gemini 3.1 Flash 图像预览", "endpoint": ["openai"], "created": 1626777600}, {"id": "gemini-3.1-pro-preview", "object": "model", "owned_by": "openai", "provider": "Google", "series": "gemini-3.1", "type": "chat", "description": "Google Gemini 3.1 Pro 预览版", "endpoint": ["openai"], "created": 1626777600}, {"id": "glm-5.1", "object": "model", "owned_by": "openai", "provider": "ZhipuAI(智谱)", "series": "glm-5.1", "type": "chat", "description": "智谱 GLM 5.1", "endpoint": ["openai"], "created": 1626777600}, {"id": "glm-5.2", "object": "model", "owned_by": "openai", "provider": "ZhipuAI(智谱)", "series": "glm-5.2", "type": "chat", "description": "智谱 GLM 5.2", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-4.1-mini", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-4.1", "type": "chat", "description": "OpenAI GPT-4.1 Mini", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-4.1-nano", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-4.1", "type": "chat", "description": "OpenAI GPT-4.1 Nano", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-5.3-codex", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-5.3", "type": "code", "description": "OpenAI GPT-5.3 Codex 代码模型", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-5.4", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-5.4", "type": "chat", "description": "OpenAI GPT-5.4", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-5.4-nano", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-5.4", "type": "chat", "description": "OpenAI GPT-5.4 Nano", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-5.5", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt-5.5", "type": "chat", "description": "OpenAI GPT-5.5", "endpoint": ["openai"], "created": 1626777600}, {"id": "gpt-5.6-luna", "object": "model", "owned_by": "advanced_custom", "provider": "OpenAI", "series": "gpt-5.6", "type": "chat", "description": "OpenAI GPT-5.6 Luna (OpenAI Response)", "endpoint": ["openai", "openai-response"], "created": 1626777600}, {"id": "gpt-5.6-sol", "object": "model", "owned_by": "advanced_custom", "provider": "OpenAI", "series": "gpt-5.6", "type": "chat", "description": "OpenAI GPT-5.6 Sol (OpenAI Response)", "endpoint": ["openai", "openai-response"], "created": 1626777600}, {"id": "gpt-5.6-terra", "object": "model", "owned_by": "advanced_custom", "provider": "OpenAI", "series": "gpt-5.6", "type": "chat", "description": "OpenAI GPT-5.6 Terra (OpenAI Response)", "endpoint": ["openai", "openai-response"], "created": 1626777600}, {"id": "gpt-image-2", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "gpt", "type": "image/video", "description": "OpenAI GPT Image 2 图像生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "kling-v3-omni", "object": "model", "owned_by": "openai", "provider": "Kuaishou(快手)", "series": "kling-v3", "type": "image/video", "description": "快手 Kling V3 Omni 视频生成", "endpoint": ["openai"], "created": 1626777600}, {"id": "qwen3.5-plus", "object": "model", "owned_by": "openai", "provider": "Alibaba(阿里)", "series": "qwen3.5", "type": "chat", "description": "阿里通义千问 Qwen 3.5 Plus", "endpoint": ["openai"], "created": 1626777600}, {"id": "qwen3.6-plus", "object": "model", "owned_by": "openai", "provider": "Alibaba(阿里)", "series": "qwen3.6", "type": "chat", "description": "阿里通义千问 Qwen 3.6 Plus", "endpoint": ["openai"], "created": 1626777600}, {"id": "text-embedding-3-large", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "text-embedding", "type": "embedding", "description": "OpenAI Text Embedding 3 Large", "endpoint": ["openai"], "created": 1626777600}, {"id": "text-embedding-ada-002", "object": "model", "owned_by": "openai", "provider": "OpenAI", "series": "text-embedding-ada", "type": "embedding", "description": "OpenAI Text Embedding Ada 002", "endpoint": ["openai"], "created": 1626777600}];
+<!-- Header -->
+<header class="nb">
+<div class="ni">
+<a class="nl" href="index.html"><div class="li">N</div><span>AI Nexus</span></a>
+<nav class="nls">
+<a href="index.html" data-i18n="nav_home">首页</a>
+<a href="index.html#page-forum" data-i18n="nav_forum">社区</a>
+<a href="index.html#page-member" data-i18n="nav_member">会员</a>
+<a href="index.html#page-promo" data-i18n="nav_apps">应用</a>
+<a href="ai-models.html" class="active" data-i18n="nav_models">大模型广场</a>
+</nav>
+<div class="na">
+<div class="ld">
+<button class="lb" onclick="document.querySelector('.lm').classList.toggle('show')"><span class="clang-text" id="cur-lang-flag"></span> <span id="cur-lang-name"></span></button>
+<div class="lm" id="lang-menu"></div>
+</div>
+</div>
+</div>
+</header>
 
-        var currentLang = (function(){
-            var s = localStorage.getItem('nexus_lang');
-            if (s && LANG[s]) return s;
-            var n = navigator.language || 'en';
-            if (LANG[n]) return n;
-            if (LANG[n.split('-')[0]]) return n.split('-')[0];
-            return 'zh';
-        })();
+<!-- Hero -->
+<section class="hero">
+<h1 data-i18n="page_title">AI Nexus - 大模型广场</h1>
+<p class="sub" data-i18n="hero_sub">35 个大模型 · 8 家顶级 AI 厂商 · OpenAI 兼容 API</p>
+<div class="price" data-i18n="price_info">统一计价：50万 tokens = 1 CNY</div>
+<div class="endpoint">api.thhtcloud.com/v1/chat/completions</div>
+<div class="bal" id="top-balance" style="margin-top:10px;font-size:.9rem;color:var(--ap);font-weight:600;">Balance: <span id="top-bal-val">0.00</span> CNY</div>
+</section>
 
-        var currentGroup = 'provider';
-        var searchQuery = '';
+<!-- Main -->
+<main class="container">
+<div class="toolbar">
+<div class="search-box"><span class="si">🔍</span><input type="text" id="search-input" data-i18n-placeholder="search_ph" placeholder="搜索模型名称..."></div>
+<div class="group-tabs" id="group-tabs">
+<button class="group-tab active" data-group="provider" data-i18n="tab_provider">按提供商</button>
+<button class="group-tab" data-group="type" data-i18n="tab_type">按类型</button>
+<button class="group-tab" data-group="series" data-i18n="tab_series">按系列</button>
+<button class="group-tab" data-group="owned_by" data-i18n="tab_owned">按归属</button>
+<button class="group-tab" data-group="endpoint" data-i18n="tab_endpoint">按端点</button>
+<button class="btn bg sm" onclick="testAllModels()" style="margin-left:auto;font-size:.73rem;padding:6px 14px">&#9654; Test All</button>
+</div>
+</div>
+<div class="stats-bar" id="stats-bar"><span data-i18n="total">共</span> <span class="count">35</span> <span data-i18n="models">个模型</span></div>
+<div id="models-container"></div>
+</main>
 
-        var typeIcons = {"chat": "💬", "code": "💻", "image/video": "🎨", "image": "🖼️", "video": "🎬", "embedding": "🔢", "multimodal": "🌐"};
+<footer><p>&copy; 2026 AI Nexus · 8 Providers · 35 Models · OpenAI Compatible</p></footer>
 
-        function t(key) {
-            return (LANG[currentLang] && LANG[currentLang][key]) || (LANG['en'] && LANG['en'][key]) || (LANG['zh'] && LANG['zh'][key]) || key;
-        }
+<!-- Call Modal -->
+<div class="mo" id="mo-call">
+<div class="mod">
+<h3>🤖 <span data-i18n="call_title">调用模型</span></h3>
+<p><span data-i18n="call_model">模型</span>: <strong id="call-model-name"></strong></p>
+<p data-i18n="call_desc">使用法币余额支付调用此模型。50万 tokens = 1 CNY。</p>
+<div class="ig"><textarea id="call-msg" rows="2" placeholder="输入消息，例如: 1+1等于几" style="width:100%;padding:8px 12px;border:1.5px solid var(--bd);border-radius:8px;background:var(--bgc);color:var(--t1);font-size:.85rem;resize:vertical;outline:none;font-family:inherit"></textarea></div>
+<div class="amount-row">
+<input type="number" id="call-amount" placeholder="10000" min="100" value="10000">
+<span data-i18n="tokens_unit">tokens</span>
+</div>
+<div style="font-size:.82rem;color:var(--t2);margin-bottom:14px" id="call-cost-display"></div>
+<div style="font-size:.78rem;color:var(--t3);margin-bottom:10px"><span data-i18n="balance_label">可用余额</span>: <span id="call-balance" style="color:var(--ag);font-family:var(--fm)">0.00</span> CNY</div>
+<div class="btns">
+<button class="btn-cancel" onclick="closeModal()" data-i18n="cancel">取消</button>
+<button class="btn-confirm" onclick="doCall()" data-i18n="confirm_call">确认调用</button>
+</div>
+</div>
+</div>
 
-        function applyI18n() {
-            document.querySelectorAll('[data-i18n]').forEach(function(el){
-                var key = el.getAttribute('data-i18n');
-                if (el.tagName === 'INPUT') {
-                    var sk = el.getAttribute('data-i18n-search');
-                    el.placeholder = t(sk || key);
-                } else {
-                    el.textContent = t(key);
-                }
-            });
-        }
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-        function renderModels() {
-            var container = document.getElementById('models-container');
-            var groups = GROUPINGS[currentGroup].groups;
-            var html = '';
-            var totalShown = 0;
+<script>
+// ======== LANG DATA (16 languages) ========
+var LANG = {
+"zh":{"page_title":"AI Nexus - 大模型广场","hero_sub":"35 个大模型 · 8 家顶级 AI 厂商 · OpenAI 兼容 API","price_info":"统一计价：50万 tokens = 1 CNY","search_ph":"搜索模型名称...","tab_provider":"按提供商","tab_type":"按类型","tab_series":"按系列","tab_owned":"按归属","tab_endpoint":"按端点","total":"共","models":"个模型","nav_home":"首页","nav_forum":"社区","nav_member":"会员","nav_apps":"应用","nav_models":"大模型广场","call_title":"调用模型","call_model":"模型","call_desc":"使用法币余额支付调用此模型。50万 tokens = 1 CNY。","tokens_unit":"tokens","balance_label":"可用余额","cancel":"取消","confirm_call":"确认调用","toast_insufficient":"余额不足，请先充值","toast_success":"调用成功！已扣除","toast_error":"调用失败","cost_label":"费用"},
+"en":{"page_title":"AI Nexus - AI Models","hero_sub":"35 Models · 8 Top AI Providers · OpenAI Compatible API","price_info":"Pricing: 500K tokens = 1 CNY","search_ph":"Search model...","tab_provider":"By Provider","tab_type":"By Type","tab_series":"By Series","tab_owned":"By Owner","tab_endpoint":"By Endpoint","total":"Total","models":"models","nav_home":"Home","nav_forum":"Forum","nav_member":"Member","nav_apps":"Apps","nav_models":"AI Models","call_title":"Call Model","call_model":"Model","call_desc":"Pay with fiat balance to call this model. 500K tokens = 1 CNY.","tokens_unit":"tokens","balance_label":"Balance","cancel":"Cancel","confirm_call":"Confirm Call","toast_insufficient":"Insufficient balance, please top up","toast_success":"Call success! Charged","toast_error":"Call failed","cost_label":"Cost"},
+"zh-TW":{"page_title":"AI Nexus - 大模型廣場","hero_sub":"35 個大模型 · 8 家頂級 AI 廠商 · OpenAI 兼容 API","price_info":"統一計價：50萬 tokens = 1 CNY","search_ph":"搜尋模型名稱...","tab_provider":"按提供商","tab_type":"按類型","tab_series":"按系列","tab_owned":"按歸屬","tab_endpoint":"按端點","total":"共","models":"個模型","nav_home":"首頁","nav_forum":"社群","nav_member":"會員","nav_apps":"應用","nav_models":"大模型廣場","call_title":"調用模型","call_model":"模型","call_desc":"使用法幣餘額支付調用此模型。50萬 tokens = 1 CNY。","tokens_unit":"tokens","balance_label":"可用餘額","cancel":"取消","confirm_call":"確認調用","toast_insufficient":"餘額不足，請先充值","toast_success":"調用成功！已扣除","toast_error":"調用失敗","cost_label":"費用"},
+"ja":{"page_title":"AI Nexus - AIモデル","hero_sub":"35モデル · 8社のトップAI · OpenAI互換API","price_info":"料金: 50万トークン = 1 CNY","search_ph":"モデルを検索...","tab_provider":"プロバイダ別","tab_type":"タイプ別","tab_series":"シリーズ別","tab_owned":"所有者別","tab_endpoint":"エンドポイント別","total":"合計","models":"モデル","nav_home":"ホーム","nav_forum":"フォーラム","nav_member":"メンバー","nav_apps":"アプリ","nav_models":"AIモデル","call_title":"モデル呼出","call_model":"モデル","call_desc":"法定通貨残高で支払い。50万トークン = 1 CNY。","tokens_unit":"トークン","balance_label":"残高","cancel":"キャンセル","confirm_call":"呼出確認","toast_insufficient":"残高不足です","toast_success":"呼出成功！請求額","toast_error":"呼出失敗","cost_label":"費用"},
+"ko":{"page_title":"AI Nexus - AI 모델","hero_sub":"35개 모델 · 8개 AI 기업 · OpenAI 호환 API","price_info":"가격: 50만 토큰 = 1 CNY","search_ph":"모델 검색...","tab_provider":"제공자별","tab_type":"유형별","tab_series":"시리즈별","tab_owned":"소유자별","tab_endpoint":"엔드포인트별","total":"총","models":"개 모델","nav_home":"홈","nav_forum":"포럼","nav_member":"회원","nav_apps":"앱","nav_models":"AI 모델","call_title":"모델 호출","call_model":"모델","call_desc":"법정화폐 잔액으로 결제. 50만 토큰 = 1 CNY.","tokens_unit":"토큰","balance_label":"잔액","cancel":"취소","confirm_call":"호출 확인","toast_insufficient":"잔액 부족","toast_success":"호출 성공! 차감액","toast_error":"호출 실패","cost_label":"비용"},
+"es":{"page_title":"AI Nexus - Modelos IA","hero_sub":"35 Modelos · 8 Proveedores · API Compatible OpenAI","price_info":"Precio: 500K tokens = 1 CNY","search_ph":"Buscar modelo...","tab_provider":"Proveedor","tab_type":"Tipo","tab_series":"Serie","tab_owned":"Propietario","tab_endpoint":"Endpoint","total":"Total","models":"modelos","nav_home":"Inicio","nav_forum":"Foro","nav_member":"Miembro","nav_apps":"Apps","nav_models":"Modelos IA","call_title":"Llamar Modelo","call_model":"Modelo","call_desc":"Pagar con saldo fiat. 500K tokens = 1 CNY.","tokens_unit":"tokens","balance_label":"Saldo","cancel":"Cancelar","confirm_call":"Confirmar","toast_insufficient":"Saldo insuficiente","toast_success":"Llamada exitosa! Cobrado","toast_error":"Error","cost_label":"Costo"},
+"fr":{"page_title":"AI Nexus - Modèles IA","hero_sub":"35 Modèles · 8 Fournisseurs · API Compatible OpenAI","price_info":"Tarif: 500K jetons = 1 CNY","search_ph":"Rechercher...","tab_provider":"Fournisseur","tab_type":"Type","tab_series":"Série","tab_owned":"Propriétaire","tab_endpoint":"Endpoint","total":"Total","models":"modèles","nav_home":"Accueil","nav_forum":"Forum","nav_member":"Membre","nav_apps":"Apps","nav_models":"Modèles IA","call_title":"Appeler Modèle","call_model":"Modèle","call_desc":"Payer avec solde fiat. 500K jetons = 1 CNY.","tokens_unit":"jetons","balance_label":"Solde","cancel":"Annuler","confirm_call":"Confirmer","toast_insufficient":"Solde insuffisant","toast_success":"Appel réussi! Débité","toast_error":"Échec","cost_label":"Coût"},
+"de":{"page_title":"AI Nexus - KI-Modelle","hero_sub":"35 Modelle · 8 Anbieter · OpenAI-kompatible API","price_info":"Preis: 500K Token = 1 CNY","search_ph":"Modell suchen...","tab_provider":"Anbieter","tab_type":"Typ","tab_series":"Serie","tab_owned":"Besitzer","tab_endpoint":"Endpunkt","total":"Gesamt","models":"Modelle","nav_home":"Start","nav_forum":"Forum","nav_member":"Mitglied","nav_apps":"Apps","nav_models":"KI-Modelle","call_title":"Modell aufrufen","call_model":"Modell","call_desc":"Mit Fiat-Guthaben bezahlen. 500K Token = 1 CNY.","tokens_unit":"Token","balance_label":"Guthaben","cancel":"Abbrechen","confirm_call":"Bestätigen","toast_insufficient":"Guthaben nicht ausreichend","toast_success":"Aufruf erfolgreich! Berechnet","toast_error":"Fehler","cost_label":"Kosten"},
+"pt":{"page_title":"AI Nexus - Modelos IA","hero_sub":"35 Modelos · 8 Provedores · API Compatível OpenAI","price_info":"Preço: 500K tokens = 1 CNY","search_ph":"Buscar modelo...","tab_provider":"Provedor","tab_type":"Tipo","tab_series":"Série","tab_owned":"Proprietário","tab_endpoint":"Endpoint","total":"Total","models":"modelos","nav_home":"Início","nav_forum":"Fórum","nav_member":"Membro","nav_apps":"Apps","nav_models":"Modelos IA","call_title":"Chamar Modelo","call_model":"Modelo","call_desc":"Pagar com saldo fiat. 500K tokens = 1 CNY.","tokens_unit":"tokens","balance_label":"Saldo","cancel":"Cancelar","confirm_call":"Confirmar","toast_insufficient":"Saldo insuficiente","toast_success":"Chamada OK! Cobrado","toast_error":"Falha","cost_label":"Custo"},
+"ru":{"page_title":"AI Nexus - ИИ-модели","hero_sub":"35 Моделей · 8 Провайдеров · OpenAI API","price_info":"Цена: 500K токенов = 1 CNY","search_ph":"Поиск модели...","tab_provider":"Провайдер","tab_type":"Тип","tab_series":"Серия","tab_owned":"Владелец","tab_endpoint":"Эндпоинт","total":"Всего","models":"моделей","nav_home":"Главная","nav_forum":"Форум","nav_member":"Участник","nav_apps":"Приложения","nav_models":"ИИ-модели","call_title":"Вызов модели","call_model":"Модель","call_desc":"Оплата с фиатного баланса. 500K токенов = 1 CNY.","tokens_unit":"токенов","balance_label":"Баланс","cancel":"Отмена","confirm_call":"Подтвердить","toast_insufficient":"Недостаточно средств","toast_success":"Вызов успешен! Списано","toast_error":"Ошибка","cost_label":"Стоимость"},
+"ar":{"page_title":"AI Nexus - نماذج الذكاء","hero_sub":"35 نموذج · 8 مزودين · واجهة OpenAI","price_info":"السعر: 500K رمز = 1 CNY","search_ph":"بحث...","tab_provider":"المزود","tab_type":"النوع","tab_series":"السلسلة","tab_owned":"المالك","tab_endpoint":"الطرفية","total":"المجموع","models":"نموذج","nav_home":"الرئيسية","nav_forum":"المنتدى","nav_member":"عضو","nav_apps":"تطبيقات","nav_models":"نماذج الذكاء","call_title":"استدعاء النموذج","call_model":"النموذج","call_desc":"الدفع من الرصيد. 500K رمز = 1 CNY.","tokens_unit":"رمز","balance_label":"الرصيد","cancel":"إلغاء","confirm_call":"تأكيد","toast_insufficient":"رصيد غير كاف","toast_success":"نجح! تم خصم","toast_error":"فشل","cost_label":"التكلفة"},
+"hi":{"page_title":"AI Nexus - AI मॉडल","hero_sub":"35 मॉडल · 8 प्रदाता · OpenAI API","price_info":"मूल्य: 500K टोकन = 1 CNY","search_ph":"खोजें...","tab_provider":"प्रदाता","tab_type":"प्रकार","tab_series":"श्रृंखला","tab_owned":"स्वामी","tab_endpoint":"एंडपॉइंट","total":"कुल","models":"मॉडल","nav_home":"होम","nav_forum":"फोरम","nav_member":"सदस्य","nav_apps":"ऐप्स","nav_models":"AI मॉडल","call_title":"मॉडल कॉल","call_model":"मॉडल","call_desc":"फिएट बैलेंस से भुगतान। 500K टोकन = 1 CNY।","tokens_unit":"टोकन","balance_label":"बैलेंस","cancel":"रद्द करें","confirm_call":"पुष्टि करें","toast_insufficient":"अपर्याप्त बैलेंस","toast_success":"कॉल सफल! कटौती","toast_error":"विफल","cost_label":"लागत"},
+"th":{"page_title":"AI Nexus - โมเดล AI","hero_sub":"35 โมเดล · 8 ผู้ให้บริการ · OpenAI API","price_info":"ราคา: 500K โทเค็น = 1 CNY","search_ph":"ค้นหา...","tab_provider":"ผู้ให้บริการ","tab_type":"ประเภท","tab_series":"ซีรีส์","tab_owned":"เจ้าของ","tab_endpoint":"ปลายทาง","total":"ทั้งหมด","models":"โมเดล","nav_home":"หน้าแรก","nav_forum":"ฟอรัม","nav_member":"สมาชิก","nav_apps":"แอป","nav_models":"โมเดล AI","call_title":"เรียกใช้โมเดล","call_model":"โมเดล","call_desc":"ชำระด้วยยอดเงินคงเหลือ 500K โทเค็น = 1 CNY","tokens_unit":"โทเค็น","balance_label":"ยอดคงเหลือ","cancel":"ยกเลิก","confirm_call":"ยืนยัน","toast_insufficient":"ยอดเงินไม่เพียงพอ","toast_success":"สำเร็จ! หัก","toast_error":"ล้มเหลว","cost_label":"ค่าใช้จ่าย"},
+"vi":{"page_title":"AI Nexus - Mô hình AI","hero_sub":"35 Mô hình · 8 Nhà cung cấp · API OpenAI","price_info":"Giá: 500K token = 1 CNY","search_ph":"Tìm kiếm...","tab_provider":"Nhà cung cấp","tab_type":"Loại","tab_series":"Dòng","tab_owned":"Chủ sở hữu","tab_endpoint":"Điểm cuối","total":"Tổng","models":"mô hình","nav_home":"Trang chủ","nav_forum":"Diễn đàn","nav_member":"Thành viên","nav_apps":"Ứng dụng","nav_models":"Mô hình AI","call_title":"Gọi Mô hình","call_model":"Mô hình","call_desc":"Thanh toán bằng số dư fiat. 500K token = 1 CNY.","tokens_unit":"token","balance_label":"Số dư","cancel":"Hủy","confirm_call":"Xác nhận","toast_insufficient":"Số dư không đủ","toast_success":"Gọi thành công! Đã trừ","toast_error":"Thất bại","cost_label":"Chi phí"},
+"id":{"page_title":"AI Nexus - Model AI","hero_sub":"35 Model · 8 Penyedia · API OpenAI","price_info":"Harga: 500K token = 1 CNY","search_ph":"Cari...","tab_provider":"Penyedia","tab_type":"Tipe","tab_series":"Seri","tab_owned":"Pemilik","tab_endpoint":"Titik Akhir","total":"Total","models":"model","nav_home":"Beranda","nav_forum":"Forum","nav_member":"Anggota","nav_apps":"Aplikasi","nav_models":"Model AI","call_title":"Panggil Model","call_model":"Model","call_desc":"Bayar dengan saldo fiat. 500K token = 1 CNY.","tokens_unit":"token","balance_label":"Saldo","cancel":"Batal","confirm_call":"Konfirmasi","toast_insufficient":"Saldo tidak cukup","toast_success":"Berhasil! Dikenakan","toast_error":"Gagal","cost_label":"Biaya"},
+"it":{"page_title":"AI Nexus - Modelli IA","hero_sub":"35 Modelli · 8 Provider · API OpenAI","price_info":"Prezzo: 500K token = 1 CNY","search_ph":"Cerca...","tab_provider":"Provider","tab_type":"Tipo","tab_series":"Serie","tab_owned":"Proprietario","tab_endpoint":"Endpoint","total":"Totale","models":"modelli","nav_home":"Home","nav_forum":"Forum","nav_member":"Membro","nav_apps":"App","nav_models":"Modelli IA","call_title":"Chiama Modello","call_model":"Modello","call_desc":"Paga con saldo fiat. 500K token = 1 CNY.","tokens_unit":"token","balance_label":"Saldo","cancel":"Annulla","confirm_call":"Conferma","toast_insufficient":"Saldo insufficiente","toast_success":"Chiamata OK! Addebitato","toast_error":"Errore","cost_label":"Costo"}
+};
 
-            Object.keys(groups).forEach(function(groupKey) {
-                var g = groups[groupKey];
-                var modelsInGroup = g.models.map(function(mid) {
-                    return MODELS.find(function(m) { return m.id === mid; });
-                }).filter(Boolean);
+// ======== MODEL DATA (35 models) ========
+var MODELS = [
+{id:"claude-opus-4-6",provider:"Anthropic",series:"claude-opus",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Claude Opus 4.6 旗舰模型"},
+{id:"claude-opus-4-7",provider:"Anthropic",series:"claude-opus",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Claude Opus 4.7 旗舰模型"},
+{id:"claude-opus-4-8",provider:"Anthropic",series:"claude-opus",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Claude Opus 4.8 最新旗舰模型"},
+{id:"claude-sonnet-4-6",provider:"Anthropic",series:"claude-sonnet",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Claude Sonnet 4.6 轻量模型"},
+{id:"deepseek-v4-flash",provider:"DeepSeek",series:"deepseek-v4",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"DeepSeek V4 Flash 快速推理模型"},
+{id:"deepseek-v4-pro",provider:"DeepSeek",series:"deepseek-v4",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"DeepSeek V4 Pro 专业推理模型"},
+{id:"doubao-1-5-pro-32k-character-250715",provider:"ByteDance(豆包)",series:"doubao-1.5",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"豆包 1.5 Pro 32K 角色模型"},
+{id:"doubao-seed-2-0-code-preview-260215",provider:"ByteDance(豆包)",series:"doubao-seed-code",type:"code",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seed 2.0 代码预览版"},
+{id:"doubao-seed-2-0-lite-260215",provider:"ByteDance(豆包)",series:"doubao-seed",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seed 2.0 Lite 轻量版"},
+{id:"doubao-seedance-1-5-pro-251215",provider:"ByteDance(豆包)",series:"doubao-seedance",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seedance 1.5 Pro 视频生成"},
+{id:"doubao-seedance-2-0-260128",provider:"ByteDance(豆包)",series:"doubao-seedance",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seedance 2.0 视频生成"},
+{id:"doubao-seedream-4.5",provider:"ByteDance(豆包)",series:"doubao-seedream-4.5",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seedream 4.5 图像生成"},
+{id:"doubao-seedream-5-0-260128",provider:"ByteDance(豆包)",series:"doubao-seedream",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"豆包 Seedream 5.0 图像生成"},
+{id:"gemini-2.5-pro",provider:"Google",series:"gemini-2.5",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Google Gemini 2.5 Pro"},
+{id:"gemini-3-pro-image",provider:"Google",series:"gemini-3",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"Google Gemini 3 Pro 图像生成"},
+{id:"gemini-3.1-flash-image",provider:"Google",series:"gemini-3.1",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"Google Gemini 3.1 Flash 图像"},
+{id:"gemini-3.1-flash-image-preview",provider:"Google",series:"gemini-3.1",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"Google Gemini 3.1 Flash 图像预览"},
+{id:"gemini-3.1-pro-preview",provider:"Google",series:"gemini-3.1",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"Google Gemini 3.1 Pro 预览版"},
+{id:"glm-5.1",provider:"ZhipuAI(智谱)",series:"glm-5.1",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"智谱 GLM 5.1"},
+{id:"glm-5.2",provider:"ZhipuAI(智谱)",series:"glm-5.2",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"智谱 GLM 5.2"},
+{id:"gpt-4.1-mini",provider:"OpenAI",series:"gpt-4.1",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"GPT-4.1 Mini"},
+{id:"gpt-4.1-nano",provider:"OpenAI",series:"gpt-4.1",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"GPT-4.1 Nano"},
+{id:"gpt-5.3-codex",provider:"OpenAI",series:"gpt-5.3",type:"code",owned_by:"openai",endpoint:["openai"],desc:"GPT-5.3 Codex 代码模型"},
+{id:"gpt-5.4",provider:"OpenAI",series:"gpt-5.4",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"GPT-5.4"},
+{id:"gpt-5.4-nano",provider:"OpenAI",series:"gpt-5.4",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"GPT-5.4 Nano"},
+{id:"gpt-5.5",provider:"OpenAI",series:"gpt-5.5",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"GPT-5.5"},
+{id:"gpt-5.6-luna",provider:"OpenAI",series:"gpt-5.6",type:"chat",owned_by:"advanced_custom",endpoint:["openai","openai-response"],desc:"GPT-5.6 Luna (Advanced)"},
+{id:"gpt-5.6-sol",provider:"OpenAI",series:"gpt-5.6",type:"chat",owned_by:"advanced_custom",endpoint:["openai","openai-response"],desc:"GPT-5.6 Sol (Advanced)"},
+{id:"gpt-5.6-terra",provider:"OpenAI",series:"gpt-5.6",type:"chat",owned_by:"advanced_custom",endpoint:["openai","openai-response"],desc:"GPT-5.6 Terra (Advanced)"},
+{id:"gpt-image-2",provider:"OpenAI",series:"gpt",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"GPT Image 2 图像生成"},
+{id:"kling-v3-omni",provider:"Kuaishou(快手)",series:"kling-v3",type:"image/video",owned_by:"openai",endpoint:["openai"],desc:"快手 Kling V3 Omni 视频生成"},
+{id:"qwen3.5-plus",provider:"Alibaba(阿里)",series:"qwen3.5",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"通义千问 Qwen 3.5 Plus"},
+{id:"qwen3.6-plus",provider:"Alibaba(阿里)",series:"qwen3.6",type:"chat",owned_by:"openai",endpoint:["openai"],desc:"通义千问 Qwen 3.6 Plus"},
+{id:"text-embedding-3-large",provider:"OpenAI",series:"text-embedding",type:"embedding",owned_by:"openai",endpoint:["openai"],desc:"Text Embedding 3 Large"},
+{id:"text-embedding-ada-002",provider:"OpenAI",series:"text-embedding-ada",type:"embedding",owned_by:"openai",endpoint:["openai"],desc:"Text Embedding Ada 002"}
+];
 
-                // Apply search filter
-                if (searchQuery) {
-                    var q = searchQuery.toLowerCase();
-                    modelsInGroup = modelsInGroup.filter(function(m) {
-                        return m.id.toLowerCase().indexOf(q) !== -1;
-                    });
-                }
+// ======== GROUPINGS ========
+var GROUPINGS = {
+provider:{groups:{"Anthropic":{label:"Anthropic",models:["claude-opus-4-6","claude-opus-4-7","claude-opus-4-8","claude-sonnet-4-6"]},"DeepSeek":{label:"DeepSeek",models:["deepseek-v4-flash","deepseek-v4-pro"]},"ByteDance(豆包)":{label:"ByteDance(豆包)",models:["doubao-1-5-pro-32k-character-250715","doubao-seed-2-0-code-preview-260215","doubao-seed-2-0-lite-260215","doubao-seedance-1-5-pro-251215","doubao-seedance-2-0-260128","doubao-seedream-4.5","doubao-seedream-5-0-260128"]},"Google":{label:"Google",models:["gemini-2.5-pro","gemini-3-pro-image","gemini-3.1-flash-image","gemini-3.1-flash-image-preview","gemini-3.1-pro-preview"]},"ZhipuAI(智谱)":{label:"ZhipuAI(智谱)",models:["glm-5.1","glm-5.2"]},"OpenAI":{label:"OpenAI",models:["gpt-4.1-mini","gpt-4.1-nano","gpt-5.3-codex","gpt-5.4","gpt-5.4-nano","gpt-5.5","gpt-5.6-luna","gpt-5.6-sol","gpt-5.6-terra","gpt-image-2","text-embedding-3-large","text-embedding-ada-002"]},"Kuaishou(快手)":{label:"Kuaishou(快手)",models:["kling-v3-omni"]},"Alibaba(阿里)":{label:"Alibaba(阿里)",models:["qwen3.5-plus","qwen3.6-plus"]}}},
+type:{groups:{chat:{label:"对话",models:[]},code:{label:"代码",models:[]},"image/video":{label:"图像/视频",models:[]},embedding:{label:"嵌入",models:[]}}},
+series:{groups:{}},
+owned_by:{groups:{openai:{label:"Open AI 标准",models:[]},advanced_custom:{label:"Advanced Custom",models:[]}}},
+endpoint:{groups:{openai:{label:"OpenAI 兼容端点",models:[]},"openai-response":{label:"OpenAI Response",models:[]}}}
+};
 
-                if (modelsInGroup.length === 0 && searchQuery) return;
+// Populate type/series/owned_by/endpoint groupings from MODELS
+MODELS.forEach(function(m){
+if(GROUPINGS.type.groups[m.type]) GROUPINGS.type.groups[m.type].models.push(m.id);
+if(!GROUPINGS.series.groups[m.series]) GROUPINGS.series.groups[m.series]={label:m.series,models:[]};
+GROUPINGS.series.groups[m.series].models.push(m.id);
+if(GROUPINGS.owned_by.groups[m.owned_by]) GROUPINGS.owned_by.groups[m.owned_by].models.push(m.id);
+m.endpoint.forEach(function(ep){if(GROUPINGS.endpoint.groups[ep]) GROUPINGS.endpoint.groups[ep].models.push(m.id);});
+});
 
-                totalShown += modelsInGroup.length;
+// ======== STATE ========
+var currentLang = (function(){
+var s=localStorage.getItem('site-lang');
+if(s&&LANG[s])return s;
+var n=navigator.language||'en';
+if(LANG[n])return n;
+if(LANG[n.split('-')[0]])return n.split('-')[0];
+return'zh';
+})();
 
-                var groupColor = stringToColor(groupKey);
-                html += '<div class="group-section">';
-                html += '<div class="group-header">';
-                html += '<span class="group-dot" style="background:' + groupColor + '"></span>';
-                html += '<span class="group-title">' + escapeHtml(g.label) + '</span>';
-                html += '<span class="group-count">' + modelsInGroup.length + '</span>';
-                html += '</div><div class="model-grid">';
+var currentGroup = 'provider';
+var searchQuery = '';
+var userBalance = parseFloat(localStorage.getItem('user-fiat-balance')||'0');
+var currentCallModel = null;
+var curUser = (function(){try{return JSON.parse(localStorage.getItem('nexus_user')||'null');}catch(e){return null;}})();
+var modelStatus = {}; // {modelId: {ok:bool, msg:string, ms:number}}
 
-                modelsInGroup.forEach(function(m) {
-                    var mtype = m.type || 'chat';
-                    var icon = typeIcons[mtype] || '🤖';
-                    var provider = m.provider || '';
-                    var isAc = m.owned_by === 'advanced_custom';
-                    var endpoints = (m.endpoint || []).join(' / ');
+var typeIcons = {chat:"💬",code:"💻","image/video":"🎨",image:"🖼️",video:"🎬",embedding:"🔢",multimodal:"🌐"};
 
-                    html += '<div class="model-card" data-id="' + escapeHtml(m.id) + '" data-type="' + mtype + '">';
-                    html += '<div class="model-top">';
-                    html += '<div class="model-icon">' + icon + '</div>';
-                    html += '<div class="model-name-row">';
-                    html += '<div class="model-name" title="' + escapeHtml(m.id) + '">' + escapeHtml(m.id) + '</div>';
-                    html += '<div class="model-meta">';
-                    html += '<span class="model-badge badge-type">' + escapeHtml(mtype) + '</span>';
-                    if (provider && currentGroup !== 'provider') {
-                        html += '<span class="model-badge badge-provider">' + escapeHtml(provider) + '</span>';
-                    }
-                    if (isAc) {
-                        html += '<span class="model-badge badge-ac">Advanced</span>';
-                    }
-                    html += '</div></div></div>';
-                    html += '<div class="model-desc">' + escapeHtml(m.description || '—') + '</div>';
-                    html += '<div style="font-size:0.7rem;color:var(--text-muted);">' + t('endpoint_label') + ': ' + escapeHtml(endpoints) + '</div>';
-                    html += '<div class="model-actions">';
-                    html += '<button class="model-btn-play" onclick="event.stopPropagation();testModel(\'' + escapeHtml(m.id) + '\')" title="\' + escapeHtml(t('start_chat')) + '\' + ">&#9654;</button>';
-                    html += '<button class="model-btn-chat" onclick="startChat(\'' + escapeHtml(m.id) + '\')">';
-                    html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
-                    html += '<span>' + t('start_chat') + '</span></button>';
-                    html += '</div>';
-                    html += '</div>';
-                });
+function t(key){return(LANG[currentLang]&&LANG[currentLang][key])||(LANG['zh']&&LANG['zh'][key])||key;}
 
-                html += '</div></div>';
-            });
+function applyI18n(){
+document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});
+document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-placeholder'));});
+document.getElementById('cur-lang-name').textContent=currentLang.toUpperCase();
+var fl=LANG[currentLang]&&LANG[currentLang].f||'';
+document.getElementById('cur-lang-flag').textContent=fl;
+buildLangMenu();
+}
 
-            if (totalShown === 0) {
-                html = '<div class="no-results">' + t('no_results') + '</div>';
-            }
+function buildLangMenu(){
+var h='';Object.keys(LANG).forEach(function(k){var l=LANG[k];h+='<div class="lmi'+(k===currentLang?' ac':'')+'" onclick="switchLang(\''+k+'\')"><span class="lmi-f">'+(l.f||'')+'</span>'+l.page_title.split(' - ')[0]+'</div>';});
+document.getElementById('lang-menu').innerHTML=h;
+}
 
-            container.innerHTML = html;
-            var mct = t('model_count_full').replace('{count}', totalShown);
-            document.getElementById('stats-bar').innerHTML = mct;
-        }
+function switchLang(lang){
+currentLang=lang;localStorage.setItem('site-lang',lang);applyI18n();renderModels();
+document.querySelector('.lm').classList.remove('show');
+}
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            str = String(str);
-            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
+function renderModels(){
+var groups=GROUPINGS[currentGroup].groups;
+var html='',totalShown=0;
+var allModelIds=MODELS.map(function(m){return m.id;});
+var usedInGroup={};
 
-        function stringToColor(str) {
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            var h = Math.abs(hash) % 360;
-            return 'hsl(' + h + ', 55%, 58%)';
-        }
+Object.keys(groups).forEach(function(gk){
+var g=groups[gk];
+var mids=g.models.filter(function(mid){return allModelIds.indexOf(mid)!==-1;});
+if(searchQuery){var q=searchQuery.toLowerCase();mids=mids.filter(function(mid){return mid.toLowerCase().indexOf(q)!==-1;});}
+if(mids.length===0)return;
+totalShown+=mids.length;
+mids.forEach(function(mid){usedInGroup[mid]=true;});
+var gc=stringToColor(gk);
+html+='<div class="group-section"><div class="group-header"><span class="group-dot" style="background:'+gc+'"></span><span class="group-title">'+esc(g.label)+'</span><span class="group-count">'+mids.length+'</span></div><div class="model-grid">';
+mids.forEach(function(mid){
+var m=MODELS.find(function(x){return x.id===mid;});if(!m)return;
+var icon=typeIcons[m.type]||'🤖',isAc=m.owned_by==='advanced_custom';
+var eps=m.endpoint.join(' / ');
+var st=modelStatus[m.id];var stDot='';if(st){stDot='<span class="ms-dot '+(st.ok?'ms-ok':'ms-fail')+'" title="'+(st.ok?'OK: '+st.msg+' ('+st.ms+'ms)':'FAIL: '+st.msg)+'"></span>';}
+html+='<div class="mcard" data-id="'+esc(m.id)+'"><div class="mtop"><div class="micon">'+icon+'</div><div class="mname-row"><div class="mname" title="'+esc(m.id)+'">'+stDot+esc(m.id)+'</div><div class="mmeta"><span class="mbadge badge-type">'+esc(m.type)+'</span>'+(currentGroup!=='provider'?'<span class="mbadge badge-provider">'+esc(m.provider)+'</span>':'')+(isAc?'<span class="mbadge badge-ac">Advanced</span>':'')+'</div></div></div><div class="mdesc">'+esc(m.desc||'—')+'</div><div class="mfooter"><div class="mprice">'+esc(eps)+'</div><button class="btn bo sm" onclick="testModel(\''+esc(m.id)+'\')" title="Quick test"><span class="tst-icon">&#9654;</span></button><button class="btn bg" onclick="openCall(\''+esc(m.id)+'\')" data-i18n="confirm_call">'+t('confirm_call')+'</button></div></div>';
+});
+html+='</div></div>';
+});
 
-        // Tab click handler
-        document.getElementById('group-tabs').addEventListener('click', function(e) {
-            if (e.target.classList.contains('group-tab')) {
-                document.querySelectorAll('.group-tab').forEach(function(t) { t.classList.remove('active'); });
-                e.target.classList.add('active');
-                currentGroup = e.target.getAttribute('data-group');
-                renderModels();
-            }
-        });
+if(totalShown===0)html='<div class="no-results">'+t('no_results')+'</div>';
+document.getElementById('models-container').innerHTML=html;
+document.getElementById('stats-bar').innerHTML=t('total')+' <span class="count">'+totalShown+'</span> '+t('models');
+applyI18n();
+}
 
-        // Search handler (debounced)
-        var searchTimer;
-        document.getElementById('search-input').addEventListener('input', function() {
-            clearTimeout(searchTimer);
-            var self = this;
-            searchTimer = setTimeout(function() {
-                searchQuery = self.value.trim();
-                renderModels();
-            }, 200);
-        });
+function esc(s){if(!s)return'';s=String(s);return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
-        // Language change listener
-        window.addEventListener('langChange', function(e) {
-            if (e.detail && LANG[e.detail]) {
-                currentLang = e.detail;
-                applyI18n();
-                renderModels();
-            }
-        });
+function stringToColor(str){var h=0,i;for(i=0;i<str.length;i++)h=str.charCodeAt(i)+((h<<5)-h);return'hsl('+(Math.abs(h)%360)+',55%,58%)';}
 
-        // Self-contained header
-        (function(){
-            var h = document.getElementById('header-placeholder');
-            if (h) {
-                var navHtml = '<header style="background:var(--card-bg,white);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:20px"><a href="index.html" style="font-weight:700;color:var(--text);text-decoration:none;font-size:1rem">THHT Cloud</a><nav style="display:flex;gap:12px;flex-wrap:wrap">'+
-                '<a href="index.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.85rem">Home</a>'+
-                '<a href="ai-models.html" style="color:var(--primary);font-weight:600;text-decoration:none;font-size:0.85rem">'+t('title')+'</a>'+
-                '</nav></header>';
-                h.innerHTML = navHtml;
-            }
-        })();
+// ======== CALL MODEL ========
+function openCall(modelId){
+var m=MODELS.find(function(x){return x.id===modelId;});
+if(!m)return;
+currentCallModel=m;
+document.getElementById('call-model-name').textContent=m.id;
+document.getElementById('call-amount').value=10000;
+updateCallCost();
+document.getElementById('call-balance').textContent=userBalance.toFixed(2);
+document.getElementById('mo-call').classList.add('show');
+applyI18n();
+}
 
-        applyI18n();
-        renderModels();
-        fetchBalance();
+function closeModal(){
+document.getElementById('mo-call').classList.remove('show');
+currentCallModel=null;
+}
 
+document.getElementById('call-amount').addEventListener('input',updateCallCost);
 
-    /* ========== Model Testing & Balance ========== */
-    var modelStatus = {};
+function updateCallCost(){
+var tokens=parseInt(document.getElementById('call-amount').value)||0;
+var cost=(tokens/500000).toFixed(4);
+document.getElementById('call-cost-display').textContent=t('cost_label')+': '+cost+' CNY ('+(tokens/1000).toFixed(0)+'K tokens)';
+}
 
-    async function fetchBalance() {
-        try {
-            var u = JSON.parse(localStorage.getItem('nexus_user')||'{}');
-            if (!u.email || !u.pass) { updateBalanceDisplay(null); return; }
-            var resp = await fetch('/api/user/balance', {
-                headers: {'X-Auth-Email': u.email, 'X-Auth-Pass': u.pass}
-            });
-            if (!resp.ok) { updateBalanceDisplay(null); return; }
-            var data = await resp.json();
-            updateBalanceDisplay(data.balance !== undefined ? data.balance : data.cny_balance);
-        } catch(e) { updateBalanceDisplay(null); }
-    }
+function doCall(){
+if(!currentCallModel)return;
+var btn=document.querySelector('#mo-call .btn-confirm');
+btn.disabled=true;btn.textContent='Calling...';
+var msg=document.getElementById('call-msg').value.trim()||'Hello';
+var hds={'Content-Type':'application/json'};
+if(curUser&&curUser.email)hds['X-Auth-Email']=curUser.email;
+if(curUser&&curUser.pass)hds['X-Auth-Pass']=curUser.pass;
+var t0=Date.now();
+fetch('/api/chat',{method:'POST',headers:hds,body:JSON.stringify({model:currentCallModel.id,messages:[{role:'user',content:msg}],provider:'models'})})
+.then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}});})
+.then(function(r){
+var ms=Date.now()-t0;
+if(r.ok&&r.data.choices&&r.data.choices[0]){
+var content=r.data.choices[0].message.content;
+var tokens=parseInt(document.getElementById('call-amount').value)||0;
+var cost=tokens/500000;
+if(curUser){
+userBalance-=cost;if(userBalance<0)userBalance=0;
+localStorage.setItem('user-fiat-balance',userBalance.toFixed(2));
+}
+updateBalanceDisplay();
+closeModal();
+showToast('OK: '+content.substring(0,50)+' ('+ms+'ms)',null);
+}else{
+var err=r.data.error||r.data.message||'Unknown error';
+closeModal();
+showToast('FAIL: '+err,'error');
+}
+})
+.catch(function(e){
+closeModal();
+showToast('Error: '+e.message,'error');
+})
+.finally(function(){btn.disabled=false;btn.textContent=t('confirm_call');});
+}
+function updateBalanceDisplay(){
+var el=document.getElementById('call-balance');if(el)el.textContent=userBalance.toFixed(2);
+var tb=document.getElementById('top-bal-val');if(tb)tb.textContent=userBalance.toFixed(2);
+}
+async function testModel(modelId){
+var card=document.querySelector('.mcard[data-id="'+modelId+'"]');
+if(!card)return;
+var btn=card.querySelector('.tst-icon');if(btn)btn.textContent='...';
+var hds={'Content-Type':'application/json'};
+if(curUser&&curUser.email)hds['X-Auth-Email']=curUser.email;
+if(curUser&&curUser.pass)hds['X-Auth-Pass']=curUser.pass;
+var t0=Date.now();
+try{
+var resp=await fetch('/api/chat',{method:'POST',headers:hds,body:JSON.stringify({model:modelId,messages:[{role:'user',content:'1+1=?'}],provider:'models'})});
+var data=await resp.json();
+var ms=Date.now()-t0;
+if(resp.ok&&data.choices&&data.choices[0]){
+modelStatus[modelId]={ok:true,msg:data.choices[0].message.content||'OK',ms:ms};
+}else{
+modelStatus[modelId]={ok:false,msg:data.error||data.message||'HTTP '+resp.status,ms:ms};
+}
+}catch(e){
+modelStatus[modelId]={ok:false,msg:e.message,ms:Date.now()-t0};
+}
+renderModels();
+}
 
-    function updateBalanceDisplay(balance) {
-        var el = document.getElementById('bal-amount');
-        if (!el) return;
-        if (balance === null || balance === undefined) {
-            el.textContent = '--';
-        } else {
-            el.textContent = '¥' + Number(balance).toFixed(2);
-        }
-    }
+async function testAllModels(){
+var btn=event.target;btn.disabled=true;
+var total=MODELS.length,ok=0,fail=0;
+var statsEl=document.getElementById('stats-bar');
+statsEl.innerHTML='Testing <span class="count">0/'+total+'</span> ...';
+for(var i=0;i<MODELS.length;i++){
+var m=MODELS[i];
+statsEl.innerHTML='Testing <span class="count">'+(i+1)+'/'+total+'</span> ...';
+await testModel(m.id);
+if(modelStatus[m.id]&&modelStatus[m.id].ok)ok++;else fail++;
+}
+statsEl.innerHTML='<span data-i18n="total">共</span> <span class="count">'+total+'</span> <span data-i18n="models">个模型</span> | <span style="color:#22c55e">OK: '+ok+'</span> | <span style="color:#ef4444">FAIL: '+fail+'</span>';
+btn.disabled=false;
+img.src=img.src;
+}
 
-    function getAuthHeaders() {
-        try {
-            var u = JSON.parse(localStorage.getItem('nexus_user')||'{}');
-            if (u.email && u.pass) return {'X-Auth-Email': u.email, 'X-Auth-Pass': u.pass};
-        } catch(e) {}
-        return {};
-    }
+function showToast(msg,type){
+var el=document.getElementById('toast');
+el.textContent=msg;
+el.className='toast'+(type==='error'?' error':'');
+el.classList.add('show');
+setTimeout(function(){el.classList.remove('show');},2500);
+}
 
-    async function doCall(modelId, prompt) {
-        var ctrl = new AbortController();
-        var tid = setTimeout(function(){ctrl.abort();}, 30000);
-        var headers = Object.assign({'Content-Type': 'application/json'}, getAuthHeaders());
-        var actualModelId = modelId.replace(/-td$/, '');
-        try {
-            var resp = await fetch('/api/chat', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({
-                    model: actualModelId,
-                    messages: [{role:'user', content: prompt}],
-                    provider: 'th'
-                }),
-                signal: ctrl.signal
-            });
-            clearTimeout(tid);
-            if (!resp.ok) {
-                var et = await resp.text();
-                var em = et;
-                try { var ej = JSON.parse(et); em = ej.error || et; } catch(e2) { em = 'HTTP ' + resp.status; }
-                return { success: false, error: em, latency: null };
-            }
-            var r = await resp.json();
-            if (r.error) return { success: false, error: r.error, latency: null };
-            var content = (r.choices?.[0]?.message?.content) || '(empty)';
-            var latency = r._ztw?.latency_ms || r.usage?.total_time || null;
-            if (r._ztw && r._ztw.cny_deducted > 0) {
-                var cur = parseFloat((document.getElementById('bal-amount')?.textContent||'').replace(/[^0-9.]/g,'')) || 0;
-                updateBalanceDisplay(Math.max(0, cur - r._ztw.cny_deducted));
-            }
-            return { success: true, content: content, latency: latency, data: r };
-        } catch(e) {
-            clearTimeout(tid);
-            return { success: false, error: e.name === 'AbortError' ? '请求超时' : e.message, latency: null };
-        }
-    }
+// ======== TAB / SEARCH ========
+document.getElementById('group-tabs').addEventListener('click',function(e){
+if(e.target.classList.contains('group-tab')){
+document.querySelectorAll('.group-tab').forEach(function(t){t.classList.remove('active');});
+e.target.classList.add('active');
+currentGroup=e.target.getAttribute('data-group');
+renderModels();
+}
+});
 
-    async function testModel(modelId) {
-        var dot = document.getElementById('dot-' + modelId);
-        var btn = document.querySelector('.model-card[data-id="' + modelId + '"] .model-btn-play');
-        if (btn) { btn.classList.add('testing'); btn.disabled = true; }
-        if (dot) { dot.className = 'model-status-dot'; dot.querySelector('.status-tooltip').textContent = '测试中...'; }
+var searchTimer;
+document.getElementById('search-input').addEventListener('input',function(){
+clearTimeout(searchTimer);
+var self=this;
+searchTimer=setTimeout(function(){searchQuery=self.value.trim();renderModels();},200);
+});
 
-        var t0 = Date.now();
-        var result = await doCall(modelId, '1+1=?');
-        var latency = Date.now() - t0;
+// ======== BALANCE SYNC ========
+async function initBalanceAsync(){
+if(!curUser||!curUser.email)return;
+try{
+var hds={'X-Auth-Email':curUser.email,'X-Auth-Pass':curUser.pass||''};
+var resp=await fetch('/api/user/balance',{headers:hds});
+var data=await resp.json();
+if(data&&data.balance!==undefined){
+userBalance=parseFloat(data.balance);
+localStorage.setItem('user-fiat-balance',userBalance.toFixed(2));
+updateBalanceDisplay();
+}
+}catch(e){}
+}
 
-        var status = { ok: result.success, latency: result.latency || latency, error: result.error || '' };
-        modelStatus[modelId] = status;
-        updateStatusDot(modelId, status);
+// ======== INIT ========
+applyI18n();
+updateBalanceDisplay();
+renderModels();
+initBalanceAsync();
 
-        if (btn) { btn.classList.remove('testing'); btn.disabled = false; }
-        return status;
-    }
-
-    function updateStatusDot(modelId, status) {
-        var dot = document.getElementById('dot-' + modelId);
-        if (!dot) return;
-        var cls = status.ok ? 'model-status-dot green' : 'model-status-dot red';
-        dot.className = cls;
-        var tip = status.ok
-            ? 'OK · ' + status.latency + 'ms'
-            : 'FAIL · ' + (status.error || '未知错误');
-        dot.querySelector('.status-tooltip').textContent = tip;
-    }
-
-    async function testAll() {
-        var btn = document.getElementById('btn-test-all');
-        var progress = document.getElementById('test-progress');
-        var progressText = document.getElementById('test-progress-text');
-        var progressFill = document.getElementById('test-progress-fill');
-        var progressResult = document.getElementById('test-progress-result');
-        if (!btn) return;
-
-        btn.disabled = true;
-        progress.classList.add('show');
-
-        var total = MODELS.length;
-        var ok = 0, fail = 0;
-
-        for (var i = 0; i < total; i++) {
-            var m = MODELS[i];
-            progressText.textContent = (i+1) + '/' + total;
-            progressFill.style.width = ((i+1)/total*100) + '%';
-
-            var status = await testModel(m.id);
-            if (status.ok) ok++; else fail++;
-            progressResult.textContent = 'OK: ' + ok + ' FAIL: ' + fail;
-        }
-
-        btn.disabled = false;
-        progressResult.textContent = '完成 · OK: ' + ok + ' FAIL: ' + fail;
-    }
-
-    /* ========== Chat Modal ========== */
-    var chatModelId = null;
-    var chatHistory = [];
-
-    function startChat(id) {
-      var m = MODELS.find(function(x){return x.id===id;});
-      if(!m) return;
-      chatModelId = id;
-      chatHistory = [];
-      document.getElementById('chat-modal-title').textContent = m.id;
-      document.getElementById('chat-modal-body').innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:16px">' + (m.description || '') + '</div>';
-      document.getElementById('chat-modal-input').value = '';
-      document.getElementById('chat-overlay').classList.add('show');
-      setTimeout(function(){ document.getElementById('chat-modal-input').focus(); }, 200);
-    }
-
-    function closeChat() {
-      document.getElementById('chat-overlay').classList.remove('show');
-      chatModelId = null;
-    }
-
-    function getTodouModelId(m) { return m.replace(/-td$/,''); }
-
-    async function sendChatMsg() {
-      if (!chatModelId) return;
-      var input = document.getElementById('chat-modal-input');
-      var body = document.getElementById('chat-modal-body');
-      var sendBtn = document.getElementById('chat-modal-send');
-      var p = input.value.trim();
-      if (!p) return;
-      input.value = '';
-      input.style.height = 'auto';
-      sendBtn.disabled = true;
-
-      body.innerHTML += '<div class="chat-msg user">' + escHtml(p) + '</div>';
-
-      var typing = document.createElement('div');
-      typing.className = 'chat-typing';
-      typing.textContent = t('chat_thinking') || '思考中...';
-      body.appendChild(typing);
-      body.scrollTop = body.scrollHeight;
-
-      var lm = {zh:'Chinese',en:'English',ja:'Japanese',ko:'Korean',
-                es:'Spanish',fr:'French',de:'German',pt:'Portuguese',
-                ru:'Russian',ar:'Arabic',hi:'Hindi'};
-      var msgs = [{role:'system',content:'You are a helpful AI assistant. Always respond in '+(lm[currentLang]||'English')+'. Keep responses concise.'},
-                  {role:'user',content:p}];
-      try {
-        var ctrl = new AbortController();
-        var tid = setTimeout(function(){ctrl.abort();},60000);
-        var headers = {'Content-Type':'application/json'};
-        try {
-          var u = JSON.parse(localStorage.getItem('nexus_user')||'{}');
-          if(u.email && u.pass){headers['X-Auth-Email']=u.email;headers['X-Auth-Pass']=u.pass;}
-        }catch(e){}
-        var resp = await fetch('/api/chat',{
-          method:'POST',headers:headers,
-          body:JSON.stringify({model:getTodouModelId(chatModelId),messages:msgs,provider:'th'}),
-          signal:ctrl.signal
-        });
-        clearTimeout(tid);
-        typing.remove();
-        if(!resp.ok){
-          var et = await resp.text();
-          var em = et;
-          try{var ej=JSON.parse(et);em=ej.error||et;}catch(e2){em='HTTP '+resp.status;}
-          body.innerHTML += '<div class="chat-msg assistant" style="color:var(--red)">'+t('chat_error')+': '+escHtml(em)+'</div>';
-          sendBtn.disabled = false;
-          body.scrollTop = body.scrollHeight;
-          return;
-        }
-        var r = await resp.json();
-        if(r.error) throw new Error(r.error);
-        var rp = (r.choices?.[0]?.message?.content)||'(no response)';
-        var html = '<div class="chat-msg assistant">' + escHtml(rp);
-        var z = r._ztw;
-        if(z && z.cny_deducted > 0){
-          html += '<div class="msg-meta">-¥' + z.cny_deducted.toFixed(2) + ' CNY</div>';
-        } else if(z && z.usd_deducted > 0){
-          html += '<div class="msg-meta">-$' + z.usd_deducted.toFixed(2) + ' USD</div>';
-        }
-        html += '</div>';
-        body.innerHTML += html;
-      } catch(e) {
-        typing.remove();
-        body.innerHTML += '<div class="chat-msg assistant" style="color:var(--red)">'+t('chat_error')+': '+escHtml(e.name==='AbortError'?(t('chat_timeout')||'请求超时'):e.message)+'</div>';
-      }
-      sendBtn.disabled = false;
-      body.scrollTop = body.scrollHeight;
-    }
-
-    var escHtml = function(str){
-      if(!str)return'';
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    };
-
-    // Close on overlay click
-    document.getElementById('chat-overlay').addEventListener('click',function(e){
-      if(e.target===this) closeChat();
-    });
-
-    // Auto-grow textarea
-    document.getElementById('chat-modal-input').addEventListener('input',function(){
-      this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';
-    });
-    </script>
+// Listen for lang change from parent (index.html)
+window.addEventListener('langChange',function(e){
+if(e.detail&&LANG[e.detail]){currentLang=e.detail;applyI18n();renderModels();}
+});
+</script>
 </body>
 </html>
