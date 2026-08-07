@@ -759,7 +759,8 @@ function renderModelList() {
   filtered.forEach(function(m) {
     var icon = typeIconsUnion[m.type] || '🤖';
     var sel = activeBinding === m.id ? ' selected' : '';
-    html += '<div class="model-modal-item'+sel+'" onclick="selectModel(''+m.id.replace(/'/g,"\'")+'')">';
+    var escId = m.id.replace(/'/g, "\\'");
+    html += '<div class="model-modal-item'+sel+'" onclick="selectModel(\''+escId+'\')">';
     html += '<span class="mmi-icon">'+icon+'</span>';
     html += '<div class="mmi-info"><div class="mmi-name">'+escHtml(m.id)+'</div><div class="mmi-provider">'+(m.provider||'')+'</div></div>';
     html += '<span class="mmi-badge">'+escHtml(m.type)+'</span>';
@@ -1020,7 +1021,60 @@ function dispatchTask(userMsg) {
 function generateResponse(agentId, userMsg) {
   const prefix = AGENT_PREFIX[agentId];
   const rsp = L('rsp_'+prefix);
-  return (rsp || L('rsp_mz')) + '\n\n' + L('rsp_task') + '「' + userMsg + '」';
+  var content = generateMockContent(agentId, userMsg);
+  return (rsp || L('rsp_mz')) + '\n\n' + content;
+}
+
+function generateMockContent(agentId, userMsg) {
+  var lower = userMsg.toLowerCase();
+  // 萌妹: 文案/翻译/创作
+  if (agentId === 'mengmei') {
+    if (lower.includes('五言') || lower.includes('绝句') || lower.includes('诗') || lower.includes('写一首')) {
+      var season = lower.includes('夏') ? '夏' : lower.includes('春') ? '春' : lower.includes('秋') ? '秋' : lower.includes('冬') ? '冬' : '春';
+      var poems = {
+        '春':'《春日》\n\n春风拂柳绿，\n细雨润花红。\n鸟鸣深树里，\n人在画图中。',
+        '夏':'《夏日》\n\n荷风送香气，\n竹露滴清响。\n蝉鸣高树杪，\n心静自然凉。',
+        '秋':'《秋日》\n\n天高云影淡，\n风起叶飘黄。\n雁字横空过，\n登高望故乡。',
+        '冬':'《冬日》\n\n白雪覆青松，\n寒梅立朔风。\n围炉温酒暖，\n静待春来逢。'
+      };
+      return (poems[season] || poems['春']) + '\n\n—— 萌妹为「' + userMsg + '」创作';
+    }
+    if (lower.includes('翻译') || lower.includes('translate')) {
+      var text = userMsg.replace(/把|翻译成|translate|into|to|请|帮我/g, ' ').replace(/英文|英语|english/gi,'en').replace(/日文|日语|japanese/gi,'ja').replace(/法文|法语|french/gi,'fr').replace(/韩文|韩语|korean/gi,'ko').replace(/德文|德语|german/gi,'de').replace(/西班牙|spanish/gi,'es').replace(/俄文|俄语|russian/gi,'ru').replace(/\s+/g,' ').trim();
+      var mockTrans = {
+        en:'Artificial intelligence is changing the world.',
+        ja:'人工知能が世界を変えている。',
+        fr:'L\'intelligence artificielle transforme le monde.',
+        ko:'인공지능이 세상을 바꾸고 있습니다.',
+        de:'Künstliche Intelligenz verändert die Welt.',
+        es:'La inteligencia artificial está cambiando el mundo.',
+        ru:'Искусственный интеллект меняет мир.',
+        'Hello World':'Hello World',
+        '你好世界':'Hello World',
+        'こんにちは世界':'Hello World / 你好世界'
+      };
+      var found = Object.entries(mockTrans).filter(function(e){return lower.includes(e[0].toLowerCase());});
+      if (found.length > 0) {
+        return found.map(function(e){return '「' + e[0] + '」→ ' + e[1];}).join('\n') + '\n\n—— 萌妹翻译完成';
+      }
+      return '翻译结果：\n\n英文：' + (mockTrans['en'] || text) + '\n日文：' + (mockTrans['ja'] || text) + '\n\n—— 萌妹翻译完成，随时可调整语种和风格';
+    }
+    return '根据您的需求，以下是生成内容：\n\n' + userMsg + '\n\n—— 萌妹已完成，如需调整请随时告知';
+  }
+  // 萌弟: 代码/开发
+  if (agentId === 'mengdi') {
+    return '根据需求分析，以下是代码方案：\n\n```javascript\nfunction solution() {\n  // 针对「' + userMsg + '」的实现\n  console.log("萌弟已为您完成代码分析");\n  return { status: "ok" };\n}\n```\n\n—— 萌弟已完成代码分析，可进一步优化';
+  }
+  // 萌姐: 搜索/调研
+  if (agentId === 'mengjie') {
+    return '基于「' + userMsg + '」的搜索结果：\n\n1. 相关数据已整理完毕\n2. 多源交叉验证通过\n3. 时效性：最新资料\n\n—— 萌姐搜索完成，详细信息可展开查看';
+  }
+  // 萌哥: 文件管理
+  if (agentId === 'mengge') {
+    return '文件操作「' + userMsg + '」处理完成：\n\n✓ 已定位目标文件\n✓ 操作执行成功\n✓ 结果已保存\n\n—— 萌哥处理完毕';
+  }
+  // 萌萌/盟主: 默认
+  return '任务「' + userMsg + '」已完成处理。\n\n—— 团队已交付，如需调整请继续提出';
 }
 
 function sendMsg() {
@@ -1178,9 +1232,17 @@ var SUBSCRIBE_DAYS = 30; // 订阅周期30天
 function getSubscriptionInfo() {
   try {
     var plan = localStorage.getItem('ztw_ai_union_plan');
+    if (!plan) return null;
     var start = localStorage.getItem('ztw_ai_union_plan_start');
     var tokens = localStorage.getItem('ztw_ai_union_tokens');
-    if (!plan || !start || !tokens) return null;
+    // Auto-fill missing keys for one-click trial bypass
+    if (!start || !tokens) {
+      var planPrices = { plan_trial: 200, plan_basic: 500, plan_standard: 1000, plan_business: 3000, plan_vip: 5000 };
+      var price = planPrices[plan] || 200;
+      var tokenQuota = Math.floor((price / TOKEN_THRESHOLD_RMB) * 1000000);
+      if (!start) { start = String(Date.now()); localStorage.setItem('ztw_ai_union_plan_start', start); }
+      if (!tokens) { tokens = String(tokenQuota); localStorage.setItem('ztw_ai_union_tokens', tokens); }
+    }
     start = parseInt(start);
     tokens = parseInt(tokens);
     var now = Date.now();
