@@ -424,7 +424,7 @@ const slides = [
 // Stat labels lookup
 const statLabels = ['ai_tools','holders','vol','mcap'];
 
-let idx=0,playing=true,timer=null,lang='zh-CN',elapsed=0;
+let idx=0,playing=false,timer=null,lang='zh-CN',elapsed=0;
 const totalDuration = slides.reduce((s,sl) => s+sl.t, 0);
 
 // Auto-detect language from URL param or parent window
@@ -487,18 +487,17 @@ function init(){
   });
   updateUI();
   loadAudio();
+  document.getElementById('playBtn').textContent='▶ 播放';
   startAuto();
 }
 
 function loadAudio(){
   const a=document.getElementById('audioPlayer');
-  // Audio mapping: zh-CN/zh-TW use Chinese, en uses English, others use closest
   if(lang==='zh-CN'||lang==='zh-TW'){
     a.src='promo_audio_zh.mp3';
   } else {
     a.src='promo_audio_en.mp3';
   }
-  a.load();
 }
 
 function startAuto(){
@@ -576,9 +575,12 @@ function prevSlide(){if(idx>0){idx--;showSlide();}}
 function togglePlay(){
   playing=!playing;
   document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
-  const a=document.getElementById('audioPlayer');
-  playing?a.play().catch(()=>{}):a.pause();
-  playing?startAuto():clearTimeout(timer);
+  if(playing){
+    startAuto();
+  } else {
+    clearTimeout(timer);
+    document.getElementById('audioPlayer').pause();
+  }
 }
 function stop(){
   playing=false;
