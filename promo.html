@@ -493,11 +493,7 @@ function init(){
 
 function loadAudio(){
   const a=document.getElementById('audioPlayer');
-  if(lang==='zh-CN'||lang==='zh-TW'){
-    a.src='promo_audio_zh.mp3';
-  } else {
-    a.src='promo_audio_en.mp3';
-  }
+  a.src='promo_audio_'+lang+'.mp3';
 }
 
 function startAuto(){
