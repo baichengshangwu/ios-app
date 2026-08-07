@@ -424,7 +424,7 @@ const slides = [
 // Stat labels lookup
 const statLabels = ['ai_tools','holders','vol','mcap'];
 
-let idx=0,playing=true,timer=null,lang='zh-CN',elapsed=0;
+let idx=0,playing=false,timer=null,lang='zh-CN',elapsed=0;
 const totalDuration = slides.reduce((s,sl) => s+sl.t, 0);
 
 // Auto-detect language from URL param or parent window
@@ -487,21 +487,17 @@ function init(){
   });
   updateUI();
   loadAudio();
+  document.getElementById('playBtn').textContent='▶ 播放';
   startAuto();
 }
 
 function loadAudio(){
   const a=document.getElementById('audioPlayer');
-  const map={
-    'zh-CN':'promo_audio_zh-CN.mp3','zh-TW':'promo_audio_zh-TW.mp3','en':'promo_audio_en.mp3',
-    'ja':'promo_audio_ja.mp3','ko':'promo_audio_ko.mp3','es':'promo_audio_es.mp3',
-    'fr':'promo_audio_fr.mp3','de':'promo_audio_de.mp3','pt':'promo_audio_pt.mp3',
-    'ru':'promo_audio_ru.mp3','ar':'promo_audio_ar.mp3','hi':'promo_audio_hi.mp3',
-    'th':'promo_audio_th.mp3','vi':'promo_audio_vi.mp3','id':'promo_audio_id.mp3',
-    'it':'promo_audio_it.mp3'
-  };
-  a.src=map[lang]||'promo_audio_en.mp3';
-  a.load();
+  if(lang==='zh-CN'||lang==='zh-TW'){
+    a.src='promo_audio_zh.mp3';
+  } else {
+    a.src='promo_audio_en.mp3';
+  }
 }
 
 function startAuto(){
@@ -579,9 +575,12 @@ function prevSlide(){if(idx>0){idx--;showSlide();}}
 function togglePlay(){
   playing=!playing;
   document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
-  const a=document.getElementById('audioPlayer');
-  playing?a.play().catch(()=>{}):a.pause();
-  playing?startAuto():clearTimeout(timer);
+  if(playing){
+    startAuto();
+  } else {
+    clearTimeout(timer);
+    document.getElementById('audioPlayer').pause();
+  }
 }
 function stop(){
   playing=false;
