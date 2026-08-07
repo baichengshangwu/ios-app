@@ -19496,34 +19496,58 @@ function _ensurePanelBackBtns(){
 
 
 <script>
-/* === Navigation Fallback: ensure sp() is always defined === */
-if(typeof sp!=='function'){
-  window.sp=function(page){
-    try{var l=document.getElementById('global-loading');if(l)l.classList.add('active');}catch(e){}
-    window.curPage=page;
-    try{
-      var navLinks=document.querySelectorAll('.nls a');
-      for(var i=0;i<navLinks.length;i++)navLinks[i].classList.remove('active');
-      var nl=document.querySelector('.nls a[data-page="'+page+'"]');
-      if(nl)nl.classList.add('active');
-    }catch(e){}
-    try{
-      var pgs=document.querySelectorAll('.pg');
-      for(var j=0;j<pgs.length;j++)pgs[j].classList.remove('active');
-      var el=document.getElementById('page-'+page);
-      if(el)el.classList.add('active');
-    }catch(e){}
-    try{if(typeof rAll==='function')rAll();}catch(e){}
-    try{if(page==='tools')rTools();else if(page==='p2p')rP2P();else if(page==='trade')rTrade();else if(page==='events')rEvents();else if(page==='social')rSocial();else if(page==='forum'&&typeof loadForumFeed==='function')loadForumFeed();else if(page==='compute'&&typeof renderComputePage==='function')renderComputePage();else if(page==='member'&&typeof renderMemberPage==='function')renderMemberPage();else if(page==='agent'&&typeof loadAgentDashboard==='function'){loadAgentDashboard();if(typeof renderAgentCard==='function')renderAgentCard();}}catch(e){}
-    try{if(typeof syncWalletBalances==='function')syncWalletBalances();}catch(e){}
-    try{if(typeof updateUserBadge==='function')updateUserBadge();}catch(e){}
-    try{if(typeof applyI18N==='function')applyI18N();}catch(e){}
-    setTimeout(function(){try{var l=document.getElementById('global-loading');if(l)l.classList.remove('active');}catch(e){}},400);
-  };
-}
-if(typeof togNav!=='function'){
-  window.togNav=function(show){try{var n=document.getElementById('nav');if(n)n.style.display=show===false?'none':'flex';}catch(e){}}
-}
+/* === Navigation Fallback v2: unconditional override + event binding === */
+window.sp=function(page){
+  try{var l=document.getElementById('global-loading');if(l)l.classList.add('active');}catch(e){}
+  window.curPage=page;
+  try{
+    var navLinks=document.querySelectorAll('.nls a');
+    for(var i=0;i<navLinks.length;i++)navLinks[i].classList.remove('active');
+    var nl=document.querySelector('.nls a[data-page="'+page+'"]');
+    if(nl)nl.classList.add('active');
+  }catch(e){}
+  try{
+    var pgs=document.querySelectorAll('.pg');
+    for(var j=0;j<pgs.length;j++)pgs[j].classList.remove('active');
+    var el=document.getElementById('page-'+page);
+    if(el)el.classList.add('active');
+  }catch(e){}
+  try{if(typeof rAll==='function')rAll();}catch(e){}
+  try{if(page==='tools')rTools();else if(page==='p2p')rP2P();else if(page==='trade')rTrade();else if(page==='events')rEvents();else if(page==='social')rSocial();else if(page==='forum'&&typeof loadForumFeed==='function')loadForumFeed();else if(page==='compute'&&typeof renderComputePage==='function')renderComputePage();else if(page==='member'&&typeof renderMemberPage==='function')renderMemberPage();else if(page==='agent'&&typeof loadAgentDashboard==='function'){loadAgentDashboard();if(typeof renderAgentCard==='function')renderAgentCard();}}catch(e){}
+  try{if(typeof syncWalletBalances==='function')syncWalletBalances();}catch(e){}
+  try{if(typeof updateUserBadge==='function')updateUserBadge();}catch(e){}
+  try{if(typeof applyI18N==='function')applyI18N();}catch(e){}
+  setTimeout(function(){try{var l=document.getElementById('global-loading');if(l)l.classList.remove('active');}catch(e){}},400);
+};
+window.togNav=function(show){try{var n=document.getElementById('nav');if(n)n.style.display=show===false?'none':'flex';}catch(e){}}
+
+/* Re-bind all navigation clicks */
+(function _rebindNav(){
+  var nls=document.querySelector('.nls');
+  if(nls){
+    var clone=nls.cloneNode(true);
+    nls.parentNode.replaceChild(clone,nls);
+    clone.addEventListener('click',function(e){
+      var t=e.target.closest('a[data-page]');
+      if(t&&t.dataset.page){
+        e.preventDefault();
+        window.sp(t.dataset.page);
+      }
+    });
+  }
+  /* Re-bind other data-page clickable elements */
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-page]');
+    if(t&&t.dataset.page&&!t.closest('.nls')){
+      e.preventDefault();
+      window.sp(t.dataset.page);
+    }else if(t&&t.dataset.action){
+      e.preventDefault();
+      var a=t.dataset.action;
+      try{if(typeof window[a]==='function')window[a]();}catch(e){}
+    }
+  });
+})();
 </script>
 
 </body>
