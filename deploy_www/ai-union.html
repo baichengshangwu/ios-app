@@ -70,6 +70,37 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 .mic-btn:hover{color:var(--accent)}
 .mic-btn.recording{color:#22c55e;animation:micGlow 1s infinite}
 .mic-btn.always-on{color:#22c55e;animation:micGlow 1.2s infinite}
+
+/* ===== Inline Plus Button (in input-wrap) ===== */
+.plus-inline{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--muted);font-size:22px;
+  cursor:pointer;padding:4px;border-radius:50%;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  font-weight:300;
+}
+.plus-inline:hover{color:var(--accent)}
+
+/* ===== Mic Button in Send Group ===== */
+.mic-btn-send{
+  background:var(--card)!important;border:2px dashed var(--border)!important;
+  color:var(--muted)!important;padding:0!important;font-size:18px!important;
+  font-weight:300!important;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;width:100%;min-width:44px;height:28px;
+  border-radius:8px!important;transition:all .2s;
+}
+.mic-btn-send:hover{border-color:var(--accent)!important;color:var(--accent)!important;background:rgba(99,102,241,0.06)!important}
+.mic-btn-send.recording{color:#22c55e!important;border-color:#22c55e!important;animation:micGlow 1s infinite}
+.mic-btn-send.always-on{color:#22c55e!important;border-color:#22c55e!important;animation:micGlow 1.2s infinite}
+
+/* ===== Header Pricing Button ===== */
+.header-pricing-btn{
+  background:#22c55e!important;border:none!important;color:#fff!important;
+  border-radius:8px!important;padding:6px 14px!important;font-size:13px!important;
+  font-weight:600!important;cursor:pointer;white-space:nowrap;transition:all .2s;
+  box-shadow:0 2px 8px rgba(34,197,94,0.35)!important;
+}
+.header-pricing-btn:hover{background:#16a34a!important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(34,197,94,0.45)!important}
 @keyframes micGlow{0%,100%{text-shadow:0 0 4px #22c55e,0 0 8px rgba(34,197,94,.5)}50%{text-shadow:0 0 12px #22c55e,0 0 24px rgba(34,197,94,.7)}}
 .mic-indicator{
   position:absolute;top:-28px;left:50%;transform:translateX(-50%);
@@ -701,6 +732,7 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
   <div style="display:flex;align-items:center;gap:12px">
     <button class="back-btn" onclick="history.back()">← 返回</button>
     <h1><span class="title-icon">🐼</span><span data-key="header_title">AI联盟智能办公室</span></h1>
+    <button onclick="showPricing()" id="pricingBtn" class="header-pricing-btn" data-key="pricing_btn">价格套餐</button>
   </div>
   <div class="header-right">
     <div class="lang-switch">
@@ -845,10 +877,10 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
         <div class="trans-status">语音对话模式 · 正在聆听</div>
       </div>
       <div class="input-wrap">
-      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="语音录制">🎤</button>
       <input type="file" id="micAudioUpload" accept="audio/*" style="display:none" onchange="handleAudioUpload(event)">
       
       <input type="text" id="msgInput" inputmode="text" enterkeyhint="send" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="plus-inline" id="uploadBtn" onclick="toggleUploadMenu(event)" title="上传图片/文件">+</button>
       </div>
       <button class="mem-dashboard-toggle" id="memDashboardToggle" onclick="toggleMemDashboard()" title="记忆看板">📋<span class="badge" id="memBadge" style="display:none">0</span></button>
       <div class="upload-overlay" id="uploadOverlay" onclick="closeUploadMenu()"></div>
@@ -864,10 +896,9 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
       <input type="file" id="imageUploadInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
       <input type="file" id="fileUploadInput" style="display:none" onchange="handleFileUpload(event)">
       <div class="send-btn-group">
-      <button class="upload-btn" id="uploadBtn" onclick="toggleUploadMenu(event)" title="上传图片/文件">+</button>
+      <button class="mic-btn-send" id="micBtn" onclick="toggleMic()" title="语音录制">🎤</button>
       <button onclick="sendMsg()" id="sendBtn" data-key="send">发送</button>
       </div>
-      <button onclick="showPricing()" id="pricingBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;box-shadow:0 2px 8px rgba(99,102,241,0.35)" data-key="pricing_btn">价格套餐</button>
       <button onclick="openModelSelector()" id="modelSelectorBtn" class="model-selector-btn" title="算力引擎"><span>算力引擎</span><span class="model-badge-id" id="selectedModelBadge"></span></button><button onclick="toggleTeamView()" id="teamToggleBtn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .2s" title="Show/Hide Team">🐼</button>
     </div>
   </div>
