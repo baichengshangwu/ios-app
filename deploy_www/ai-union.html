@@ -1584,6 +1584,7 @@ var _origSendMsg=sendMsg;sendMsg=function(){var input=document.getElementById('m
 </script>
 
 
+<script>
 /* ========== Topic Channel State ========== */
 var TOPICS={active:1,data:{1:{name:'话题 1',msgs:[],outputs:[]},2:{name:'话题 2',msgs:[],outputs:[]},3:{name:'话题 3',msgs:[],outputs:[]},4:{name:'话题 4',msgs:[],outputs:[]},5:{name:'话题 5',msgs:[],outputs:[]}}};
 function switchTopic(n){
@@ -2167,7 +2168,7 @@ document.addEventListener('keydown',function(e){
     if(panel.classList.contains('show')){closeMemDashboard();}
   }
 });
-
+</script>
 <div class="modal-overlay" id="pricingOverlay" onclick="if(event.target===this)hidePricing()">
   <div class="pricing-modal">
     <button class="modal-close" onclick="hidePricing()" style="float:right;background:none;border:none;font-size:24px;color:var(--muted);cursor:pointer">&times;</button>
