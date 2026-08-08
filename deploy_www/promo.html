@@ -46,7 +46,7 @@ audio{display:none}
 <div class="slide-indicator" id="slideIndicator">1 / 15</div>
 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 <div class="controls">
-<button onclick="togglePlay()" id="playBtn">⏸ 暂停</button>
+<button onclick="togglePlay()" id="playBtn">▶ 播放</button>
 <button onclick="prevSlide()">⏮</button>
 <button onclick="nextSlide()">⏭</button>
 <button onclick="restart()">🔄 重播</button>
@@ -334,7 +334,7 @@ const slideTitles = [
   {titles:{"zh-CN": "即刻体验 AI Nexus", "en": "Experience AI Nexus Now"},descs:{"zh-CN": "OpenAI · Anthropic · Google · DeepSeek · 豆包 · 智谱 · 通义千问 · 快手", "en": "OpenAI · Anthropic · Google · DeepSeek · ByteDance · ZhipuAI · Alibaba · Kuaishou"}}
 ];
 
-let idx=0,playing=true,timer=null,lang='zh-CN',elapsed=0;
+let idx=0,playing=false,timer=null,lang='zh-CN',elapsed=0;
 const totalDuration = slides.reduce((s,sl) => s+sl.t, 0);
 
 function init(){
@@ -431,8 +431,12 @@ function togglePlay(){
   playing=!playing;
   document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
   const a=document.getElementById('audioPlayer');
-  playing?a.play().catch(()=>{}):a.pause();
-  playing?startAuto():clearTimeout(timer);
+  if(playing){
+    startAuto();
+  }else{
+    a.pause();
+    clearTimeout(timer);
+  }
 }
 function stop(){
   playing=false;
