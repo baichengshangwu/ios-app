@@ -68,10 +68,9 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
   display:flex;align-items:center;justify-content:center;line-height:1;
 }
 .mic-btn:hover{color:var(--accent)}
-.mic-btn.recording{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444;animation:micPulse .8s infinite}
-.mic-btn.always-on{background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e}
-.mic-btn.always-on::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#22c55e;border-radius:50%;animation:micPulse 1.5s infinite}
-@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.mic-btn.recording{color:#22c55e;animation:micGlow 1s infinite}
+.mic-btn.always-on{color:#22c55e;animation:micGlow 1.2s infinite}
+@keyframes micGlow{0%,100%{text-shadow:0 0 4px #22c55e,0 0 8px rgba(34,197,94,.5)}50%{text-shadow:0 0 12px #22c55e,0 0 24px rgba(34,197,94,.7)}}
 .mic-indicator{
   position:absolute;top:-28px;left:50%;transform:translateX(-50%);
   background:rgba(239,68,68,.9);color:#fff;padding:3px 10px;border-radius:6px;
