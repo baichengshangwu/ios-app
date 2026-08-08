@@ -444,17 +444,14 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 .typing-indicator span:nth-child(3){animation-delay:0.4s}
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
 .byte-counter{
-  display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;
-  border-top:1px solid var(--border);font-size:11px;color:var(--muted);width:100%;
+  display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding-top:6px;
+  border-top:1px solid var(--border);width:100%;
 }
-.byte-counter .bc-label{white-space:nowrap}
-.byte-counter .bc-num{
-  font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;
-  transition:all 0.3s ease;min-width:40px;text-align:right;
+.byte-counter .bc-char{
+  font-size:8px;font-weight:300;color:var(--muted);white-space:nowrap;
 }
-.byte-counter .bc-num.counting{animation:numPop 0.4s ease}
-@keyframes numPop{0%{transform:scale(1.4);color:var(--accent2)}100%{transform:scale(1);color:var(--accent)}}
-.byte-counter .bc-desc{font-size:11px;color:var(--muted)}
+.byte-counter .bc-char.counting{animation:numPop 0.4s ease}
+@keyframes numPop{0%{transform:scale(1.4);color:var(--accent2)}100%{transform:scale(1);color:var(--muted)}}
 
 
 .input-bar{
@@ -1143,9 +1140,9 @@ function renderMessages() {
       var bubbleHtml = '<div class="bubble"><div class="sender">'+getAgentName(m.agentId)+'</div>'+m.text.replace(/\n/g,'<br>');
       // Add byte counter if token info exists
       if (m.tokens !== undefined) {
-        var tokenLabel = m.tokens >= 1000000 ? (m.tokens/1000000).toFixed(1)+'M' : m.tokens >= 1000 ? (m.tokens/1000).toFixed(0)+'K' : String(m.tokens);
-        var statusLabel = m.spinnerState ? L('bp_'+m.spinnerState) : L('bp_done');
-        bubbleHtml += '<div class="byte-counter"><span class="bc-desc">'+statusLabel+'</span><span class="bc-num">'+tokenLabel+'</span></div>';
+        var charCount = m.tokens;
+        var charLabel = charCount >= 1000000 ? (charCount/1000000).toFixed(1)+'M' : charCount >= 1000 ? (charCount/1000).toFixed(0)+'K' : String(charCount);
+        bubbleHtml += '<div class="byte-counter"><span class="bc-char">'+charLabel+' 字符</span></div>';
       }
       bubbleHtml += '</div>';
       div.innerHTML = avatarHtml + bubbleHtml;
@@ -1174,7 +1171,7 @@ function addTyping(agentId, spinnerState) {
     '<div class="ap-body"></div>'+
     '<div class="ap-arm l"></div><div class="ap-arm r"></div>'+
     '</div></div><div class="bubble"><div class="sender">'+getAgentName(agentId)+'</div><div class="typing-indicator"><span></span><span></span><span></span></div>'+
-    '<div class="byte-counter"><span class="bc-desc">'+L('bp_'+ss)+'</span><span class="bc-num">0</span></div></div>';
+    '<div class="byte-counter"><span class="bc-char">0 字符</span></div></div>';
   chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
 }
 
@@ -1183,8 +1180,8 @@ function updateSpinnerState(agentId, state) {
   if (!el) return;
   const spinner = el.querySelector('.msg-avatar-spinner');
   if (spinner) { spinner.className = 'msg-avatar-spinner '+state; }
-  const desc = el.querySelector('.bc-desc');
-  if (desc) { desc.textContent = L('bp_'+state); }
+  const bcChar = el.querySelector('.bc-char');
+  if (bcChar) { bcChar.textContent = (state==='connecting'?'连接中':state==='processing'?'处理中':'')+' '+bcChar.textContent.match(/\d.*/)[0]; }
   // Update sidebar card state
   var card = document.getElementById('card-'+agentId);
   if (card) {
@@ -1198,18 +1195,18 @@ function updateSpinnerState(agentId, state) {
 function updateByteCounter(agentId, num) {
   const el = document.getElementById('typing-'+agentId);
   if (!el) return;
-  const numEl = el.querySelector('.bc-num');
-  if (!numEl) return;
+  const charEl = el.querySelector('.bc-char');
+  if (!charEl) return;
   var label = num >= 1000000 ? (num/1000000).toFixed(1)+'M' : num >= 1000 ? (num/1000).toFixed(0)+'K' : String(num);
-  numEl.textContent = label;
-  numEl.classList.add('counting');
-  setTimeout(function(){ numEl.classList.remove('counting'); }, 400);
+  charEl.textContent = label+' 字符';
+  charEl.classList.add('counting');
+  setTimeout(function(){ charEl.classList.remove('counting'); }, 400);
 }
 
 function animateByteCounterEl(el, target) {
   if (!el) return;
   var label = target >= 1000000 ? (target/1000000).toFixed(1)+'M' : target >= 1000 ? (target/1000).toFixed(0)+'K' : String(target);
-  el.textContent = label;
+  el.textContent = label+' 字符';
   el.classList.add('counting');
   setTimeout(function(){ el.classList.remove('counting'); }, 400);
 }
@@ -1264,7 +1261,7 @@ function generateMockContent(agentId, userMsg) {
         '秋':'《秋日》\n\n天高云影淡，\n风起叶飘黄。\n雁字横空过，\n登高望故乡。',
         '冬':'《冬日》\n\n白雪覆青松，\n寒梅立朔风。\n围炉温酒暖，\n静待春来逢。'
       };
-      return (poems[season] || poems['春']) + '\n\n—— 萌妹为「' + userMsg + '」创作';
+      return (poems[season] || poems['春']);
     }
     if (lower.includes('翻译') || lower.includes('translate')) {
       var text = userMsg.replace(/把|翻译成|translate|into|to|请|帮我/g, ' ').replace(/英文|英语|english/gi,'en').replace(/日文|日语|japanese/gi,'ja').replace(/法文|法语|french/gi,'fr').replace(/韩文|韩语|korean/gi,'ko').replace(/德文|德语|german/gi,'de').replace(/西班牙|spanish/gi,'es').replace(/俄文|俄语|russian/gi,'ru').replace(/\s+/g,' ').trim();
@@ -1282,26 +1279,26 @@ function generateMockContent(agentId, userMsg) {
       };
       var found = Object.entries(mockTrans).filter(function(e){return lower.includes(e[0].toLowerCase());});
       if (found.length > 0) {
-        return found.map(function(e){return '「' + e[0] + '」→ ' + e[1];}).join('\n') + '\n\n—— 萌妹翻译完成';
+        return found.map(function(e){return '「' + e[0] + '」→ ' + e[1];}).join('\n');
       }
-      return '翻译结果：\n\n英文：' + (mockTrans['en'] || text) + '\n日文：' + (mockTrans['ja'] || text) + '\n\n—— 萌妹翻译完成，随时可调整语种和风格';
+      return '翻译结果：\n\n英文：' + (mockTrans['en'] || text) + '\n日文：' + (mockTrans['ja'] || text);
     }
-    return '根据您的需求，以下是生成内容：\n\n' + userMsg + '\n\n—— 萌妹已完成，如需调整请随时告知';
+    return '根据您的需求，以下是生成内容：\n\n' + userMsg;
   }
   // 萌弟: 代码/开发
   if (agentId === 'mengdi') {
-    return '根据需求分析，以下是代码方案：\n\n```javascript\nfunction solution() {\n  // 针对「' + userMsg + '」的实现\n  console.log("萌弟已为您完成代码分析");\n  return { status: "ok" };\n}\n```\n\n—— 萌弟已完成代码分析，可进一步优化';
+    return '代码方案如下：\n\n```javascript\nfunction solution() {\n  // 针对「' + userMsg + '」的实现\n  return { status: "ok" };\n}\n```';
   }
   // 萌姐: 搜索/调研
   if (agentId === 'mengjie') {
-    return '基于「' + userMsg + '」的搜索结果：\n\n1. 相关数据已整理完毕\n2. 多源交叉验证通过\n3. 时效性：最新资料\n\n—— 萌姐搜索完成，详细信息可展开查看';
+    return '搜索结果如下：\n\n1. 相关数据已整理\n2. 多源交叉验证\n3. 最新资料\n\n—— 如需展开详细信息请说明';
   }
   // 萌哥: 文件管理
   if (agentId === 'mengge') {
-    return '文件操作「' + userMsg + '」处理完成：\n\n✓ 已定位目标文件\n✓ 操作执行成功\n✓ 结果已保存\n\n—— 萌哥处理完毕';
+    return '文件操作完成：\n\n✓ 已定位目标文件\n✓ 操作执行成功\n✓ 结果已保存';
   }
-  // 萌萌/盟主: 默认
-  return '任务「' + userMsg + '」已完成处理。\n\n—— 团队已交付，如需调整请继续提出';
+  // 萌萌/盟主: 默认（电脑不在线兜底）
+  return '电脑目前不在线，暂时无法完成此任务';
 }
 
 function sendMsg() {
