@@ -62,11 +62,12 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 
 /* ===== Voice Mic Button ===== */
 .mic-btn{
-  background:var(--card);border:1px solid var(--border);color:var(--muted);
-  border-radius:10px;padding:10px 12px;font-size:18px;cursor:pointer;
-  flex-shrink:0;transition:all .2s;position:relative;
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--muted);font-size:18px;
+  cursor:pointer;padding:6px;border-radius:50%;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;line-height:1;
 }
-.mic-btn:hover{color:var(--accent);border-color:var(--accent)}
+.mic-btn:hover{color:var(--accent)}
 .mic-btn.recording{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444;animation:micPulse .8s infinite}
 .mic-btn.always-on{background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e}
 .mic-btn.always-on::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#22c55e;border-radius:50%;animation:micPulse 1.5s infinite}
@@ -458,9 +459,10 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
   background:var(--card);border-top:1px solid var(--border);
   padding:14px 20px;display:flex;gap:10px;
 }
+.input-wrap{position:relative;flex:1;display:flex}
 .input-bar input{
   flex:1;background:var(--bg);border:1px solid var(--border);
-  border-radius:10px;padding:10px 16px;color:var(--text);
+  border-radius:10px;padding:10px 38px 10px 16px;color:var(--text);
   font-size:14px;outline:none;transition:border 0.2s;
 }
 .input-bar input:focus{border-color:var(--accent)}
@@ -843,8 +845,12 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
         <div class="trans-text" id="transText"></div>
         <div class="trans-status">语音对话模式 · 正在聆听</div>
       </div>
-      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="语音录制（长按说话/点击常开）">🎤</button>
+      <div class="input-wrap">
+      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="语音录制">🎤</button>
       <input type="file" id="micAudioUpload" accept="audio/*" style="display:none" onchange="handleAudioUpload(event)">
+      
+      <input type="text" id="msgInput" inputmode="text" enterkeyhint="send" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter')sendMsg()">
+      </div>
       <button class="mem-dashboard-toggle" id="memDashboardToggle" onclick="toggleMemDashboard()" title="记忆看板">📋<span class="badge" id="memBadge" style="display:none">0</span></button>
       <div class="upload-overlay" id="uploadOverlay" onclick="closeUploadMenu()"></div>
       <div class="upload-popup" id="uploadPopup">
@@ -856,7 +862,6 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
         </div>
       </div>
       
-      <input type="text" id="msgInput" inputmode="text" enterkeyhint="send" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter')sendMsg()">
       <input type="file" id="imageUploadInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
       <input type="file" id="fileUploadInput" style="display:none" onchange="handleFileUpload(event)">
       <div class="send-btn-group">
