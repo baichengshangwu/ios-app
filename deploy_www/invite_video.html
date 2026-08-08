@@ -19,17 +19,12 @@ canvas{display:block;width:100%;height:100%;border-radius:12px;pointer-events:no
 </style>
 </head>
 <body>
-
 <div id="wrap">
-  <div style="position:absolute;top:8px;left:8px;z-index:20">
-    <button id="close-btn" onclick="window.parent.postMessage('close-invite','*')" style="font-size:.7rem;padding:3px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);color:#fff;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(255,0,0,.6)'" onmouseout="this.style.background='rgba(0,0,0,.5)'">✕</button>
-  </div>
   <canvas id="c" width="800" height="500"></canvas>
-  <audio id="voiceover-audio" preload="auto" style="display:none"></audio>
   <div id="subtitles"><span id="subtitle-text" style="opacity: 0;"></span></div>
   <div id="progress" style="width: 0%;"></div>
   <button id="fs-btn" title="全屏" onclick="toggleFullscreen()">⛶</button>
-  <button id="sound-btn" style="opacity:0.5" title="音效" onclick="toggleSound()">🔇</button>
+  <button id="sound-btn" title="音效" onclick="toggleSound()">🔇</button>
 </div>
 
 <script>
@@ -322,36 +317,6 @@ const SCRIPT = {
   ]
 };
 
-
-function loadVoiceover() {
-  var lang = getLang();
-  var audio = document.getElementById('voiceover-audio');
-  if (!audio) return;
-  var src = 'promo_audio_' + lang + '.mp3';
-  // Try with zh fallback
-  audio.onerror = function() {
-    if (lang !== 'zh-CN') {
-      audio.src = '../promo_audio_zh-CN.mp3';
-    }
-  };
-  audio.src = src;
-}
-function playVoiceover() {
-  var audio = document.getElementById('voiceover-audio');
-  if (audio) { audio.currentTime = 0; audio.play().catch(function(){}); }
-}
-function pauseVoiceover() {
-  var audio = document.getElementById('voiceover-audio');
-  if (audio) audio.pause();
-}
-// Sync voiceover with animation
-var _voSynced = false;
-function syncVoiceover() {
-  if (_voSynced) return;
-  _voSynced = true;
-  loadVoiceover();
-  setTimeout(function() { playVoiceover(); }, 500);
-}
 function getLang() {
   try { if (typeof window.parent !== 'undefined' && window.parent.curLang) return window.parent.curLang; } catch(e) {}
   var nav = navigator.language || 'zh-CN';
@@ -386,7 +351,7 @@ function resizeCanvas() {
   H = W * 5/8;
   canvas.width = W; canvas.height = H;
 }
-resizeCanvas(); syncVoiceover();
+resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 document.addEventListener('fullscreenchange', function(){ setTimeout(resizeCanvas,100); });
 document.addEventListener('webkitfullscreenchange', function(){ setTimeout(resizeCanvas,100); });
@@ -1146,32 +1111,7 @@ window.addEventListener('message', function(e) {
   if (e.data === 'enableSound') {
     _soundOn = true;
     var b = document.getElementById('sound-btn');
-    if (b) { b.textContent = '\u{1F50A}'; b.style.opacity = '1'; }
-  }
-  if (e.data === 'stop') {
-    running = false;
-    if(animId) cancelAnimationFrame(animId);
-    var a = document.getElementById('voiceover-audio');
-    if(a) { a.pause(); a.currentTime = 0; }
-    speechSynthesis.cancel();
-    subEl.style.opacity = '0';
-  }
-  if (e.data && e.data.type === 'langChange') {
-    _voSynced = false;
-    startTime = null;
-    currentTime = 0;
-    running = true;
-    lastSubtitleIdx = -1;
-    spokenSubtitles = {};
-    sceneInitDone = {};
-    particles = [];
-    sparkles = [];
-    pile1 = 0; pile2 = 0;
-    tableCoins = 0;
-    billStack = 0;
-    subEl.style.opacity = '0';
-    speechSynthesis.cancel();
-    syncVoiceover();
+    if (b) { b.textContent = '🔊'; b.style.opacity = '1'; }
   }
 });
 </script>
