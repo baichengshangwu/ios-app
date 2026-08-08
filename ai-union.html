@@ -62,15 +62,42 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 
 /* ===== Voice Mic Button ===== */
 .mic-btn{
-  background:var(--card);border:1px solid var(--border);color:var(--muted);
-  border-radius:10px;padding:10px 12px;font-size:18px;cursor:pointer;
-  flex-shrink:0;transition:all .2s;position:relative;
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--muted);font-size:18px;
+  cursor:pointer;padding:6px;border-radius:50%;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;line-height:1;
 }
-.mic-btn:hover{color:var(--accent);border-color:var(--accent)}
-.mic-btn.recording{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444;animation:micPulse .8s infinite}
-.mic-btn.always-on{background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e}
-.mic-btn.always-on::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#22c55e;border-radius:50%;animation:micPulse 1.5s infinite}
-@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.mic-btn:hover{color:var(--accent)}
+.mic-btn.recording{color:#22c55e;animation:micGlow 1s infinite}
+.mic-btn.always-on{color:#22c55e;animation:micGlow 1.2s infinite}
+
+/* ===== Button Row ===== */
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn-row button{
+  background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:8px 14px;font-size:14px;font-weight:500;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.btn-row button:hover{background:var(--bg);border-color:var(--accent);color:var(--accent)}
+.btn-row button.icon-btn{padding:8px 10px;font-size:18px}
+.btn-row .btn-send{
+  background:#22c55e!important;border-color:#22c55e!important;color:#fff!important;
+  font-weight:600;padding:8px 20px;
+}
+.btn-row .btn-send:hover{background:#16a34a!important;border-color:#16a34a!important}
+.btn-row .mic-recording{color:#22c55e!important;border-color:#22c55e!important;animation:micGlow 1s infinite}
+.btn-row .mic-always-on{color:#22c55e!important;border-color:#22c55e!important;animation:micGlow 1.2s infinite}
+
+/* ===== Header Pricing Button ===== */
+.header-pricing-btn{
+  background:#22c55e!important;border:none!important;color:#fff!important;
+  border-radius:8px!important;padding:6px 14px!important;font-size:13px!important;
+  font-weight:600!important;cursor:pointer;white-space:nowrap;transition:all .2s;
+  box-shadow:0 2px 8px rgba(34,197,94,0.35)!important;
+}
+.header-pricing-btn:hover{background:#16a34a!important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(34,197,94,0.45)!important}
+@keyframes micGlow{0%,100%{text-shadow:0 0 4px #22c55e,0 0 8px rgba(34,197,94,.5)}50%{text-shadow:0 0 12px #22c55e,0 0 24px rgba(34,197,94,.7)}}
 .mic-indicator{
   position:absolute;top:-28px;left:50%;transform:translateX(-50%);
   background:rgba(239,68,68,.9);color:#fff;padding:3px 10px;border-radius:6px;
@@ -444,30 +471,29 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 .typing-indicator span:nth-child(3){animation-delay:0.4s}
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
 .byte-counter{
-  display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;
-  border-top:1px solid var(--border);font-size:11px;color:var(--muted);width:100%;
+  display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding-top:6px;
+  border-top:1px solid var(--border);width:100%;
 }
-.byte-counter .bc-label{white-space:nowrap}
-.byte-counter .bc-num{
-  font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;
-  transition:all 0.3s ease;min-width:40px;text-align:right;
+.byte-counter .bc-char{
+  font-size:8px;font-weight:300;color:var(--muted);white-space:nowrap;
 }
-.byte-counter .bc-num.counting{animation:numPop 0.4s ease}
-@keyframes numPop{0%{transform:scale(1.4);color:var(--accent2)}100%{transform:scale(1);color:var(--accent)}}
-.byte-counter .bc-desc{font-size:11px;color:var(--muted)}
+.byte-counter .bc-char.counting{animation:numPop 0.4s ease}
+@keyframes numPop{0%{transform:scale(1.4);color:var(--accent2)}100%{transform:scale(1);color:var(--muted)}}
 
 
 .input-bar{
   background:var(--card);border-top:1px solid var(--border);
-  padding:14px 20px;display:flex;gap:10px;
+  padding:14px 20px;display:flex;flex-direction:column;align-items:stretch;gap:10px;
 }
-.input-bar input{
-  flex:1;background:var(--bg);border:1px solid var(--border);
+.input-row{width:100%}
+.input-row textarea{
+  width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);
   border-radius:10px;padding:10px 16px;color:var(--text);
-  font-size:14px;outline:none;transition:border 0.2s;
+  font-size:14px;outline:none;transition:border 0.2s;resize:vertical;
+  min-height:44px;max-height:150px;font-family:inherit;line-height:1.5;
 }
-.input-bar input:focus{border-color:var(--accent)}
-.input-bar input::placeholder{color:var(--muted)}
+.input-row textarea:focus{border-color:var(--accent)}
+.input-row textarea::placeholder{color:var(--muted)}
 .input-bar button{
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   color:#fff;border:none;border-radius:10px;padding:10px 20px;
@@ -476,19 +502,7 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 .input-bar button:hover{opacity:0.9}
 .input-bar button:disabled{opacity:0.5;cursor:not-allowed}
 
-.upload-btn{
-  background:var(--card)!important;border:2px dashed var(--border)!important;
-  color:var(--muted)!important;border-radius:12px!important;
-  width:44px;height:44px;padding:0!important;font-size:24px!important;
-  font-weight:300!important;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;flex-shrink:0;transition:all 0.2s;position:relative;
-}
-.upload-btn:hover{border-color:var(--accent)!important;color:var(--accent)!important;background:rgba(99,102,241,0.06)!important}
-
-.send-btn-group{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
-.send-btn-group .upload-btn{width:100%;min-width:44px;height:28px;font-size:18px!important;border-radius:8px!important;border-style:dashed!important}
-.send-btn-group #sendBtn{width:100%;padding:10px 14px}
-
+/* ===== Upload Popup ===== */
 .upload-popup{
   display:none;position:absolute;bottom:62px;left:20px;
   background:var(--card);border:1px solid var(--border);border-radius:12px;
@@ -562,7 +576,7 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 /* Model Selector Modal - hidden by default */
 .model-selector-btn {
   background: var(--bg); border: 1px solid var(--border); color: var(--accent);
-  border-radius: 8px; padding: 8px 12px; font-size: 12px; cursor: pointer;
+  border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer;
   white-space: nowrap; font-weight: 600; display: none; align-items: center; gap: 4px;
 }
 .model-selector-btn.show { display: flex; }
@@ -689,11 +703,11 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
 .mem-card-left-bar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
 .mem-dashboard-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 .mem-dashboard-empty .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
-.mem-dashboard-toggle{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10}
+.mem-dashboard-toggle{position:relative;width:auto;height:auto;min-width:30px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;gap:4px}
 .mem-dashboard-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .mem-dashboard-toggle.active{background:var(--accent);color:#fff}
 .mem-dashboard-toggle .badge{position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--danger);color:#fff;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
-@media (max-width:768px){.mem-dashboard{width:100vw;max-width:100vw;right:-100vw}.mem-dashboard-toggle{right:8px;top:8px;width:28px;height:28px}}
+@media (max-width:768px){.mem-dashboard{width:100vw;max-width:100vw;right:-100vw}.mem-dashboard-toggle{min-width:32px;padding:6px 8px;font-size:14px}}
 
 </style>
 </head>
@@ -703,6 +717,7 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
   <div style="display:flex;align-items:center;gap:12px">
     <button class="back-btn" onclick="history.back()">← 返回</button>
     <h1><span class="title-icon">🐼</span><span data-key="header_title">AI联盟智能办公室</span></h1>
+    <button onclick="showPricing()" id="pricingBtn" class="header-pricing-btn" data-key="pricing_btn">价格套餐</button>
   </div>
   <div class="header-right">
     <div class="lang-switch">
@@ -846,9 +861,18 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
         <div class="trans-text" id="transText"></div>
         <div class="trans-status">语音对话模式 · 正在聆听</div>
       </div>
-      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="语音录制（长按说话/点击常开）">🎤</button>
+      <div class="input-row">
       <input type="file" id="micAudioUpload" accept="audio/*" style="display:none" onchange="handleAudioUpload(event)">
-      <button class="mem-dashboard-toggle" id="memDashboardToggle" onclick="toggleMemDashboard()" title="记忆看板">📋<span class="badge" id="memBadge" style="display:none">0</span></button>
+      <textarea id="msgInput" rows="2" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+      </div>
+      <div class="btn-row">
+      <button id="micBtn" title="语音录制" class="icon-btn">🎤</button>
+      <button id="uploadBtn" onclick="toggleUploadMenu(event)" title="上传图片/文件" class="icon-btn">+</button>
+      <button id="memDashboardToggle" onclick="toggleMemDashboard()" title="记忆看板" class="mem-dashboard-toggle">📋<span class="badge" id="memBadge" style="display:none">0</span></button>
+      <button onclick="openModelSelector()" id="modelSelectorBtn" class="model-selector-btn" title="算力引擎"><span>算力引擎</span><span class="model-badge-id" id="selectedModelBadge"></span></button>
+      <button onclick="toggleTeamView()" id="teamToggleBtn" class="icon-btn" title="Show/Hide Team">🐼</button>
+      <button onclick="sendMsg()" id="sendBtn" data-key="send" class="btn-send">发送</button>
+      </div>
       <div class="upload-overlay" id="uploadOverlay" onclick="closeUploadMenu()"></div>
       <div class="upload-popup" id="uploadPopup">
         <div class="upload-popup-item" onclick="triggerImageUpload()">
@@ -859,15 +883,8 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
         </div>
       </div>
       
-      <input type="text" id="msgInput" inputmode="text" enterkeyhint="send" data-key-placeholder="input_placeholder" placeholder="输入任务，盟主将自动分发给最合适的队员..." onkeydown="if(event.key==='Enter')sendMsg()">
       <input type="file" id="imageUploadInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
       <input type="file" id="fileUploadInput" style="display:none" onchange="handleFileUpload(event)">
-      <div class="send-btn-group">
-      <button class="upload-btn" id="uploadBtn" onclick="toggleUploadMenu(event)" title="上传图片/文件">+</button>
-      <button onclick="sendMsg()" id="sendBtn" data-key="send">发送</button>
-      </div>
-      <button onclick="showPricing()" id="pricingBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;box-shadow:0 2px 8px rgba(99,102,241,0.35)" data-key="pricing_btn">价格套餐</button>
-      <button onclick="openModelSelector()" id="modelSelectorBtn" class="model-selector-btn" title="算力引擎"><span>算力引擎</span><span class="model-badge-id" id="selectedModelBadge"></span></button><button onclick="toggleTeamView()" id="teamToggleBtn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .2s" title="Show/Hide Team">🐼</button>
     </div>
   </div>
 </div>
@@ -1016,6 +1033,7 @@ function clearModel() {
   if (badge) badge.textContent = '';
   state.messages.push({role:'agent',agentId:'mengzhu',text:'已退出算力引擎模式，恢复默认团队调度。',time:Date.now()});
   renderMessages();
+  closeModelSelector();
 }
 
 function escHtml(str) {
@@ -1143,9 +1161,9 @@ function renderMessages() {
       var bubbleHtml = '<div class="bubble"><div class="sender">'+getAgentName(m.agentId)+'</div>'+m.text.replace(/\n/g,'<br>');
       // Add byte counter if token info exists
       if (m.tokens !== undefined) {
-        var tokenLabel = m.tokens >= 1000000 ? (m.tokens/1000000).toFixed(1)+'M' : m.tokens >= 1000 ? (m.tokens/1000).toFixed(0)+'K' : String(m.tokens);
-        var statusLabel = m.spinnerState ? L('bp_'+m.spinnerState) : L('bp_done');
-        bubbleHtml += '<div class="byte-counter"><span class="bc-desc">'+statusLabel+'</span><span class="bc-num">'+tokenLabel+'</span></div>';
+        var charCount = m.tokens;
+        var charLabel = charCount >= 1000000 ? (charCount/1000000).toFixed(1)+'M' : charCount >= 1000 ? (charCount/1000).toFixed(0)+'K' : String(charCount);
+        bubbleHtml += '<div class="byte-counter"><span class="bc-char">'+charLabel+' 字符</span></div>';
       }
       bubbleHtml += '</div>';
       div.innerHTML = avatarHtml + bubbleHtml;
@@ -1174,7 +1192,7 @@ function addTyping(agentId, spinnerState) {
     '<div class="ap-body"></div>'+
     '<div class="ap-arm l"></div><div class="ap-arm r"></div>'+
     '</div></div><div class="bubble"><div class="sender">'+getAgentName(agentId)+'</div><div class="typing-indicator"><span></span><span></span><span></span></div>'+
-    '<div class="byte-counter"><span class="bc-desc">'+L('bp_'+ss)+'</span><span class="bc-num">0</span></div></div>';
+    '<div class="byte-counter"><span class="bc-char">0 字符</span></div></div>';
   chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
 }
 
@@ -1183,8 +1201,8 @@ function updateSpinnerState(agentId, state) {
   if (!el) return;
   const spinner = el.querySelector('.msg-avatar-spinner');
   if (spinner) { spinner.className = 'msg-avatar-spinner '+state; }
-  const desc = el.querySelector('.bc-desc');
-  if (desc) { desc.textContent = L('bp_'+state); }
+  const bcChar = el.querySelector('.bc-char');
+  if (bcChar) { bcChar.textContent = (state==='connecting'?'连接中':state==='processing'?'处理中':'')+' '+bcChar.textContent.match(/\d.*/)[0]; }
   // Update sidebar card state
   var card = document.getElementById('card-'+agentId);
   if (card) {
@@ -1198,18 +1216,18 @@ function updateSpinnerState(agentId, state) {
 function updateByteCounter(agentId, num) {
   const el = document.getElementById('typing-'+agentId);
   if (!el) return;
-  const numEl = el.querySelector('.bc-num');
-  if (!numEl) return;
+  const charEl = el.querySelector('.bc-char');
+  if (!charEl) return;
   var label = num >= 1000000 ? (num/1000000).toFixed(1)+'M' : num >= 1000 ? (num/1000).toFixed(0)+'K' : String(num);
-  numEl.textContent = label;
-  numEl.classList.add('counting');
-  setTimeout(function(){ numEl.classList.remove('counting'); }, 400);
+  charEl.textContent = label+' 字符';
+  charEl.classList.add('counting');
+  setTimeout(function(){ charEl.classList.remove('counting'); }, 400);
 }
 
 function animateByteCounterEl(el, target) {
   if (!el) return;
   var label = target >= 1000000 ? (target/1000000).toFixed(1)+'M' : target >= 1000 ? (target/1000).toFixed(0)+'K' : String(target);
-  el.textContent = label;
+  el.textContent = label+' 字符';
   el.classList.add('counting');
   setTimeout(function(){ el.classList.remove('counting'); }, 400);
 }
@@ -1264,7 +1282,7 @@ function generateMockContent(agentId, userMsg) {
         '秋':'《秋日》\n\n天高云影淡，\n风起叶飘黄。\n雁字横空过，\n登高望故乡。',
         '冬':'《冬日》\n\n白雪覆青松，\n寒梅立朔风。\n围炉温酒暖，\n静待春来逢。'
       };
-      return (poems[season] || poems['春']) + '\n\n—— 萌妹为「' + userMsg + '」创作';
+      return (poems[season] || poems['春']);
     }
     if (lower.includes('翻译') || lower.includes('translate')) {
       var text = userMsg.replace(/把|翻译成|translate|into|to|请|帮我/g, ' ').replace(/英文|英语|english/gi,'en').replace(/日文|日语|japanese/gi,'ja').replace(/法文|法语|french/gi,'fr').replace(/韩文|韩语|korean/gi,'ko').replace(/德文|德语|german/gi,'de').replace(/西班牙|spanish/gi,'es').replace(/俄文|俄语|russian/gi,'ru').replace(/\s+/g,' ').trim();
@@ -1282,26 +1300,26 @@ function generateMockContent(agentId, userMsg) {
       };
       var found = Object.entries(mockTrans).filter(function(e){return lower.includes(e[0].toLowerCase());});
       if (found.length > 0) {
-        return found.map(function(e){return '「' + e[0] + '」→ ' + e[1];}).join('\n') + '\n\n—— 萌妹翻译完成';
+        return found.map(function(e){return '「' + e[0] + '」→ ' + e[1];}).join('\n');
       }
-      return '翻译结果：\n\n英文：' + (mockTrans['en'] || text) + '\n日文：' + (mockTrans['ja'] || text) + '\n\n—— 萌妹翻译完成，随时可调整语种和风格';
+      return '翻译结果：\n\n英文：' + (mockTrans['en'] || text) + '\n日文：' + (mockTrans['ja'] || text);
     }
-    return '根据您的需求，以下是生成内容：\n\n' + userMsg + '\n\n—— 萌妹已完成，如需调整请随时告知';
+    return '根据您的需求，以下是生成内容：\n\n' + userMsg;
   }
   // 萌弟: 代码/开发
   if (agentId === 'mengdi') {
-    return '根据需求分析，以下是代码方案：\n\n```javascript\nfunction solution() {\n  // 针对「' + userMsg + '」的实现\n  console.log("萌弟已为您完成代码分析");\n  return { status: "ok" };\n}\n```\n\n—— 萌弟已完成代码分析，可进一步优化';
+    return '代码方案如下：\n\n```javascript\nfunction solution() {\n  // 针对「' + userMsg + '」的实现\n  return { status: "ok" };\n}\n```';
   }
   // 萌姐: 搜索/调研
   if (agentId === 'mengjie') {
-    return '基于「' + userMsg + '」的搜索结果：\n\n1. 相关数据已整理完毕\n2. 多源交叉验证通过\n3. 时效性：最新资料\n\n—— 萌姐搜索完成，详细信息可展开查看';
+    return '搜索结果如下：\n\n1. 相关数据已整理\n2. 多源交叉验证\n3. 最新资料\n\n—— 如需展开详细信息请说明';
   }
   // 萌哥: 文件管理
   if (agentId === 'mengge') {
-    return '文件操作「' + userMsg + '」处理完成：\n\n✓ 已定位目标文件\n✓ 操作执行成功\n✓ 结果已保存\n\n—— 萌哥处理完毕';
+    return '文件操作完成：\n\n✓ 已定位目标文件\n✓ 操作执行成功\n✓ 结果已保存';
   }
-  // 萌萌/盟主: 默认
-  return '任务「' + userMsg + '」已完成处理。\n\n—— 团队已交付，如需调整请继续提出';
+  // 萌萌/盟主: 默认（电脑不在线兜底）
+  return '电脑目前不在线，暂时无法完成此任务';
 }
 
 function sendMsg() {
@@ -1587,6 +1605,7 @@ var _origSendMsg=sendMsg;sendMsg=function(){var input=document.getElementById('m
 </script>
 
 
+<script>
 /* ========== Topic Channel State ========== */
 var TOPICS={active:1,data:{1:{name:'话题 1',msgs:[],outputs:[]},2:{name:'话题 2',msgs:[],outputs:[]},3:{name:'话题 3',msgs:[],outputs:[]},4:{name:'话题 4',msgs:[],outputs:[]},5:{name:'话题 5',msgs:[],outputs:[]}}};
 function switchTopic(n){
@@ -1686,7 +1705,7 @@ function startMicPTT(){
     micMode='ptt';
     var btn=document.getElementById('micBtn');
     btn.textContent='🎤';
-    btn.classList.add('recording');
+    btn.classList.add('mic-recording');
     var ind=document.getElementById('micIndicator');
     ind.classList.add('show');
 
@@ -1712,7 +1731,7 @@ function startMicPTT(){
         micMode='off';
         var btn=document.getElementById('micBtn');
         btn.textContent='🎤';
-        btn.classList.remove('recording','always-on');
+        btn.classList.remove('mic-recording','mic-always-on');
         var ind=document.getElementById('micIndicator');
         ind.classList.remove('show');
         updateTopicBadge(TOPICS.active);
@@ -1724,7 +1743,7 @@ function startMicPTT(){
     }).catch(function(e){
       micMode='off';
       var btn=document.getElementById('micBtn');
-      btn.classList.remove('recording','always-on');
+      btn.classList.remove('mic-recording','mic-always-on');
       var ind=document.getElementById('micIndicator');
       ind.classList.remove('show');
       alert('麦克风权限未授权: '+e.message);
@@ -1790,8 +1809,8 @@ function startAlwaysOn(){
   micAlwaysOnActive=true;
   var btn=document.getElementById('micBtn');
   btn.textContent='🔊';
-  btn.classList.add('always-on');
-  btn.classList.remove('recording');
+  btn.classList.add('mic-always-on');
+  btn.classList.remove('mic-recording');
   var ind=document.getElementById('micIndicator');
   ind.textContent='语音常开 · 持续聆听';
   ind.classList.add('show');
@@ -1805,7 +1824,7 @@ function startAlwaysOn(){
     startContinuousRecognition();
   }).catch(function(e){
     micAlwaysOnActive=false;
-    btn.classList.remove('always-on');
+    btn.classList.remove('mic-always-on');
     ind.classList.remove('show');
     panel.classList.remove('show');
   });
@@ -1815,7 +1834,7 @@ function stopAlwaysOn(){
   micAlwaysOnActive=false;
   var btn=document.getElementById('micBtn');
   btn.textContent='🎤';
-  btn.classList.remove('always-on');
+  btn.classList.remove('mic-always-on');
   var ind=document.getElementById('micIndicator');
   ind.classList.remove('show');
   var panel=document.getElementById('transcribePanel');
@@ -2170,7 +2189,7 @@ document.addEventListener('keydown',function(e){
     if(panel.classList.contains('show')){closeMemDashboard();}
   }
 });
-
+</script>
 <div class="modal-overlay" id="pricingOverlay" onclick="if(event.target===this)hidePricing()">
   <div class="pricing-modal">
     <button class="modal-close" onclick="hidePricing()" style="float:right;background:none;border:none;font-size:24px;color:var(--muted);cursor:pointer">&times;</button>
