@@ -559,6 +559,42 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
   margin-left: 4px; vertical-align: middle;
 }
 
+/* ===== Memory & Context System ===== */
+.card-memory-bar{height:3px;border-radius:2px;margin-top:6px;background:var(--border);overflow:hidden;transition:all .3s}
+.card-memory-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.card-memory-label{font-size:10px;color:var(--muted);margin-top:2px;text-align:right}
+.card-context-badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;margin-left:4px;vertical-align:middle;background:rgba(34,197,94,0.15);color:#22c55e}
+.sidebar-divider{margin:10px 0;border-top:1px solid var(--border)}
+.sidebar-tools{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.sidebar-tool-btn{flex:1;min-width:0;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap}
+.sidebar-tool-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sidebar-tool-btn.active{background:var(--accent);color:#fff}
+.history-panel{position:fixed;top:0;right:0;width:380px;max-width:90vw;height:100vh;background:var(--bg);z-index:3000;box-shadow:-4px 0 24px rgba(0,0,0,.3);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease}
+.history-panel.show{transform:translateX(0)}
+.history-panel-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.history-panel-header h3{margin:0;font-size:16px}
+.history-search{padding:10px 16px;border-bottom:1px solid var(--border)}
+.history-search input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;outline:none}
+.history-search input:focus{border-color:var(--accent)}
+.history-list{flex:1;overflow-y:auto;padding:8px}
+.history-item{padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:6px;background:var(--card);border:1px solid var(--border);transition:all .2s}
+.history-item:hover{border-color:var(--accent);background:var(--bg)}
+.history-item .hi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.history-item .hi-agent{font-size:12px;font-weight:600;color:var(--accent)}
+.history-item .hi-time{font-size:10px;color:var(--muted)}
+.history-item .hi-preview{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item .hi-tags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.history-item .hi-tag{font-size:9px;padding:1px 6px;border-radius:6px;background:rgba(99,102,241,0.1);color:var(--accent)}
+.history-empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.history-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);z-index:2999;display:none}
+.history-overlay.show{display:block}
+.context-inject-notice{text-align:center;padding:8px 12px;margin:8px 0;background:rgba(34,197,94,0.08);border-radius:8px;font-size:11px;color:#22c55e;border:1px dashed rgba(34,197,94,0.25)}
+.preference-section{margin-top:8px;padding:8px;background:var(--card);border-radius:8px;border:1px solid var(--border)}
+.preference-title{font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px}
+.preference-tags{display:flex;gap:3px;flex-wrap:wrap}
+.preference-tag{font-size:9px;padding:2px 7px;border-radius:6px;background:rgba(245,158,11,0.15);color:#f59e0b;cursor:pointer}
+.preference-tag:hover{background:rgba(245,158,11,0.3)}
+
 </style>
 </head>
 <body>
@@ -620,6 +656,18 @@ header h1 .title-icon{font-size:24px;-webkit-text-fill-color:initial}
       <div class="info"><div class="name" data-key="mm2_name">萌萌</div><div class="role" data-key="mm2_role">全能辅助 · 综合支持</div></div><div class="card-spinner"></div><div class="card-status"></div>
     </div>
   </aside>
+
+  <div class="history-overlay" id="historyOverlay" onclick="closeHistoryPanel()"></div>
+  <div class="history-panel" id="historyPanel">
+    <div class="history-panel-header">
+      <h3>历史对话记录</h3>
+      <button onclick="closeHistoryPanel()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted)">&times;</button>
+    </div>
+    <div class="history-search">
+      <input type="text" id="historySearchInput" placeholder="搜索历史对话..." oninput="searchHistory()">
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
 
   <div class="main">
     <div class="chat-area" id="chatArea">
@@ -1337,6 +1385,26 @@ function showPricing() {
 function hidePricing() {
   document.getElementById('pricingOverlay').classList.remove('show');
 }
+
+// ============================================================
+//  Memory & Context System — Maximum Context + Learning
+// ============================================================
+var MEM_CONFIG={MAX_CONV_PER_MEMBER:100,STORAGE_PREFIX:'ztw_mem_',PREF_KEY:'ztw_user_prefs',IDX_KEY:'ztw_conv_idx',SAVE_DELAY:2000,COLORS:{mengzhu:'#ef4444',mengge:'#3b82f6',mengjie:'#ec4899',mengdi:'#94a3b8',mengmei:'#facc15',mengmeng:'#22c55e'}};
+var ConvStore={_idx:null,_init:function(){if(this._idx===null)try{this._idx=JSON.parse(localStorage.getItem(MEM_CONFIG.IDX_KEY)||'[]')}catch(e){this._idx=[]}},_saveIdx:function(){try{localStorage.setItem(MEM_CONFIG.IDX_KEY,JSON.stringify(this._idx))}catch(e){}},_k:function(id){return MEM_CONFIG.STORAGE_PREFIX+id},save:function(a,msgs){this._init();var id='c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);var p=(msgs.length&&msgs[msgs.length-1].text)?msgs[msgs.length-1].text.slice(0,80):'';var at=msgs.map(function(m){return m.text||''}).join(' ').toLowerCase();var tags=[];var tm={文件:['文件','文件夹','路径','读取','写入','保存','删除','下载','上传','zip','csv','json','xml'],搜索:['搜索','查找','查询','调研','对比','最新','新闻','资料','论文','报告'],代码:['代码','编程','函数','bug','错误','调试','算法','接口','api','sql','python','js','html','css','git'],创作:['写','翻译','文案','文章','文档','报告','邮件','润色','总结','摘要'],算力:['算力','模型','gpt','claude','deepseek','qwen','glm','gemini','kimi','doubao']};for(var t in tm)if(tm[t].some(function(w){return at.indexOf(w)>=0}))tags.push(t);var cpt=msgs.map(function(m){return{r:m.role,g:m.agentId||a,x:m.text?m.text.slice(0,500):'',t:m.time}});try{localStorage.setItem(this._k(id),JSON.stringify(cpt))}catch(e){this._idx.sort(function(x,y){return x.t-y.t});while(this._idx.length>0){try{localStorage.removeItem(this._k(this._idx[0].id));this._idx.shift()}catch(e2){break}}try{localStorage.setItem(this._k(id),JSON.stringify(cpt))}catch(e2){return null}}this._idx.push({id:id,a:a,t:Date.now(),n:msgs.length,p:p,g:tags.slice(0,4)});var ac=this._idx.filter(function(c){return c.a===a}).sort(function(x,y){return x.t-y.t});while(ac.length>MEM_CONFIG.MAX_CONV_PER_MEMBER){var o=ac.shift();try{localStorage.removeItem(this._k(o.id))}catch(e){}}this._saveIdx();return id},load:function(id){try{var r=localStorage.getItem(this._k(id));return r?JSON.parse(r):null}catch(e){return null}},listByAgent:function(a){this._init();return this._idx.filter(function(c){return c.a===a}).sort(function(x,y){return y.t-x.t})},listAll:function(){this._init();return this._idx.slice().sort(function(x,y){return y.t-x.t})},search:function(q){this._init();var lq=q.toLowerCase();return this._idx.filter(function(c){return c.p.toLowerCase().indexOf(lq)>=0||c.g.some(function(t){return t.toLowerCase().indexOf(lq)>=0})}).sort(function(x,y){return y.t-x.t})},delete:function(id){try{localStorage.removeItem(this._k(id))}catch(e){}this._idx=this._idx.filter(function(c){return c.id!==id});this._saveIdx();updateMemoryBars()},clearAll:function(){this._init();var s=this;this._idx.forEach(function(c){try{localStorage.removeItem(s._k(c.id))}catch(e){}});this._idx=[];this._saveIdx();updateMemoryBars()},getMemory:function(a){this._init();var n=this._idx.filter(function(c){return c.a===a}).length;return{count:n,pct:Math.min(100,Math.round(n/MEM_CONFIG.MAX_CONV_PER_MEMBER*100)),max:MEM_CONFIG.MAX_CONV_PER_MEMBER}}};
+var UserPrefs={_d:null,_init:function(){if(this._d===null){try{this._d=JSON.parse(localStorage.getItem(MEM_CONFIG.PREF_KEY)||'{}')}catch(e){this._d={}};this._d.topics=this._d.topics||{};this._d.models=this._d.models||{};this._d.agents=this._d.agents||{};this._d.lastAgent=this._d.lastAgent||'mengzhu';this._d.taskCount=this._d.taskCount||0}},_save:function(){try{localStorage.setItem(MEM_CONFIG.PREF_KEY,JSON.stringify(this._d))}catch(e){}},learn:function(msg,agent,model){this._init();this._d.taskCount++;this._d.agents[agent]=(this._d.agents[agent]||0)+1;this._d.lastAgent=agent;if(model)this._d.models[model]=(this._d.models[model]||0)+1;var l=msg.toLowerCase();var tw={部署:['部署','deploy','发布','上线','推送','wrangler','cloudflare'],代码:['代码','code','编程','修复','bug','fix','函数','function','script'],文件:['文件','file','文档','doc','备份','backup','压缩','zip'],搜索:['搜索','search','查找','find','调研','研究','资料'],翻译:['翻译','translate','语言','language','lang','i18n'],音频:['音频','audio','声音','播放','play','视频','video','mp3','mp4'],模型:['模型','model','gpt','claude','deepseek','qwen','glm','gemini','token','算力'],配置:['配置','config','设置','setting','token','key','api']};for(var t in tw)if(tw[t].some(function(w){return l.indexOf(w)>=0}))this._d.topics[t]=(this._d.topics[t]||0)+1;this._save()},getTopTopics:function(n){this._init();n=n||5;var e=Object.entries(this._d.topics);e.sort(function(a,b){return b[1]-a[1]});return e.slice(0,n)},getPreferredAgent:function(){this._init();var b='mengzhu',s=0;for(var a in this._d.agents)if(this._d.agents[a]>s){s=this._d.agents[a];b=a}return b},getStats:function(){this._init();return{tasks:this._d.taskCount,topics:this.getTopTopics(),prefAgent:this.getPreferredAgent(),totalConvs:ConvStore.listAll().length}}};
+function searchAndInjectContext(msg){var r=ConvStore.search(msg);if(!r.length)return null;var b=r[0],m=ConvStore.load(b.id);if(!m||!m.length)return null;var s='',l4=m.slice(-4);l4.forEach(function(x){s+=(x.r==='user'?'用户':getAgentName(x.g))+': '+x.x.slice(0,200)+'\n'});return{summary:'## 历史相关对话 (来自'+getAgentName(b.a)+')\n'+s+'\n---\n请结合以上历史对话回答当前问题，保持服务连续性。',convId:b.id,agentId:b.a}}
+var _autoSaveTimer=null;function scheduleAutoSave(){if(_autoSaveTimer)clearTimeout(_autoSaveTimer);_autoSaveTimer=setTimeout(function(){if(!state||!state.messages||!state.messages.length)return;ConvStore.save(state.selectedAgent||'mengzhu',state.messages);updateMemoryBars();_autoSaveTimer=null},MEM_CONFIG.SAVE_DELAY)}
+function injectMemoryBars(){['mengzhu','mengge','mengjie','mengdi','mengmei','mengmeng'].forEach(function(a){var c=document.getElementById('card-'+a);if(!c||c.querySelector('.card-memory-bar'))return;var b=document.createElement('div');b.className='card-memory-bar';b.innerHTML='<div class="card-memory-fill" id="mem-fill-'+a+'"></div>';c.appendChild(b);var l=document.createElement('div');l.className='card-memory-label';l.id='mem-label-'+a;c.appendChild(l)});updateMemoryBars()}
+function updateMemoryBars(){['mengzhu','mengge','mengjie','mengdi','mengmei','mengmeng'].forEach(function(a){var f=document.getElementById('mem-fill-'+a),l=document.getElementById('mem-label-'+a);if(!f||!l)return;var u=ConvStore.getMemory(a);f.style.width=u.pct+'%';f.style.background=u.pct>80?'#ef4444':u.pct>50?'#f59e0b':'#22c55e';l.textContent='记忆 '+u.count+'/'+u.max})}
+function openHistoryPanel(){document.getElementById('historyPanel').classList.add('show');document.getElementById('historyOverlay').classList.add('show');renderHistoryList()}
+function closeHistoryPanel(){document.getElementById('historyPanel').classList.remove('show');document.getElementById('historyOverlay').classList.remove('show')}
+function searchHistory(){renderHistoryList(document.getElementById('historySearchInput').value)}
+function renderHistoryList(q){var l=document.getElementById('historyList'),items=q?ConvStore.search(q):ConvStore.listAll();if(!items.length){l.innerHTML='<div class="history-empty">暂无历史记录<br><small>开始对话后将自动保存</small></div>';return}var h='';items.slice(0,50).forEach(function(c){var d=new Date(c.t),ts=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),tg=c.g.map(function(t){return'<span class="hi-tag">'+t+'</span>'}).join('');h+='<div class="history-item" onclick="loadConversation(\''+c.id+'\',\''+c.a+'\')"><div class="hi-header"><span class="hi-agent">'+getAgentName(c.a)+'</span><span class="hi-time">'+ts+'</span></div><div class="hi-preview">'+escHtml(c.p||'(空对话)')+'</div><div class="hi-tags">'+tg+'<span style="font-size:9px;color:var(--muted);margin-left:auto">'+c.n+'条</span></div></div>'});l.innerHTML=h}
+function loadConversation(id,aid){var m=ConvStore.load(id);if(!m)return;state.messages=m.map(function(x){return{role:x.r,agentId:x.g,text:x.x,time:x.t}});state.selectedAgent=aid;selectAgent(aid);renderMessages();closeHistoryPanel();setTimeout(function(){var ca=document.getElementById('chatArea');if(ca)ca.scrollTop=ca.scrollHeight},100)}
+function injectSidebarTools(){var s=document.querySelector('.sidebar');if(!s||s.querySelector('.sidebar-tools'))return;var d=document.createElement('div');d.className='sidebar-divider';s.appendChild(d);var t=document.createElement('div');t.className='sidebar-tools';t.innerHTML='<button class="sidebar-tool-btn" onclick="openHistoryPanel()" title="查看历史对话">📋 记忆库</button><button class="sidebar-tool-btn" onclick="clearCurrentMemory()" title="清空当前成员记忆">🗑 清记忆</button>';s.appendChild(t)}
+function clearCurrentMemory(){var a=state.selectedAgent||'mengzhu';ConvStore.listByAgent(a).forEach(function(c){ConvStore.delete(c.id)});updateMemoryBars()}
+var _origSendMsg=sendMsg;sendMsg=function(){var input=document.getElementById('msgInput'),text=input.value.trim();_origSendMsg();if(text){var ta=(typeof dispatchTask==='function'&&!selectedModelId)?dispatchTask(text):(state.selectedAgent||'mengzhu');UserPrefs.learn(text,ta,selectedModelId||null)}scheduleAutoSave()};
+(function iM(){setTimeout(function(){injectMemoryBars();injectSidebarTools();updateMemoryBars();var lc=ConvStore.listAll();if(lc.length>0){var last=lc[0],m=ConvStore.load(last.id);if(m&&m.length>0){state.messages=m.map(function(x){return{role:x.r,agentId:x.g,text:x.x,time:x.t}});state.selectedAgent=last.a;renderMessages();selectAgent(last.a)}}},300)})();
 </script>
 
 <div class="modal-overlay" id="pricingOverlay" onclick="if(event.target===this)hidePricing()">
