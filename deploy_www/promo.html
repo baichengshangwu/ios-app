@@ -38,6 +38,10 @@ body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;backgroun
 .logo{position:absolute;top:14px;left:18px;z-index:20;font-size:1.1em;font-weight:700;background:linear-gradient(135deg,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .idx-ind{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:.72em;z-index:10}
 .voice-ind{position:absolute;top:46px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.3);font-size:.7em;z-index:10;transition:opacity .3s}
+
+.slide-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.35;z-index:0;pointer-events:none}
+.slide .title,.slide .desc,.slide .cta,.slide .icon-row,.slide .stats-row,.slide .stat,.slide .spec-card{position:relative;z-index:1}
+
 </style>
 </head>
 <body>
@@ -48,6 +52,7 @@ body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;backgroun
 </select>
 <div class="voice-ind" id="voiceInd"></div>
 <div id="slidesCt"></div>
+<img id="slideImg" class="slide-img" src="" alt="">
 <div class="sub-bar" id="subBar"></div>
 <div class="idx-ind" id="idxInd"></div>
 <div class="prog-wrap"><div class="prog-fill" id="prog"></div></div>
@@ -481,10 +486,10 @@ const SUB = {
 
 // ========== SLIDE DEFINITIONS ==========
 const SLIDES = [
-{type:'hero',bg:'linear-gradient(135deg,#08082e,#1a0a3e)',t:{'zh-CN':'AI Nexus — 全球首个去中心化 AI 访问市场','en':"AI Nexus — World's First Decentralized AI Access Market"},d:{'zh-CN':'AI 共享经济协议','en':'AI Sharing Economy Protocol'}},
-{type:'hero',bg:'linear-gradient(135deg,#1a0a2e,#0a0a3e)',t:{'zh-CN':'痛点与突破','en':'The Pain & The Breakthrough'},d:{'zh-CN':'打破封闭——去中心化 AI 访问全新范式','en':'Breaking walls — decentralized AI access redefined'}},
-{type:'hero',bg:'linear-gradient(135deg,#0a1a3e,#0a0a2e)',t:{'zh-CN':'一个 Token，打通所有 AI','en':'One Token, All AI'},d:{'zh-CN':'AI Nexus — 统一 AI 访问入口','en':'AI Nexus — Unified AI Access Gateway'}},
-{type:'stats',bg:'linear-gradient(135deg,#0a0a2e,#1a1a4e)',t:{'zh-CN':'行情看板','en':'Market Dashboard'},stats:[{n:'48',l:{'zh-CN':'AI 工具','en':'AI Tools'}},{n:'1,247',l:{'zh-CN':'持有者','en':'Holders'}},{n:'$2.8M',l:{'zh-CN':'24h 成交量','en':'24h Volume'}},{n:'$42.8M',l:{'zh-CN':'市值','en':'Market Cap'}}]},
+{type:'hero',bg:'linear-gradient(135deg,#08082e,#1a0a3e)',img:'promo_hero.jpg',t:{'zh-CN':'AI Nexus — 全球首个去中心化 AI 访问市场','en':"AI Nexus — World's First Decentralized AI Access Market"},d:{'zh-CN':'AI 共享经济协议','en':'AI Sharing Economy Protocol'}},
+{type:'hero',bg:'linear-gradient(135deg,#1a0a2e,#0a0a3e)',img:'promo_img/02_tools.png',t:{'zh-CN':'痛点与突破','en':'The Pain & The Breakthrough'},d:{'zh-CN':'打破封闭——去中心化 AI 访问全新范式','en':'Breaking walls — decentralized AI access redefined'}},
+{type:'hero',bg:'linear-gradient(135deg,#0a1a3e,#0a0a2e)',img:'promo_img/03_p2p.png',t:{'zh-CN':'一个 Token，打通所有 AI','en':'One Token, All AI'},d:{'zh-CN':'AI Nexus — 统一 AI 访问入口','en':'AI Nexus — Unified AI Access Gateway'}},
+{type:'stats',bg:'linear-gradient(135deg,#0a0a2e,#1a1a4e)',img:'promo_img/04_events.png',t:{'zh-CN':'行情看板','en':'Market Dashboard'},stats:[{n:'48',l:{'zh-CN':'AI 工具','en':'AI Tools'}},{n:'1,247',l:{'zh-CN':'持有者','en':'Holders'}},{n:'$2.8M',l:{'zh-CN':'24h 成交量','en':'24h Volume'}},{n:'$42.8M',l:{'zh-CN':'市值','en':'Market Cap'}}]},
 {type:'icons',bg:'linear-gradient(135deg,#0a1a3e,#1a0a2e)',t:{'zh-CN':'一切 AI 资源，Token 化交易','en':'All AI Resources, Tokenized'},d:{'zh-CN':'从 GPT 到 Claude，从绿电到 GPU——明码标价，即时交易','en':'From GPT to Claude, green energy to GPU—priced and traded instantly'},icons:['GPT-5.5','Claude 4.7','⚡ 绿电','💻 GPU']},
 {type:'hero',bg:'linear-gradient(135deg,#1a0a4e,#0a1a3e)',t:{'zh-CN':'工具市场','en':'Tool Market'},d:{'zh-CN':'全球顶级 AI 模型聚合，按类别筛选，一键订阅','en':'Global top AI models, filter by category, one-click subscribe'}},
 {type:'hero',bg:'linear-gradient(135deg,#0a2a3e,#0a0a4e)',t:{'zh-CN':'P2P 自由市场','en':'P2P Free Market'},d:{'zh-CN':'从电力原料到 GPU 集群，全链路透明流转','en':'From energy to GPU clusters, full-chain transparency'}},
@@ -510,12 +515,33 @@ const SLIDES = [
 // ========== SPEECH SYNTHESIS ENGINE ==========
 let idx=0,playing=false,lang='zh-CN',voices=[];
 const synth=window.speechSynthesis;
+var bgAudio=null;
+function playBgAudio(){
+  if(!bgAudio)bgAudio=document.getElementById('bgAudio');
+  if(!bgAudio||voices.length>0)return;
+  var langCode=lang.replace('zh-CN','zh-CN').replace('zh-TW','zh-TW');
+  var src='promo_audio_'+langCode+'.mp3';
+  bgAudio.src=src;
+  bgAudio.load();
+  bgAudio.play().catch(function(){});
+}
+function stopBgAudio(){
+  if(bgAudio){bgAudio.pause();bgAudio.currentTime=0;}
+}
 let currentUtterance=null;
 
 // Load voices
 function loadVoices(){
   voices=synth.getVoices();
-  if(voices.length===0){setTimeout(loadVoices,200);return;}
+  if(voices.length===0){
+    // Try up to 10 times, then fall back to MP3
+    if(!window._vTry)window._vTry=0;
+    window._vTry++;
+    if(window._vTry<10){setTimeout(loadVoices,500);return;}
+    document.getElementById('voiceInd').textContent='🔊 音频模式';
+    setTimeout(()=>document.getElementById('voiceInd').style.opacity='0',2000);
+    return;
+  }
   document.getElementById('voiceInd').textContent='🎤 SpeechSynthesis ready';
   setTimeout(()=>document.getElementById('voiceInd').style.opacity='0',2000);
 }
@@ -532,9 +558,13 @@ function getVoice(langCode){
 
 function speakSlide(){
   if(!playing)return;
-  synth.cancel();
+  synth.cancel();stopBgAudio();
   const text=(SUB[lang]||SUB['zh-CN'])[idx];
   if(!text){nextSlide();return;}
+  // Show slide image
+  var sl=document.getElementById('sl'+idx);
+  var si=document.getElementById('slideImg');
+  if(si&&sl){var imgs=sl.getAttribute('data-img');si.src=imgs||'';si.style.display=imgs?'block':'none';}
 
   currentUtterance=new SpeechSynthesisUtterance(text);
   currentUtterance.lang=lang;
@@ -587,6 +617,7 @@ function init(){
     d.className='slide'+(i===0?' active':'');
     d.id='sl'+i;
     d.style.background=s.bg;
+    if(s.img){d.setAttribute('data-img',s.img);}
     let h='';
     if(s.t)h+=`<div class="title">${s.t['zh-CN']||''}</div>`;
     if(s.d)h+=`<div class="desc">${s.d['zh-CN']||''}</div>`;
@@ -633,13 +664,19 @@ function togglePlay(){
   document.getElementById('playBtn').textContent=playing?'⏸ 暂停':'▶ 播放';
   document.getElementById('playBtn').classList.toggle('on',playing);
   document.getElementById('prog').style.width='0%';
-  if(playing)speakSlide();
-  else synth.cancel();
+  if(playing){
+    if(voices.length===0)playBgAudio();
+    speakSlide();
+  }else{
+    synth.cancel();
+    stopBgAudio();
+  }
 }
 
 function stop(){
   playing=false;
   synth.cancel();
+  stopBgAudio();
   document.getElementById('playBtn').textContent='🔄 重播';
   document.getElementById('playBtn').classList.remove('on');
   document.getElementById('prog').style.width='100%';
@@ -672,5 +709,7 @@ document.addEventListener('keydown',e=>{
 
 init();
 </script>
+
+<audio id="bgAudio" preload="none" style="display:none"></audio>
 </body>
 </html>
